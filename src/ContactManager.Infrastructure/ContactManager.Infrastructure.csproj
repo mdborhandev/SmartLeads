@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\ContactManager.Application\ContactManager.Application.csproj" />
     <ProjectReference Include="..\ContactManager.Domain\ContactManager.Domain.csproj" />
+    <ProjectReference Include="..\ContactManager.Application\ContactManager.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

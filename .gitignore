@@ -1,0 +1,10 @@
+bin/
+obj/
+*.user
+.vs/
+.idea/
+.vscode/
+appsettings.Development.json
+.env
+storage/uploads/*
+!storage/uploads/.gitkeep

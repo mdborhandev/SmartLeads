@@ -10,11 +10,11 @@
 using System;
 using System.Reflection;
 
-[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("dotnet-ContactManager.Worker-287cd993-ab19-4f67-b3bd-47853766ed68")]
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("dotnet-ContactManager.Worker-235b0ae4-659a-4791-8411-1336c41b1fe5")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("ContactManager.Worker")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8a4cec20e0c91658405f68431389bfd4224f3712")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a823decb56a390441d8d3c9452ace57a96f6c55c")]
 [assembly: System.Reflection.AssemblyProductAttribute("ContactManager.Worker")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ContactManager.Worker")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
