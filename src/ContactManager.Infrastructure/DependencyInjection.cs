@@ -46,6 +46,15 @@ public static class DependencyInjection
                 ValidAudience = jwtSettings["Audience"],
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret))
             };
+
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    context.Token = context.Request.Cookies["JwtToken"];
+                    return Task.CompletedTask;
+                }
+            };
         });
 
         return services;
