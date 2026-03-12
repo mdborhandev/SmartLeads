@@ -1,6 +1,0 @@
-{
-  "ContractManager.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/home\/borhan-uddin-fahim\/ContractManager\/src\/ContractManager.API",
-  "ContractManager.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/home\/borhan-uddin-fahim\/ContractManager\/src\/ContractManager.Application",
-  "ContractManager.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/home\/borhan-uddin-fahim\/ContractManager\/src\/ContractManager.Domain",
-  "ContractManager.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/home\/borhan-uddin-fahim\/ContractManager\/src\/ContractManager.Infrastructure"
-}
