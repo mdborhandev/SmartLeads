@@ -1,11 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using ContactManager.Domain.Common;
-using ContactManager.Domain.Users;
-using ContactManager.Domain.Contacts;
-using ContactManager.Domain.Groups;
-using ContactManager.Domain.Tags;
-using ContactManager.Domain.Notes;
-using ContactManager.Domain.Attachments;
+using ContactManager.Domain.Models;
 
 namespace ContactManager.Infrastructure.Persistence;
 

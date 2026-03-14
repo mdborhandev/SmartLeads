@@ -1,8 +1,4 @@
-using ContactManager.Domain.Common;
-using ContactManager.Domain.Users;
-using ContactManager.Domain.Contacts;
-
-namespace ContactManager.Domain.Tags;
+namespace ContactManager.Domain.Models;
 
 public class Tag : BaseEntity
 {

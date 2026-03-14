@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using ContactManager.Application.Common.Interfaces;
-using ContactManager.Domain.Users;
+using ContactManager.Domain.Models;
 
 namespace ContactManager.Infrastructure.Identity;
 

@@ -2,7 +2,7 @@ using MediatR;
 using AutoMapper;
 using ContactManager.Application.Contacts.Models;
 using ContactManager.Domain.Interfaces.Repositories;
-using ContactManager.Domain.Contacts;
+using ContactManager.Domain.Models;
 
 namespace ContactManager.Application.Contacts.Queries.GetContacts;
 

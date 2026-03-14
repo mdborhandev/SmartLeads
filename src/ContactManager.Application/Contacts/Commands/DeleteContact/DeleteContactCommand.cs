@@ -1,6 +1,6 @@
 using MediatR;
 using ContactManager.Domain.Interfaces.Repositories;
-using ContactManager.Domain.Contacts;
+using ContactManager.Domain.Models;
 
 namespace ContactManager.Application.Contacts.Commands.DeleteContact;
 

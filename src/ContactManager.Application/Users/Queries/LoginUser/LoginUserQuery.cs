@@ -2,7 +2,7 @@ using MediatR;
 using ContactManager.Application.Common.Interfaces;
 using ContactManager.Application.Common.Models;
 using ContactManager.Domain.Interfaces.Repositories;
-using ContactManager.Domain.Users;
+using ContactManager.Domain.Models;
 
 namespace ContactManager.Application.Users.Queries.LoginUser;
 

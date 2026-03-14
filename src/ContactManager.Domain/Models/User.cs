@@ -1,6 +1,4 @@
-using ContactManager.Domain.Common;
-
-namespace ContactManager.Domain.Users;
+namespace ContactManager.Domain.Models;
 
 public class User : BaseEntity
 {

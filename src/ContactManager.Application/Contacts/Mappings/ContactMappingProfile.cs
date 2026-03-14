@@ -1,6 +1,6 @@
 using AutoMapper;
 using ContactManager.Application.Contacts.Models;
-using ContactManager.Domain.Contacts;
+using ContactManager.Domain.Models;
 
 namespace ContactManager.Application.Contacts.Mappings;
 

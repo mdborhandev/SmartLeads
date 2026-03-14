@@ -1,11 +1,4 @@
-using ContactManager.Domain.Common;
-using ContactManager.Domain.Users;
-using ContactManager.Domain.Notes;
-using ContactManager.Domain.Tags;
-using ContactManager.Domain.Groups;
-using ContactManager.Domain.Attachments;
-
-namespace ContactManager.Domain.Contacts;
+namespace ContactManager.Domain.Models;
 
 public class Contact : BaseEntity
 {

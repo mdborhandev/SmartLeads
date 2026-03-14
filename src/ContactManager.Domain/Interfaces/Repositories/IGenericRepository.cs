@@ -1,5 +1,5 @@
 using System.Linq.Expressions;
-using ContactManager.Domain.Common;
+using ContactManager.Domain.Models;
 
 namespace ContactManager.Domain.Interfaces.Repositories;
 

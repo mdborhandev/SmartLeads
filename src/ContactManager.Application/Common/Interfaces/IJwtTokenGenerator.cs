@@ -1,4 +1,4 @@
-using ContactManager.Domain.Users;
+using ContactManager.Domain.Models;
 
 namespace ContactManager.Application.Common.Interfaces;
 

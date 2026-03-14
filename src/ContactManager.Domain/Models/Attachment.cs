@@ -1,7 +1,4 @@
-using ContactManager.Domain.Common;
-using ContactManager.Domain.Contacts;
-
-namespace ContactManager.Domain.Attachments;
+namespace ContactManager.Domain.Models;
 
 public class Attachment : BaseEntity
 {

@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using ContactManager.Domain.Common;
+using ContactManager.Domain.Models;
 using ContactManager.Domain.Interfaces.Repositories;
 
 namespace ContactManager.Infrastructure.Persistence.Repositories;

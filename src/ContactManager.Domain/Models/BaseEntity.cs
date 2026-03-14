@@ -1,4 +1,4 @@
-namespace ContactManager.Domain.Common;
+namespace ContactManager.Domain.Models;
 
 public abstract class BaseEntity
 {

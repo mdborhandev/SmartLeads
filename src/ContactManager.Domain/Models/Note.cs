@@ -1,7 +1,4 @@
-using ContactManager.Domain.Common;
-using ContactManager.Domain.Contacts;
-
-namespace ContactManager.Domain.Notes;
+namespace ContactManager.Domain.Models;
 
 public class Note : BaseEntity
 {
