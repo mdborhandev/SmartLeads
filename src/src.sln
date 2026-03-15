@@ -2,15 +2,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContactManager.Infrastructure", "ContactManager.Infrastructure\ContactManager.Infrastructure.csproj", "{5C781FFA-99A4-3B50-B154-B7E6FEF75A55}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLeads.Infrastructure", "SmartLeads.Infrastructure\SmartLeads.Infrastructure.csproj", "{5C781FFA-99A4-3B50-B154-B7E6FEF75A55}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContactManager.Worker", "ContactManager.Worker\ContactManager.Worker.csproj", "{FAA8E01B-D404-E9BA-9471-5A91E278372C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLeads.Worker", "SmartLeads.Worker\SmartLeads.Worker.csproj", "{FAA8E01B-D404-E9BA-9471-5A91E278372C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContactManager.Web", "ContactManager.Web\ContactManager.Web.csproj", "{4E7F945E-2C20-6D6B-B518-136C678128B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLeads.Web", "SmartLeads.Web\SmartLeads.Web.csproj", "{4E7F945E-2C20-6D6B-B518-136C678128B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContactManager.Application", "ContactManager.Application\ContactManager.Application.csproj", "{C1E29C5B-FCB8-6DA2-5F05-D6F035379BFE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLeads.Application", "SmartLeads.Application\SmartLeads.Application.csproj", "{C1E29C5B-FCB8-6DA2-5F05-D6F035379BFE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContactManager.Domain", "ContactManager.Domain\ContactManager.Domain.csproj", "{AE26EE31-1177-1622-F282-73B611B6585A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLeads.Domain", "SmartLeads.Domain\SmartLeads.Domain.csproj", "{AE26EE31-1177-1622-F282-73B611B6585A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

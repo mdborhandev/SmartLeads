@@ -1,0 +1,44 @@
+@model SmartLeads.Web.Models.LoginViewModel
+
+@{
+    ViewData["Title"] = "Log in";
+    Layout = "_AuthLayout";
+}
+
+<form id="account" method="post">
+    <h4 class="mb-4">Welcome back! 👋</h4>
+    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+    
+    <div class="form-floating mb-3">
+        <input asp-for="EmailOrUsername" class="form-control" autocomplete="username" aria-required="true" placeholder="username or email" />
+        <label asp-for="EmailOrUsername" class="form-label"></label>
+        <span asp-validation-for="EmailOrUsername" class="text-danger"></span>
+    </div>
+    
+    <div class="form-floating mb-3">
+        <input asp-for="Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+        <label asp-for="Password" class="form-label"></label>
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="form-check">
+            <input class="form-check-input" asp-for="RememberMe" type="checkbox" id="rememberMe">
+            <label class="form-check-label" asp-for="RememberMe">
+                Remember me
+            </label>
+        </div>
+        <a href="javascript:void(0)" class="text-decoration-none">Forgot Password?</a>
+    </div>
+    
+    <button id="login-submit" type="submit" class="btn btn-primary d-grid w-100 mb-3">Sign in</button>
+    
+    <div class="text-center">
+        <span class="text-body-secondary">New on our platform?</span>
+        <a asp-action="Register" class="text-decoration-none ms-2">Create an account</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

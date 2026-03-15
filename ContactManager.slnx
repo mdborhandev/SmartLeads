@@ -1,9 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/ContactManager.Application/ContactManager.Application.csproj" />
-    <Project Path="src/ContactManager.Domain/ContactManager.Domain.csproj" />
-    <Project Path="src/ContactManager.Infrastructure/ContactManager.Infrastructure.csproj" />
-    <Project Path="src/ContactManager.Web/ContactManager.Web.csproj" />
-    <Project Path="src/ContactManager.Worker/ContactManager.Worker.csproj" />
-  </Folder>
-</Solution>
