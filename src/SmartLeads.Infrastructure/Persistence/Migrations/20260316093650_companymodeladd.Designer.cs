@@ -12,7 +12,7 @@ using SmartLeads.Infrastructure.Persistence;
 namespace SmartLeads.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260316092520_companymodeladd")]
+    [Migration("20260316093650_companymodeladd")]
     partial class companymodeladd
     {
         /// <inheritdoc />

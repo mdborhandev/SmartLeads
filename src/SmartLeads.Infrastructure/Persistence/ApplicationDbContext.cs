@@ -10,13 +10,13 @@ public class ApplicationDbContext : DbContext
     {
     }
 
-    public DbSet<User> Users => Set<User>();
-    public DbSet<Contact> Contacts => Set<Contact>();
-    public DbSet<Group> Groups => Set<Group>();
-    public DbSet<Tag> Tags => Set<Tag>();
-    public DbSet<Note> Notes => Set<Note>();
-    public DbSet<Attachment> Attachments => Set<Attachment>();
-    public DbSet<Company> Companies => Set<Company>();
+    public DbSet<User> Users { get; set; }
+    public DbSet<Contact> Contacts { get; set; }
+    public DbSet<Group> Groups { get; set; }
+    public DbSet<Tag> Tags { get; set; }
+    public DbSet<Note> Notes { get; set; }
+    public DbSet<Attachment> Attachments { get; set; }
+    public DbSet<Company> Companies { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
