@@ -1,6 +1,8 @@
 using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MimeKit;
 using SmartLeads.Utilities.Interfaces;
 
@@ -8,101 +10,159 @@ namespace SmartLeads.Utilities.Email;
 
 public class EmailService : IEmailService
 {
-    private readonly IConfiguration _configuration;
+    private readonly SMTPConfigModel _smtpConfig;
     private readonly ILogger<EmailService> _logger;
 
-    public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
+    public EmailService(IOptions<SMTPConfigModel> smtpConfigOptions, ILogger<EmailService> logger)
     {
-        _configuration = configuration;
+        _smtpConfig = smtpConfigOptions.Value;
         _logger = logger;
     }
 
-    public async Task SendPasswordResetEmailAsync(string toEmail, string username, string resetLink)
+    public async Task SendEmailAsync(string toEmail, string subject, string htmlMessage)
     {
-        var emailSettings = _configuration.GetSection("EmailSettings");
-        var smtpServer = emailSettings["SmtpServer"];
-        var smtpPort = int.Parse(emailSettings["SmtpPort"] ?? "587");
-        var senderEmail = emailSettings["SenderEmail"];
-        var senderName = emailSettings["SenderName"] ?? "SmartLeads";
-        var smtpUsername = emailSettings["SmtpUsername"];
-        var smtpPassword = emailSettings["SmtpPassword"];
-        var enableSsl = bool.Parse(emailSettings["EnableSsl"] ?? "true");
-
-        var subject = "Password Reset Request - SmartLeads";
-        var body = $@"
-<html>
-<head>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
-        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }}
-        .button {{ display: inline-block; background: #667eea; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }}
-        .button:hover {{ background: #5a6fd6; }}
-        .footer {{ text-align: center; margin-top: 20px; color: #888; font-size: 12px; }}
-        .warning {{ background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='header'>
-            <h1>🔐 Password Reset Request</h1>
-        </div>
-        <div class='content'>
-            <p>Hello {username},</p>
-            <p>We received a request to reset your SmartLeads account password. Click the button below to reset your password:</p>
-
-            <div style='text-align: center;'>
-                <a href='{resetLink}' class='button'>Reset Password</a>
-            </div>
-
-            <p>Or copy and paste this link into your browser:</p>
-            <p style='word-break: break-all; color: #667eea;'>{resetLink}</p>
-
-            <div class='warning'>
-                <strong>⚠️ Important:</strong> This link will expire in 24 hours. If you didn't request this password reset, you can safely ignore this email. Your password will remain unchanged.
-            </div>
-
-            <p>Best regards,<br><strong>The SmartLeads Team</strong></p>
-        </div>
-        <div class='footer'>
-            <p>&copy; {DateTime.Now.Year} SmartLeads. All rights reserved.</p>
-            <p>This is an automated message, please do not reply.</p>
-        </div>
-    </div>
-</body>
-</html>";
-
         try
         {
             var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(senderName, senderEmail));
+            message.From.Add(new MailboxAddress(_smtpConfig.SenderName, _smtpConfig.SenderEmail));
             message.To.Add(new MailboxAddress("", toEmail));
             message.Subject = subject;
 
             var bodyBuilder = new BodyBuilder
             {
-                HtmlBody = body
+                HtmlBody = htmlMessage
             };
 
             message.Body = bodyBuilder.ToMessageBody();
 
             using var client = new SmtpClient();
-            await client.ConnectAsync(smtpServer, smtpPort, enableSsl);
+            var secureSocketOptions = _smtpConfig.SmtpPort == 465
+                ? SecureSocketOptions.SslOnConnect
+                : _smtpConfig.SmtpPort == 587
+                    ? SecureSocketOptions.StartTls
+                    : SecureSocketOptions.None;
 
-            if (!string.IsNullOrEmpty(smtpUsername))
+            await client.ConnectAsync(_smtpConfig.SmtpServer, _smtpConfig.SmtpPort, secureSocketOptions);
+
+            if (!string.IsNullOrEmpty(_smtpConfig.SmtpUsername))
             {
-                await client.AuthenticateAsync(smtpUsername, smtpPassword);
+                await client.AuthenticateAsync(_smtpConfig.SmtpUsername, _smtpConfig.SmtpPassword);
             }
 
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
 
-            _logger.LogInformation("Password reset email sent successfully to {Email}", toEmail);
+            _logger.LogInformation("Email sent successfully to {Email}", toEmail);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send password reset email to {Email}. Error: {Error}", toEmail, ex.Message);
+            _logger.LogError(ex, "Failed to send email to {Email}. Error: {Error}", toEmail, ex.Message);
+            throw;
+        }
+    }
+
+    public async Task SendEmailAsync(List<string> toEmails, string subject, string htmlMessage)
+    {
+        if (toEmails == null || toEmails.Count == 0)
+        {
+            _logger.LogWarning("Attempted to send email to empty recipient list");
+            return;
+        }
+
+        try
+        {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(_smtpConfig.SenderName, _smtpConfig.SenderEmail));
+            message.Subject = subject;
+
+            foreach (var email in toEmails)
+            {
+                message.To.Add(new MailboxAddress("", email));
+            }
+
+            var bodyBuilder = new BodyBuilder
+            {
+                HtmlBody = htmlMessage
+            };
+
+            message.Body = bodyBuilder.ToMessageBody();
+
+            using var client = new SmtpClient();
+            var secureSocketOptions = _smtpConfig.SmtpPort == 465
+                ? SecureSocketOptions.SslOnConnect
+                : _smtpConfig.SmtpPort == 587
+                    ? SecureSocketOptions.StartTls
+                    : SecureSocketOptions.None;
+
+            await client.ConnectAsync(_smtpConfig.SmtpServer, _smtpConfig.SmtpPort, secureSocketOptions);
+
+            if (!string.IsNullOrEmpty(_smtpConfig.SmtpUsername))
+            {
+                await client.AuthenticateAsync(_smtpConfig.SmtpUsername, _smtpConfig.SmtpPassword);
+            }
+
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
+
+            _logger.LogInformation("Email sent successfully to {Count} recipients", toEmails.Count);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send email to {Count} recipients. Error: {Error}", toEmails.Count, ex.Message);
+            throw;
+        }
+    }
+
+    public async Task SendEmailAsync(string toEmail, string subject, string htmlMessage, Stream fileStream, string fileName)
+    {
+        try
+        {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(_smtpConfig.SenderName, _smtpConfig.SenderEmail));
+            message.To.Add(new MailboxAddress("", toEmail));
+            message.Subject = subject;
+
+            var bodyBuilder = new BodyBuilder
+            {
+                HtmlBody = htmlMessage
+            };
+
+            if (fileStream != null && fileStream.Length > 0)
+            {
+                fileStream.Position = 0;
+                var attachment = new MimePart()
+                {
+                    Content = new MimeContent(fileStream, ContentEncoding.Default),
+                    ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
+                    FileName = fileName
+                };
+                bodyBuilder.Attachments.Add(attachment);
+            }
+
+            message.Body = bodyBuilder.ToMessageBody();
+
+            using var client = new SmtpClient();
+            var secureSocketOptions = _smtpConfig.SmtpPort == 465
+                ? SecureSocketOptions.SslOnConnect
+                : _smtpConfig.SmtpPort == 587
+                    ? SecureSocketOptions.StartTls
+                    : SecureSocketOptions.None;
+
+            await client.ConnectAsync(_smtpConfig.SmtpServer, _smtpConfig.SmtpPort, secureSocketOptions);
+
+            if (!string.IsNullOrEmpty(_smtpConfig.SmtpUsername))
+            {
+                await client.AuthenticateAsync(_smtpConfig.SmtpUsername, _smtpConfig.SmtpPassword);
+            }
+
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
+
+            _logger.LogInformation("Email with attachment sent successfully to {Email}", toEmail);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send email with attachment to {Email}. Error: {Error}", toEmail, ex.Message);
             throw;
         }
     }

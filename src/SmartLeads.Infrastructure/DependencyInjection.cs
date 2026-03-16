@@ -6,7 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using SmartLeads.Infrastructure.Persistence;
 using SmartLeads.Infrastructure.Repositories;
+using SmartLeads.Infrastructure.Repositories.Implementation;
 using SmartLeads.Infrastructure.Repositories.Interface;
+using SmartLeads.Infrastructure.Services.Implementation;
+using SmartLeads.Infrastructure.Services.Interface;
 using SmartLeads.Utilities.Interfaces;
 
 namespace SmartLeads.Infrastructure;
@@ -22,6 +25,10 @@ public static class DependencyInjection
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        
+        // Register User Repository and Service
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUserService, UserService>();
 
         // JWT Authentication
         var jwtSettings = configuration.GetSection("JwtSettings");

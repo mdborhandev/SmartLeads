@@ -5,9 +5,10 @@
     Layout = "_AuthLayout";
 }
 
-<form asp-action="Register" method="post">
+<form id="register">
+    @Html.AntiForgeryToken()
     <h4 class="mb-4">Adventure starts here 🚀</h4>
-    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+    <div id="error-message" class="alert alert-danger" role="alert" style="display: none;"></div>
 
     <div class="form-floating mb-3">
         <input asp-for="Username" class="form-control" placeholder="username" autocomplete="username" />
@@ -55,7 +56,10 @@
         </label>
     </div>
 
-    <button type="submit" class="btn btn-primary d-grid w-100 mb-3">Sign up</button>
+    <button id="register-submit" type="submit" class="btn btn-primary d-grid w-100 mb-3">
+        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        <span>Sign up</span>
+    </button>
 
     <div class="text-center">
         <span class="text-body-secondary">Already have an account?</span>
@@ -65,4 +69,77 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            $('#register').on('submit', function(e) {
+                e.preventDefault();
+                
+                var $form = $(this);
+                var $button = $('#register-submit');
+                var $spinner = $button.find('.spinner-border');
+                var $buttonText = $button.find('span:not(.spinner-border)');
+                var $errorMessage = $('#error-message');
+                
+                // Validate form
+                if (!$form.valid()) {
+                    return false;
+                }
+                
+                // Check terms checkbox
+                if (!$('#termsCheck').is(':checked')) {
+                    $errorMessage.text('You must agree to the terms and conditions.');
+                    $errorMessage.show();
+                    return false;
+                }
+                
+                // Show loading state
+                $button.prop('disabled', true);
+                $spinner.removeClass('d-none');
+                $buttonText.text('Creating account...');
+                $errorMessage.hide();
+                
+                // Get anti-forgery token
+                var token = $form.find('input[name="__RequestVerificationToken"]').val();
+                
+                // Send AJAX request
+                $.ajax({
+                    url: '@Url.Action("ApiRegister", "Auth")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    headers: {
+                        'RequestVerificationToken': token
+                    },
+                    data: JSON.stringify({
+                        username: $('#Username').val(),
+                        email: $('#Email').val(),
+                        password: $('#Password').val(),
+                        confirmPassword: $('#ConfirmPassword').val(),
+                        firstName: $('#FirstName').val(),
+                        lastName: $('#LastName').val()
+                    }),
+                    success: function(response) {
+                        // Show success message
+                        toastr.success(response.message, 'Success');
+                        
+                        // Redirect to home page
+                        setTimeout(function() {
+                            window.location.href = '@Url.Action("Index", "Home")';
+                        }, 1000);
+                    },
+                    error: function(xhr) {
+                        var response = xhr.responseJSON;
+                        $errorMessage.text(response?.message || 'Registration failed. Please try again.');
+                        $errorMessage.show();
+                        
+                        // Reset button state
+                        $button.prop('disabled', false);
+                        $spinner.addClass('d-none');
+                        $buttonText.text('Sign up');
+                    }
+                });
+                
+                return false;
+            });
+        });
+    </script>
 }

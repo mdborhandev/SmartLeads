@@ -10,12 +10,14 @@ public class UnitOfWork : IUnitOfWork
 
     #region Repositories
     public IContactRepository contactRepository { get; private set; }
+    public IUserRepository userRepository { get; private set; }
     #endregion
 
     public UnitOfWork(ApplicationDbContext context)
     {
         _dbContext = context;
         contactRepository = new ContactRepository(context);
+        userRepository = new UserRepository(context);
     }
 
     public async Task SaveAsync(CancellationToken token = default)

@@ -5,22 +5,23 @@
     Layout = "_AuthLayout";
 }
 
-<form id="account" method="post">
+<form id="account">
+    @Html.AntiForgeryToken()
     <h4 class="mb-4">Welcome back! 👋</h4>
-    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-    
+    <div id="error-message" class="alert alert-danger" role="alert" style="display: none;"></div>
+
     <div class="form-floating mb-3">
         <input asp-for="EmailOrUsername" class="form-control" autocomplete="username" aria-required="true" placeholder="username or email" />
         <label asp-for="EmailOrUsername" class="form-label"></label>
         <span asp-validation-for="EmailOrUsername" class="text-danger"></span>
     </div>
-    
+
     <div class="form-floating mb-3">
         <input asp-for="Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
         <label asp-for="Password" class="form-label"></label>
         <span asp-validation-for="Password" class="text-danger"></span>
     </div>
-    
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="form-check">
             <input class="form-check-input" asp-for="RememberMe" type="checkbox" id="rememberMe">
@@ -30,9 +31,12 @@
         </div>
         <a asp-action="ForgotPassword" class="text-decoration-none">Forgot Password?</a>
     </div>
-    
-    <button id="login-submit" type="submit" class="btn btn-primary d-grid w-100 mb-3">Sign in</button>
-    
+
+    <button id="login-submit" type="submit" class="btn btn-primary d-grid w-100 mb-3">
+        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        <span>Sign in</span>
+    </button>
+
     <div class="text-center">
         <span class="text-body-secondary">New on our platform?</span>
         <a asp-action="Register" class="text-decoration-none ms-2">Create an account</a>
@@ -41,4 +45,67 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            $('#account').on('submit', function(e) {
+                e.preventDefault();
+                
+                var $form = $(this);
+                var $button = $('#login-submit');
+                var $spinner = $button.find('.spinner-border');
+                var $buttonText = $button.find('span:not(.spinner-border)');
+                var $errorMessage = $('#error-message');
+                
+                // Validate form
+                if (!$form.valid()) {
+                    return false;
+                }
+                
+                // Show loading state
+                $button.prop('disabled', true);
+                $spinner.removeClass('d-none');
+                $buttonText.text('Signing in...');
+                $errorMessage.hide();
+                
+                // Get anti-forgery token
+                var token = $form.find('input[name="__RequestVerificationToken"]').val();
+                
+                // Send AJAX request
+                $.ajax({
+                    url: '@Url.Action("ApiLogin", "Auth")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    headers: {
+                        'RequestVerificationToken': token
+                    },
+                    data: JSON.stringify({
+                        emailOrUsername: $('#EmailOrUsername').val(),
+                        password: $('#Password').val(),
+                        rememberMe: $('#rememberMe').is(':checked')
+                    }),
+                    success: function(response) {
+                        // Show success message
+                        toastr.success(response.message, 'Success');
+                        
+                        // Redirect to home page
+                        setTimeout(function() {
+                            window.location.href = '@Url.Action("Index", "Home")';
+                        }, 1000);
+                    },
+                    error: function(xhr) {
+                        var response = xhr.responseJSON;
+                        $errorMessage.text(response?.message || 'Login failed. Please check your credentials.');
+                        $errorMessage.show();
+                        
+                        // Reset button state
+                        $button.prop('disabled', false);
+                        $spinner.addClass('d-none');
+                        $buttonText.text('Sign in');
+                    }
+                });
+                
+                return false;
+            });
+        });
+    </script>
 }

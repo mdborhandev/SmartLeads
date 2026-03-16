@@ -10,6 +10,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddUtilities(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<SMTPConfigModel>(options => configuration.GetSection("EmailSettings").Bind(options));
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IEmailService, EmailService>();
