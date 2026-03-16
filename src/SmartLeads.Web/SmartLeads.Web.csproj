@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SmartLeads.Infrastructure\SmartLeads.Infrastructure.csproj" />
     <ProjectReference Include="..\SmartLeads.Domain\SmartLeads.Domain.csproj" />
+    <ProjectReference Include="..\SmartLeads.Utilities\SmartLeads.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>

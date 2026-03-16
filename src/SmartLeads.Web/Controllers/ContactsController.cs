@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using SmartLeads.Domain.DTOs;
-using SmartLeads.Domain.Interfaces.Repositories;
+using SmartLeads.Infrastructure.Repositories.Interface;
 
 namespace SmartLeads.Web.Controllers;
 

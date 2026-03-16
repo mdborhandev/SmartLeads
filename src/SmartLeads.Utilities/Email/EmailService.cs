@@ -1,10 +1,10 @@
-using System.Net;
-using System.Net.Mail;
+using MailKit.Net.Smtp;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SmartLeads.Domain.Interfaces.Services;
+using MimeKit;
+using SmartLeads.Utilities.Interfaces;
 
-namespace SmartLeads.Infrastructure.Services;
+namespace SmartLeads.Utilities.Email;
 
 public class EmailService : IEmailService
 {
@@ -51,18 +51,18 @@ public class EmailService : IEmailService
         <div class='content'>
             <p>Hello {username},</p>
             <p>We received a request to reset your SmartLeads account password. Click the button below to reset your password:</p>
-            
+
             <div style='text-align: center;'>
                 <a href='{resetLink}' class='button'>Reset Password</a>
             </div>
-            
+
             <p>Or copy and paste this link into your browser:</p>
             <p style='word-break: break-all; color: #667eea;'>{resetLink}</p>
-            
+
             <div class='warning'>
                 <strong>⚠️ Important:</strong> This link will expire in 24 hours. If you didn't request this password reset, you can safely ignore this email. Your password will remain unchanged.
             </div>
-            
+
             <p>Best regards,<br><strong>The SmartLeads Team</strong></p>
         </div>
         <div class='footer'>
@@ -75,23 +75,29 @@ public class EmailService : IEmailService
 
         try
         {
-            using var message = new MailMessage
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(senderName, senderEmail));
+            message.To.Add(new MailboxAddress("", toEmail));
+            message.Subject = subject;
+
+            var bodyBuilder = new BodyBuilder
             {
-                From = new MailAddress(senderEmail!, senderName),
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true
+                HtmlBody = body
             };
 
-            message.To.Add(new MailAddress(toEmail));
+            message.Body = bodyBuilder.ToMessageBody();
 
-            using var client = new SmtpClient(smtpServer!, smtpPort)
+            using var client = new SmtpClient();
+            await client.ConnectAsync(smtpServer, smtpPort, enableSsl);
+
+            if (!string.IsNullOrEmpty(smtpUsername))
             {
-                Credentials = new NetworkCredential(smtpUsername, smtpPassword),
-                EnableSsl = enableSsl
-            };
+                await client.AuthenticateAsync(smtpUsername, smtpPassword);
+            }
 
-            await client.SendMailAsync(message);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
+
             _logger.LogInformation("Password reset email sent successfully to {Email}", toEmail);
         }
         catch (Exception ex)

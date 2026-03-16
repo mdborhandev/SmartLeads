@@ -1,6 +1,6 @@
 using SmartLeads.Domain.Models;
 
-namespace SmartLeads.Domain.Interfaces.Services;
+namespace SmartLeads.Utilities.Interfaces;
 
 public interface IJwtTokenGenerator
 {

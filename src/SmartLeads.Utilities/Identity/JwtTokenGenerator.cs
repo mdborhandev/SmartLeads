@@ -3,10 +3,10 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using SmartLeads.Domain.Interfaces.Services;
 using SmartLeads.Domain.Models;
+using SmartLeads.Utilities.Interfaces;
 
-namespace SmartLeads.Infrastructure.Identity;
+namespace SmartLeads.Utilities.Identity;
 
 public class JwtTokenGenerator : IJwtTokenGenerator
 {

@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
-using SmartLeads.Domain.Interfaces.Repositories;
 using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Persistence;
+using SmartLeads.Infrastructure.Repositories.Interface;
 using System.Linq.Expressions;
 
 namespace SmartLeads.Infrastructure.Repositories;

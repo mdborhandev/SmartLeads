@@ -1,5 +1,6 @@
 using SmartLeads.Web;
 using SmartLeads.Infrastructure;
+using SmartLeads.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews()
     .AddRazorRuntimeCompilation();
 builder.Services.AddApplication();
+builder.Services.AddUtilities(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();

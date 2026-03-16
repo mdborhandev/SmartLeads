@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using SmartLeads.Domain.DTOs;
-using SmartLeads.Domain.Interfaces.Repositories;
 using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Persistence;
+using SmartLeads.Infrastructure.Repositories.Interface;
 
 namespace SmartLeads.Infrastructure.Repositories.Implementation;
 

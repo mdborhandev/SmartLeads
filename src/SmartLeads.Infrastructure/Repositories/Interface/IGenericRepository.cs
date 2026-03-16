@@ -1,7 +1,6 @@
-using SmartLeads.Domain.Interfaces.Repositories;
 using SmartLeads.Domain.Models;
 
-namespace SmartLeads.Domain.Interfaces.Repositories;
+namespace SmartLeads.Infrastructure.Repositories.Interface;
 
 public interface IGenericRepository<TEntity> : IBaseRepository<TEntity, int> where TEntity : BaseEntity
 {

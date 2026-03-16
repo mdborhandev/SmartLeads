@@ -4,12 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using SmartLeads.Domain.Interfaces.Services;
-using SmartLeads.Domain.Interfaces.Repositories;
-using SmartLeads.Infrastructure.Identity;
 using SmartLeads.Infrastructure.Persistence;
 using SmartLeads.Infrastructure.Repositories;
-using SmartLeads.Infrastructure.Services;
+using SmartLeads.Infrastructure.Repositories.Interface;
+using SmartLeads.Utilities.Interfaces;
 
 namespace SmartLeads.Infrastructure;
 
@@ -24,10 +22,6 @@ public static class DependencyInjection
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-        services.AddScoped<IPasswordHasher, PasswordHasher>();
-        services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-        services.AddScoped<IEmailService, EmailService>();
 
         // JWT Authentication
         var jwtSettings = configuration.GetSection("JwtSettings");

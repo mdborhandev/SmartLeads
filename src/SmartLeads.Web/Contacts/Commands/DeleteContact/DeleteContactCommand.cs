@@ -1,5 +1,5 @@
 using MediatR;
-using SmartLeads.Domain.Interfaces.Repositories;
+using SmartLeads.Infrastructure.Repositories.Interface;
 
 namespace SmartLeads.Web.Contacts.Commands.DeleteContact;
 

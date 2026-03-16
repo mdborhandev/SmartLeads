@@ -1,6 +1,6 @@
 using MediatR;
 using SmartLeads.Domain.DTOs;
-using SmartLeads.Domain.Interfaces.Repositories;
+using SmartLeads.Infrastructure.Repositories.Interface;
 
 namespace SmartLeads.Web.Contacts.Queries.GetContacts;
 

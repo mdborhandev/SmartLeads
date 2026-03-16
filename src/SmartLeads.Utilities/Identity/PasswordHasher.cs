@@ -1,7 +1,7 @@
-using SmartLeads.Domain.Interfaces.Services;
 using BCrypt.Net;
+using SmartLeads.Utilities.Interfaces;
 
-namespace SmartLeads.Infrastructure.Identity;
+namespace SmartLeads.Utilities.Identity;
 
 public class PasswordHasher : IPasswordHasher
 {

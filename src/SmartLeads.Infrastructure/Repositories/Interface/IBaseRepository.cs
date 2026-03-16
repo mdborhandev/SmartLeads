@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace SmartLeads.Domain.Interfaces.Repositories;
+namespace SmartLeads.Infrastructure.Repositories.Interface;
 
 public interface IBaseRepository<TEntity, TKey> where TEntity : class
 {

@@ -1,4 +1,4 @@
-namespace SmartLeads.Domain.Interfaces.Services;
+namespace SmartLeads.Utilities.Interfaces;
 
 public interface IEmailService
 {

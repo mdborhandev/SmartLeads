@@ -1,6 +1,6 @@
 using MediatR;
-using SmartLeads.Domain.Interfaces.Repositories;
 using SmartLeads.Domain.Models;
+using SmartLeads.Infrastructure.Repositories.Interface;
 
 namespace SmartLeads.Web.Users.Queries.GetUserProfile;
 

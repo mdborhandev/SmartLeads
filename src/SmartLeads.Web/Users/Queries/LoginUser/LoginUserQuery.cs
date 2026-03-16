@@ -1,8 +1,8 @@
 using MediatR;
-using SmartLeads.Domain.Interfaces.Services;
 using SmartLeads.Domain.DTOs;
-using SmartLeads.Domain.Interfaces.Repositories;
 using SmartLeads.Domain.Models;
+using SmartLeads.Infrastructure.Repositories.Interface;
+using SmartLeads.Utilities.Interfaces;
 
 namespace SmartLeads.Web.Users.Queries.LoginUser;
 
