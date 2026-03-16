@@ -5,6 +5,8 @@ using SmartLeads.Application.Users.Commands.RegisterUser;
 using SmartLeads.Application.Users.Queries.LoginUser;
 using SmartLeads.Application.Users.Commands.ForgotPassword;
 using SmartLeads.Application.Users.Commands.ResetPassword;
+using SmartLeads.Application.Users.Queries.GetUserProfile;
+using SmartLeads.Application.Users.Commands.UpdateUser;
 
 namespace SmartLeads.Web.Controllers;
 
@@ -104,6 +106,77 @@ public class AuthController : Controller
     {
         HttpContext.Response.Cookies.Delete("JwtToken");
         return RedirectToAction("Login");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Profile()
+    {
+        if (!User.Identity?.IsAuthenticated ?? true)
+        {
+            return RedirectToAction("Login");
+        }
+
+        try
+        {
+            var usernameOrEmail = User.Identity.Name;
+            if (string.IsNullOrEmpty(usernameOrEmail))
+            {
+                return RedirectToAction("Login");
+            }
+
+            var query = new GetUserProfileQuery(usernameOrEmail);
+            var userProfile = await _sender.Send(query);
+
+            var model = new UserProfileViewModel
+            {
+                Username = userProfile.Username,
+                Email = userProfile.Email,
+                FirstName = userProfile.FirstName,
+                LastName = userProfile.LastName,
+                CreatedAt = userProfile.CreatedAt,
+                UpdatedAt = userProfile.UpdatedAt
+            };
+
+            return View(model);
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction("Login");
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Profile(UserProfileViewModel model)
+    {
+        if (!User.Identity?.IsAuthenticated ?? true)
+        {
+            return RedirectToAction("Login");
+        }
+
+        if (ModelState.IsValid)
+        {
+            try
+            {
+                var command = new UpdateUserCommand(
+                    model.Username,
+                    model.Email,
+                    model.FirstName,
+                    model.LastName);
+
+                await _sender.Send(command);
+
+                TempData["SuccessMessage"] = "Profile updated successfully!";
+                return RedirectToAction("Profile");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+            }
+        }
+
+        return View(model);
     }
 
     [HttpGet]

@@ -15,6 +15,27 @@ public class LoginViewModel
     public bool RememberMe { get; set; }
 }
 
+public class UserProfileViewModel
+{
+    [Display(Name = "Username")]
+    public string Username { get; set; } = string.Empty;
+
+    [Display(Name = "Email Address")]
+    public string Email { get; set; } = string.Empty;
+
+    [Display(Name = "First Name")]
+    public string? FirstName { get; set; }
+
+    [Display(Name = "Last Name")]
+    public string? LastName { get; set; }
+
+    [Display(Name = "Member Since")]
+    public DateTime CreatedAt { get; set; }
+
+    [Display(Name = "Last Updated")]
+    public DateTime? UpdatedAt { get; set; }
+}
+
 public class RegisterViewModel
 {
     [Required]
