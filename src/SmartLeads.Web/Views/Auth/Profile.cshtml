@@ -70,13 +70,13 @@
             <div class="row mb-3">
                 <div class="col-md-6">
                     <div class="form-floating">
-                        <input type="text" class="form-control" value="@Model.CreatedAt.ToString("MMMM dd, yyyy")" readonly />
+                        <input type="text" class="form-control" value="@(Model?.CreatedAt.ToString("MMMM dd, yyyy") ?? "N/A")" readonly />
                         <label class="form-label">Member Since</label>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-floating">
-                        <input type="text" class="form-control" value="@(Model.UpdatedAt?.ToString("MMMM dd, yyyy") ?? "N/A")" readonly />
+                        <input type="text" class="form-control" value="@(Model?.UpdatedAt?.ToString("MMMM dd, yyyy") ?? "N/A")" readonly />
                         <label class="form-label">Last Updated</label>
                     </div>
                 </div>

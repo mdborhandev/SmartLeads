@@ -117,15 +117,46 @@ public class AuthController : Controller
     }
 
     [HttpGet]
-    public IActionResult Profile()
+    public async Task<IActionResult> Profile()
     {
         if (!User.Identity?.IsAuthenticated ?? true)
         {
             return RedirectToAction("Login");
         }
 
-        // Profile logic here (keep existing or implement with service)
-        return View();
+        try
+        {
+            var usernameOrEmail = User.Identity?.Name;
+            if (string.IsNullOrEmpty(usernameOrEmail))
+            {
+                return RedirectToAction("Login");
+            }
+
+            // Get user from repository
+            var user = await _userService.GetUserByUsernameOrEmailAsync(usernameOrEmail);
+            
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var model = new UserProfileViewModel
+            {
+                Username = user.Username,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt
+            };
+
+            return View(model);
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction("Login");
+        }
     }
 
     [HttpPost]
@@ -139,8 +170,26 @@ public class AuthController : Controller
 
         if (ModelState.IsValid)
         {
-            // Update profile logic here
-            TempData["SuccessMessage"] = "Profile updated successfully!";
+            // Get current username (immutable)
+            var currentUsername = User.Identity?.Name;
+            
+            // Update profile
+            var success = await _userService.UpdateProfileAsync(
+                currentUsername,
+                model.Email,
+                model.FirstName,
+                model.LastName
+            );
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Profile updated successfully!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to update profile.";
+            }
+            
             return RedirectToAction("Profile");
         }
 

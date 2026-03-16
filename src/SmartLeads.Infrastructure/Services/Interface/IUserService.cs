@@ -6,4 +6,6 @@ public interface IUserService
     Task<bool> ResetPasswordAsync(string email, string token, string newPassword);
     Task<(bool Success, string? Token, string? Error)> LoginAsync(string usernameOrEmail, string password);
     Task<(bool Success, string? Token, string? Error)> RegisterAsync(string username, string email, string password, string firstName, string lastName);
+    Task<Domain.Models.User?> GetUserByUsernameOrEmailAsync(string usernameOrEmail);
+    Task<bool> UpdateProfileAsync(string username, string email, string firstName, string lastName);
 }

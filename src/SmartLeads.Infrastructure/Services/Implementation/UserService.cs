@@ -146,6 +146,30 @@ public class UserService : IUserService
         return (true, token, null);
     }
 
+    public async Task<Domain.Models.User?> GetUserByUsernameOrEmailAsync(string usernameOrEmail)
+    {
+        return await _userRepository.GetByUsernameOrEmailAsync(usernameOrEmail);
+    }
+
+    public async Task<bool> UpdateProfileAsync(string username, string email, string firstName, string lastName)
+    {
+        var user = await _userRepository.GetByUsernameOrEmailAsync(username);
+        
+        if (user == null)
+        {
+            return false;
+        }
+
+        user.Email = email;
+        user.FirstName = firstName;
+        user.LastName = lastName;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _unitOfWork.SaveAsync();
+        
+        return true;
+    }
+
     private string GenerateResetToken()
     {
         return Guid.NewGuid().ToString("N");
