@@ -1,4 +1,4 @@
-using SmartLeads.Application.Common.Interfaces;
+using SmartLeads.Domain.Interfaces.Services;
 using BCrypt.Net;
 
 namespace SmartLeads.Infrastructure.Identity;

@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SmartLeads.Domain\SmartLeads.Domain.csproj" />
-    <ProjectReference Include="..\SmartLeads.Application\SmartLeads.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

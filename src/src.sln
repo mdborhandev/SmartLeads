@@ -8,8 +8,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLeads.Worker", "SmartL
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLeads.Web", "SmartLeads.Web\SmartLeads.Web.csproj", "{4E7F945E-2C20-6D6B-B518-136C678128B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLeads.Application", "SmartLeads.Application\SmartLeads.Application.csproj", "{C1E29C5B-FCB8-6DA2-5F05-D6F035379BFE}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLeads.Domain", "SmartLeads.Domain\SmartLeads.Domain.csproj", "{AE26EE31-1177-1622-F282-73B611B6585A}"
 EndProject
 Global
@@ -30,10 +28,6 @@ Global
 		{4E7F945E-2C20-6D6B-B518-136C678128B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E7F945E-2C20-6D6B-B518-136C678128B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E7F945E-2C20-6D6B-B518-136C678128B7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C1E29C5B-FCB8-6DA2-5F05-D6F035379BFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C1E29C5B-FCB8-6DA2-5F05-D6F035379BFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C1E29C5B-FCB8-6DA2-5F05-D6F035379BFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C1E29C5B-FCB8-6DA2-5F05-D6F035379BFE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AE26EE31-1177-1622-F282-73B611B6585A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AE26EE31-1177-1622-F282-73B611B6585A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE26EE31-1177-1622-F282-73B611B6585A}.Release|Any CPU.ActiveCfg = Release|Any CPU

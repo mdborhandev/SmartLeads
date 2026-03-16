@@ -1,4 +1,4 @@
-using SmartLeads.Application;
+using SmartLeads.Web;
 using SmartLeads.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);

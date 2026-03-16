@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Mail;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SmartLeads.Application.Common.Interfaces;
+using SmartLeads.Domain.Interfaces.Services;
 
 namespace SmartLeads.Infrastructure.Services;
 

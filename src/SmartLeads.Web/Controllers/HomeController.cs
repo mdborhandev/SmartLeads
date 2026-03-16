@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using SmartLeads.Web.Models;
+using SmartLeads.Domain.DTOs;
 
 namespace SmartLeads.Web.Controllers;
 

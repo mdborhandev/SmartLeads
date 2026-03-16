@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using SmartLeads.Application.Common.Interfaces;
+using SmartLeads.Domain.Interfaces.Services;
 using SmartLeads.Domain.Models;
 
 namespace SmartLeads.Infrastructure.Identity;

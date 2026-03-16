@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SmartLeads.Application\SmartLeads.Application.csproj" />
     <ProjectReference Include="..\SmartLeads.Infrastructure\SmartLeads.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

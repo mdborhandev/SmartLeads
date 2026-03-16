@@ -1,12 +1,12 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SmartLeads.Web.Models;
-using SmartLeads.Application.Users.Commands.RegisterUser;
-using SmartLeads.Application.Users.Queries.LoginUser;
-using SmartLeads.Application.Users.Commands.ForgotPassword;
-using SmartLeads.Application.Users.Commands.ResetPassword;
-using SmartLeads.Application.Users.Queries.GetUserProfile;
-using SmartLeads.Application.Users.Commands.UpdateUser;
+using SmartLeads.Domain.DTOs;
+using SmartLeads.Web.Users.Commands.RegisterUser;
+using SmartLeads.Web.Users.Queries.LoginUser;
+using SmartLeads.Web.Users.Commands.ForgotPassword;
+using SmartLeads.Web.Users.Commands.ResetPassword;
+using SmartLeads.Web.Users.Queries.GetUserProfile;
+using SmartLeads.Web.Users.Commands.UpdateUser;
 
 namespace SmartLeads.Web.Controllers;
 
@@ -118,7 +118,7 @@ public class AuthController : Controller
 
         try
         {
-            var usernameOrEmail = User.Identity.Name;
+            var usernameOrEmail = User.Identity?.Name;
             if (string.IsNullOrEmpty(usernameOrEmail))
             {
                 return RedirectToAction("Login");

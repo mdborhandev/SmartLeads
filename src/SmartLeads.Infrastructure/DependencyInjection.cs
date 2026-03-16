@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using SmartLeads.Application.Common.Interfaces;
+using SmartLeads.Domain.Interfaces.Services;
 using SmartLeads.Domain.Interfaces.Repositories;
 using SmartLeads.Infrastructure.Identity;
 using SmartLeads.Infrastructure.Persistence;
