@@ -32,9 +32,9 @@
         <a asp-action="ForgotPassword" class="text-decoration-none">Forgot Password?</a>
     </div>
 
-    <button id="login-submit" type="submit" class="btn btn-primary d-grid w-100 mb-3">
+    <button id="login-submit" type="submit" class="btn btn-primary w-100 mb-3 d-flex align-items-center justify-content-center">
         <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-        <span>Sign in</span>
+        <span class="button-text">Sign in</span>
     </button>
 
     <div class="text-center">
@@ -53,7 +53,7 @@
                 var $form = $(this);
                 var $button = $('#login-submit');
                 var $spinner = $button.find('.spinner-border');
-                var $buttonText = $button.find('span:not(.spinner-border)');
+                var $buttonText = $button.find('.button-text');
                 var $errorMessage = $('#error-message');
                 
                 // Validate form
