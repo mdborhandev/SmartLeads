@@ -4,7 +4,7 @@ using SmartLeads.Infrastructure.Repositories.Interface;
 
 namespace SmartLeads.Infrastructure.Repositories;
 
-public class GenericRepository<TEntity> : BaseRepository<TEntity, int>, IGenericRepository<TEntity> where TEntity : BaseEntity
+public class GenericRepository<TEntity> : BaseRepository<TEntity, Guid>, IGenericRepository<TEntity> where TEntity : BaseEntity
 {
     public GenericRepository(ApplicationDbContext dbContext) : base(dbContext)
     {

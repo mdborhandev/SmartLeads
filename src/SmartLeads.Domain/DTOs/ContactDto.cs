@@ -1,7 +1,7 @@
 namespace SmartLeads.Domain.DTOs;
 
 public record ContactDto(
-    int Id,
+    Guid Id,
     string FirstName,
     string LastName,
     string? Email,
@@ -9,4 +9,6 @@ public record ContactDto(
     string? Company,
     string? JobTitle,
     string? Address,
-    bool IsArchived);
+    bool IsArchived,
+    Guid CompanyId = default,
+    Guid UserId = default);

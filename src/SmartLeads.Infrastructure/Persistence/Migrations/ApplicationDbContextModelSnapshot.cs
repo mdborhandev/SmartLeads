@@ -24,14 +24,15 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Attachment", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("ContactId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ContactId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -62,23 +63,79 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CompanyId");
+
                     b.HasIndex("ContactId");
 
                     b.ToTable("Attachments");
                 });
 
-            modelBuilder.Entity("SmartLeads.Domain.Models.Contact", b =>
+            modelBuilder.Entity("SmartLeads.Domain.Models.Company", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Address")
                         .HasColumnType("text");
 
-                    b.Property<string>("Company")
+                    b.Property<string>("Code")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsParent")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Logo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ParentCompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentCompanyId");
+
+                    b.ToTable("Companies");
+                });
+
+            modelBuilder.Entity("SmartLeads.Domain.Models.Contact", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContactCompany")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
@@ -113,10 +170,12 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("UserId");
 
@@ -125,11 +184,11 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("SmartLeads.Domain.Models.ContactGroup", b =>
                 {
-                    b.Property<int>("ContactId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ContactId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("GroupId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("ContactId", "GroupId");
 
@@ -140,11 +199,11 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("SmartLeads.Domain.Models.ContactTag", b =>
                 {
-                    b.Property<int>("ContactId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ContactId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("TagId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("ContactId", "TagId");
 
@@ -155,11 +214,12 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Group", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -180,10 +240,12 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("UserId");
 
@@ -192,14 +254,15 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Note", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("ContactId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ContactId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -221,23 +284,31 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("CompanyId");
+
                     b.HasIndex("ContactId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Notes");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Tag", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Color")
                         .HasColumnType("text");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -255,10 +326,12 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("UserId");
 
@@ -267,11 +340,12 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("SmartLeads.Domain.Models.User", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -317,27 +391,55 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CompanyId");
+
                     b.ToTable("Users");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Attachment", b =>
                 {
+                    b.HasOne("SmartLeads.Domain.Models.Company", "Company")
+                        .WithMany("Attachments")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("SmartLeads.Domain.Models.Contact", "Contact")
                         .WithMany("Attachments")
                         .HasForeignKey("ContactId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Company");
+
                     b.Navigation("Contact");
+                });
+
+            modelBuilder.Entity("SmartLeads.Domain.Models.Company", b =>
+                {
+                    b.HasOne("SmartLeads.Domain.Models.Company", "ParentCompany")
+                        .WithMany("ChildCompanies")
+                        .HasForeignKey("ParentCompanyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ParentCompany");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Contact", b =>
                 {
-                    b.HasOne("SmartLeads.Domain.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("SmartLeads.Domain.Models.Company", "Company")
+                        .WithMany("Contacts")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("SmartLeads.Domain.Models.User", "User")
+                        .WithMany("Contacts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Company");
 
                     b.Navigation("User");
                 });
@@ -382,35 +484,91 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Group", b =>
                 {
+                    b.HasOne("SmartLeads.Domain.Models.Company", "Company")
+                        .WithMany("Groups")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("SmartLeads.Domain.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Company");
 
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Note", b =>
                 {
+                    b.HasOne("SmartLeads.Domain.Models.Company", "Company")
+                        .WithMany("Notes")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("SmartLeads.Domain.Models.Contact", "Contact")
                         .WithMany("Notes")
                         .HasForeignKey("ContactId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SmartLeads.Domain.Models.User", null)
+                        .WithMany("Notes")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Company");
+
                     b.Navigation("Contact");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Tag", b =>
                 {
+                    b.HasOne("SmartLeads.Domain.Models.Company", "Company")
+                        .WithMany("Tags")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("SmartLeads.Domain.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Company");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SmartLeads.Domain.Models.User", b =>
+                {
+                    b.HasOne("SmartLeads.Domain.Models.Company", "Company")
+                        .WithMany("Users")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("SmartLeads.Domain.Models.Company", b =>
+                {
+                    b.Navigation("Attachments");
+
+                    b.Navigation("ChildCompanies");
+
+                    b.Navigation("Contacts");
+
+                    b.Navigation("Groups");
+
+                    b.Navigation("Notes");
+
+                    b.Navigation("Tags");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Contact", b =>
@@ -432,6 +590,13 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("SmartLeads.Domain.Models.Tag", b =>
                 {
                     b.Navigation("ContactTags");
+                });
+
+            modelBuilder.Entity("SmartLeads.Domain.Models.User", b =>
+                {
+                    b.Navigation("Contacts");
+
+                    b.Navigation("Notes");
                 });
 #pragma warning restore 612, 618
         }

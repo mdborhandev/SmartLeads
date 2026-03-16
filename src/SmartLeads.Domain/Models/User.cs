@@ -15,4 +15,8 @@ public class User : BaseEntity
     // Password reset support
     public string? ResetPasswordToken { get; set; }
     public DateTime? ResetPasswordTokenExpiryTime { get; set; }
+
+    // Navigation properties
+    public ICollection<Contact> Contacts { get; set; } = new List<Contact>();
+    public ICollection<Note> Notes { get; set; } = new List<Note>();
 }

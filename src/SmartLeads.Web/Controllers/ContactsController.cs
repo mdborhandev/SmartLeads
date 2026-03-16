@@ -16,7 +16,8 @@ public class ContactsController : Controller
         _unitOfWork = unitOfWork;
     }
 
-    private int UserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+    private Guid UserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+    private Guid CompanyId => Guid.Parse(User.FindFirstValue("CompanyId") ?? Guid.Empty.ToString());
 
     // Main Index page
     public IActionResult Index()
@@ -28,17 +29,17 @@ public class ContactsController : Controller
     [HttpGet("/api/contacts")]
     public async Task<IActionResult> GetContacts()
     {
-        var contacts = await _unitOfWork.contactRepository.GetContactDtosByUserIdAsync(UserId);
+        var contacts = await _unitOfWork.contactRepository.GetContactDtosByCompanyIdAsync(CompanyId);
         return Ok(contacts);
     }
 
     // API: Get single contact
     [HttpGet("/api/contacts/{id}")]
-    public async Task<IActionResult> GetContact(int id)
+    public async Task<IActionResult> GetContact(Guid id)
     {
         var contact = await _unitOfWork.contactRepository.GetContactDtoByIdAsync(id);
         if (contact == null) return NotFound();
-        
+
         return Ok(contact);
     }
 
@@ -54,11 +55,12 @@ public class ContactsController : Controller
         var contact = new Domain.Models.Contact
         {
             UserId = UserId,
+            CompanyId = CompanyId,
             FirstName = request.FirstName,
             LastName = request.LastName,
             Email = request.Email,
             PhoneNumber = request.PhoneNumber,
-            Company = request.Company,
+            ContactCompany = request.Company,
             JobTitle = request.JobTitle,
             Address = request.Address
         };
@@ -71,13 +73,13 @@ public class ContactsController : Controller
 
     // API: Update contact
     [HttpPut("/api/contacts/{id}")]
-    public async Task<IActionResult> UpdateContact(int id, [FromBody] UpdateContactRequest request)
+    public async Task<IActionResult> UpdateContact(Guid id, [FromBody] UpdateContactRequest request)
     {
         if (id != request.Id)
         {
             return BadRequest(new { success = false, message = "ID mismatch" });
         }
-        
+
         if (!ModelState.IsValid)
         {
             return BadRequest(new { errors = new[] { "Invalid model state" } });
@@ -93,7 +95,7 @@ public class ContactsController : Controller
         contact.LastName = request.LastName;
         contact.Email = request.Email;
         contact.PhoneNumber = request.PhoneNumber;
-        contact.Company = request.Company;
+        contact.ContactCompany = request.Company;
         contact.JobTitle = request.JobTitle;
         contact.Address = request.Address;
 
@@ -105,7 +107,7 @@ public class ContactsController : Controller
 
     // API: Delete contact
     [HttpDelete("/api/contacts/{id}")]
-    public async Task<IActionResult> DeleteContact(int id)
+    public async Task<IActionResult> DeleteContact(Guid id)
     {
         var contact = await _unitOfWork.contactRepository.GetContactByIdAndUserIdAsync(id, UserId);
         if (contact == null)
@@ -125,7 +127,7 @@ public class ContactsController : Controller
         return View();
     }
 
-    public async Task<IActionResult> Edit(int id)
+    public async Task<IActionResult> Edit(Guid id)
     {
         var contact = await _unitOfWork.contactRepository.GetContactDtoByIdAsync(id);
         if (contact == null) return NotFound();
@@ -142,11 +144,12 @@ public class ContactsController : Controller
         var contact = new Domain.Models.Contact
         {
             UserId = UserId,
+            CompanyId = CompanyId,
             FirstName = request.FirstName,
             LastName = request.LastName,
             Email = request.Email,
             PhoneNumber = request.PhoneNumber,
-            Company = request.Company,
+            ContactCompany = request.Company,
             JobTitle = request.JobTitle,
             Address = request.Address
         };
@@ -159,7 +162,7 @@ public class ContactsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, UpdateContactRequest request)
+    public async Task<IActionResult> Edit(Guid id, UpdateContactRequest request)
     {
         if (id != request.Id) return BadRequest();
         if (!ModelState.IsValid) return View(request);
@@ -171,7 +174,7 @@ public class ContactsController : Controller
         contact.LastName = request.LastName;
         contact.Email = request.Email;
         contact.PhoneNumber = request.PhoneNumber;
-        contact.Company = request.Company;
+        contact.ContactCompany = request.Company;
         contact.JobTitle = request.JobTitle;
         contact.Address = request.Address;
 
@@ -183,7 +186,7 @@ public class ContactsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(Guid id)
     {
         var contact = await _unitOfWork.contactRepository.GetContactByIdAndUserIdAsync(id, UserId);
         if (contact != null)

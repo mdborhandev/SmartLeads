@@ -26,4 +26,10 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     {
         return await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
     }
+
+    public async Task<User?> GetUserByIdAndCompanyIdAsync(Guid id, Guid companyId, CancellationToken token = default)
+    {
+        return await _dbContext.Users
+            .FirstOrDefaultAsync(u => u.Id == id && u.CompanyId == companyId && !u.IsDeleted, token);
+    }
 }

@@ -16,10 +16,48 @@ public class ApplicationDbContext : DbContext
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<Note> Notes => Set<Note>();
     public DbSet<Attachment> Attachments => Set<Attachment>();
+    public DbSet<Company> Companies => Set<Company>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Configure all entities to use Guid keys
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            var key = entityType.FindPrimaryKey();
+            if (key?.Properties.Count == 1 && key.Properties[0].ClrType == typeof(Guid))
+            {
+                key.Properties[0].ValueGenerated = Microsoft.EntityFrameworkCore.Metadata.ValueGenerated.OnAdd;
+            }
+        }
+
+        // Company self-referencing relationship (hierarchical)
+        modelBuilder.Entity<Company>()
+            .HasOne(c => c.ParentCompany)
+            .WithMany(c => c.ChildCompanies)
+            .HasForeignKey(c => c.ParentCompanyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // User belongs to Company
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.Company)
+            .WithMany(c => c.Users)
+            .HasForeignKey(u => u.CompanyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Contact belongs to Company and User
+        modelBuilder.Entity<Contact>()
+            .HasOne(c => c.Company)
+            .WithMany(c => c.Contacts)
+            .HasForeignKey(c => c.CompanyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Contact>()
+            .HasOne(c => c.User)
+            .WithMany(u => u.Contacts)
+            .HasForeignKey(c => c.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Many-to-Many: Contact <-> Group
         modelBuilder.Entity<ContactGroup>()
@@ -48,8 +86,6 @@ public class ApplicationDbContext : DbContext
             .HasOne(ct => ct.Tag)
             .WithMany(t => t.ContactTags)
             .HasForeignKey(ct => ct.TagId);
-            
-        // Configure cascade deletes or other constraints if needed
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

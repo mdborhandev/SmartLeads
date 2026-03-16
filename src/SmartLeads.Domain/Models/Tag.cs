@@ -3,9 +3,10 @@ namespace SmartLeads.Domain.Models;
 public class Tag : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
-    public string? Color { get; set; } // Hex value or name
+    public string? Color { get; set; }
 
-    public int UserId { get; set; }
+    // Foreign Key for User (Owner)
+    public Guid UserId { get; set; }
     public User User { get; set; } = null!;
 
     public ICollection<ContactTag> ContactTags { get; set; } = new List<ContactTag>();
@@ -13,9 +14,9 @@ public class Tag : BaseEntity
 
 public class ContactTag
 {
-    public int ContactId { get; set; }
+    public Guid ContactId { get; set; }
     public Contact Contact { get; set; } = null!;
 
-    public int TagId { get; set; }
+    public Guid TagId { get; set; }
     public Tag Tag { get; set; } = null!;
 }

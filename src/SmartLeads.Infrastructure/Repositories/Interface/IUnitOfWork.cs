@@ -4,6 +4,7 @@ public interface IUnitOfWork : IAsyncDisposable
 {
     IContactRepository contactRepository { get; }
     IUserRepository userRepository { get; }
+    ICompanyRepository companyRepository { get; }
 
     Task SaveAsync(CancellationToken token = default);
 }

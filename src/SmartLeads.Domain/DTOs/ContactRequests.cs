@@ -11,7 +11,7 @@ public record CreateContactRequest(
 );
 
 public record UpdateContactRequest(
-    int Id,
+    Guid Id,
     string FirstName,
     string LastName,
     string? Email,

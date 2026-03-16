@@ -7,6 +7,6 @@ public class Attachment : BaseEntity
     public long FileSize { get; set; }
     public string FileType { get; set; } = string.Empty;
 
-    public int ContactId { get; set; }
+    public Guid ContactId { get; set; }
     public Contact Contact { get; set; } = null!;
 }
