@@ -7,8 +7,12 @@ public class User : BaseEntity
     public string PasswordHash { get; set; } = string.Empty;
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
-    
+
     // Refresh token support
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }
+
+    // Password reset support
+    public string? ResetPasswordToken { get; set; }
+    public DateTime? ResetPasswordTokenExpiryTime { get; set; }
 }

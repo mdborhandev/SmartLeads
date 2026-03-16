@@ -9,6 +9,7 @@ using SmartLeads.Domain.Interfaces.Repositories;
 using SmartLeads.Infrastructure.Identity;
 using SmartLeads.Infrastructure.Persistence;
 using SmartLeads.Infrastructure.Repositories;
+using SmartLeads.Infrastructure.Services;
 
 namespace SmartLeads.Infrastructure;
 
@@ -21,11 +22,12 @@ public static class DependencyInjection
 
         // Register generic repository for backward compatibility
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-        
+
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<IEmailService, EmailService>();
 
         // JWT Authentication
         var jwtSettings = configuration.GetSection("JwtSettings");
