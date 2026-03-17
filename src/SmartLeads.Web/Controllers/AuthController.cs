@@ -90,56 +90,6 @@ public class AuthController : Controller
         }
     }
 
-    [HttpGet]
-    public IActionResult Register()
-    {
-        return View();
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Register(RegisterViewModel model)
-    {
-        if (!ModelState.IsValid)
-        {
-            return View(model);
-        }
-
-        try
-        {
-            var result = await _userService.RegisterAsync(
-                model.Username,
-                model.Email,
-                model.Password,
-                model.FirstName,
-                model.LastName,
-                null); // No company association for regular registration
-
-            if (result.Success)
-            {
-                HttpContext.Response.Cookies.Append("JwtToken", result.Token!, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTimeOffset.UtcNow.AddHours(1)
-                });
-
-                return RedirectToAction("Index", "Home");
-            }
-            else
-            {
-                ModelState.AddModelError(string.Empty, result.Error);
-                return View(model);
-            }
-        }
-        catch (Exception ex)
-        {
-            ModelState.AddModelError(string.Empty, ex.Message);
-            return View(model);
-        }
-    }
-
     [HttpPost]
     public IActionResult Logout()
     {
@@ -357,48 +307,6 @@ public class AuthController : Controller
                     userId = userId,
                     companyId = companyId
                 });
-            }
-            else
-            {
-                return BadRequest(new { success = false, message = result.Error });
-            }
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { success = false, message = ex.Message });
-        }
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ApiRegister([FromBody] RegisterViewModel model)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(new { success = false, message = "Invalid input" });
-        }
-
-        try
-        {
-            var result = await _userService.RegisterAsync(
-                model.Username,
-                model.Email,
-                model.Password,
-                model.FirstName,
-                model.LastName,
-                null); // No company association for regular registration
-
-            if (result.Success)
-            {
-                HttpContext.Response.Cookies.Append("JwtToken", result.Token!, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTimeOffset.UtcNow.AddHours(1)
-                });
-
-                return Ok(new { success = true, message = "Registration successful" });
             }
             else
             {
