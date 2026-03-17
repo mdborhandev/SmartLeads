@@ -23,63 +23,15 @@
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
 
+    <!-- SmartLeads Custom CSS -->
+    <link rel="stylesheet" href="~/css/smartleads.css" />
+
     <!-- Helpers -->
     <script src="~/gtlib/dependencylib/sneatlayout/assets/vendor/js/helpers.js"></script>
     <script src="~/gtlib/dependencylib/sneatlayout/assets/vendor/js/template-customizer.js"></script>
     <script src="~/gtlib/dependencylib/sneatlayout/assets/js/config.js"></script>
 
     <script type="importmap"></script>
-
-    <style>
-        .auth-wrapper {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f5f5f9;
-            padding: 2rem;
-        }
-        [data-bs-theme="dark"] .auth-wrapper {
-            background-color: #1a1f2e;
-        }
-        .auth-card {
-            background: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            width: 100%;
-            max-width: 400px;
-        }
-        [data-bs-theme="dark"] .auth-card {
-            background: #232d3f;
-            box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.3);
-        }
-        .auth-title {
-            text-align: center;
-            margin-bottom: 0.5rem;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        .auth-title .highlight {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 0.1rem 0.5rem;
-            border-radius: 0.25rem;
-        }
-        .auth-subtitle {
-            text-align: center;
-            color: #697a8d;
-            margin-bottom: 1.5rem;
-        }
-        [data-bs-theme="dark"] .auth-subtitle {
-            color: #a0aec0;
-        }
-        .theme-switcher {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-        }
-    </style>
 </head>
 <body>
     <!-- Theme Switcher -->
@@ -109,14 +61,7 @@
     </div>
 
     <div class="auth-wrapper">
-        <div class="auth-card">
-            <h2 class="auth-title">Smart<span class="highlight">Leads</span></h2>
-            <p class="auth-subtitle">Manage your leads efficiently</p>
-
-            <main role="main">
-                @RenderBody()
-            </main>
-        </div>
+        @RenderBody()
     </div>
 
     <!-- jQuery CDN -->
@@ -141,25 +86,25 @@
             const themeIcon = themeSwitcher?.querySelector('.theme-icon-active');
             const themeButtons = document.querySelectorAll('[data-bs-theme-value]');
             const htmlElement = document.documentElement;
-            
+
             // Get saved theme or default to 'light'
             const savedTheme = localStorage.getItem('theme') || 'light';
             setTheme(savedTheme);
-            
+
             themeButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const themeValue = this.getAttribute('data-bs-theme-value');
                     setTheme(themeValue);
-                    
+
                     // Update active state
                     themeButtons.forEach(btn => btn.classList.remove('active'));
                     this.classList.add('active');
                 });
             });
-            
+
             function setTheme(theme) {
                 localStorage.setItem('theme', theme);
-                
+
                 if (theme === 'system') {
                     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                     htmlElement.setAttribute('data-bs-theme', systemTheme);
@@ -169,10 +114,10 @@
                     updateIcon(theme);
                 }
             }
-            
+
             function updateIcon(theme) {
                 if (!themeIcon) return;
-                
+
                 themeIcon.classList.remove('bx-sun', 'bx-moon');
                 if (theme === 'dark') {
                     themeIcon.classList.add('bx-moon');
@@ -180,7 +125,7 @@
                     themeIcon.classList.add('bx-sun');
                 }
             }
-            
+
             // Listen for system theme changes
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
                 if (localStorage.getItem('theme') === 'system') {

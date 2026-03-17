@@ -1,0 +1,195 @@
+/* SmartLeads Custom Styles */
+
+/* ========================================
+   SmartLeads Logo Highlight
+   ======================================== */
+.smartleads-logo .highlight {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.1rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* ========================================
+   Card Header with Logo
+   ======================================== */
+.card-header-custom {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.card-header-custom .highlight {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.1rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* ========================================
+   Auth Layout
+   ======================================== */
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f9;
+    padding: 2rem;
+}
+
+[data-bs-theme="dark"] .auth-wrapper {
+    background-color: #1a1f2e;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    width: 100%;
+    max-width: 400px;
+}
+
+[data-bs-theme="dark"] .auth-card {
+    background: #232d3f;
+    box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.3);
+}
+
+.auth-title {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.auth-title .highlight {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.1rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+.auth-subtitle {
+    text-align: center;
+    color: #697a8d;
+    margin-bottom: 1.5rem;
+}
+
+[data-bs-theme="dark"] .auth-subtitle {
+    color: #a0aec0;
+}
+
+.theme-switcher {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+.container-custom {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* ========================================
+   Auth Cards (Login, Register)
+   ======================================== */
+.login-card,
+.auth-card {
+    background: var(--bs-body-bg);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    width: 100%;
+    max-width: 400px;
+}
+
+[data-bs-theme="dark"] .login-card,
+[data-bs-theme="dark"] .auth-card {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================
+   Company Card (Create Company)
+   ======================================== */
+.company-card {
+    background: var(--bs-body-bg);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 700px;
+}
+
+[data-bs-theme="dark"] .company-card {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================
+   Landing Page Styles
+   ======================================== */
+.landing-header .highlight {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.1rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+.landing-hero {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-radius: 0.5rem;
+    padding: 3rem 2rem;
+}
+
+.hero-title {
+    color: #667eea;
+}
+
+.hero-illustration {
+    animation: float-animation 3s ease-in-out infinite;
+}
+
+@keyframes float-animation {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.feature-card {
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+}
+
+.cta-section {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-radius: 0.5rem;
+}
+
+/* ========================================
+   Section Titles (Create Company)
+   ======================================== */
+.section-title {
+    color: #667eea;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+[data-bs-theme="dark"] .section-title {
+    color: #8b98ff;
+}
+
+/* ========================================
+   Landing Layout Container
+   ======================================== */
+.landing-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}

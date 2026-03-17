@@ -1,0 +1,230 @@
+@model SmartLeads.Domain.DTOs.CompanyRegistrationViewModel
+
+@{
+    ViewData["Title"] = "Create Company - SmartLeads";
+    Layout = "_AuthLayout";
+}
+
+<!-- Create Company Form Card -->
+<div class="company-card">
+    <!-- Card Header (Inside Card - Top) -->
+    @await Html.PartialAsync("_CardHeader", new ViewDataDictionary(ViewData) { { "LogoSubtitle", "Set up your company and admin account to get started" } })
+
+    <form id="createCompanyForm" method="post">
+        @Html.AntiForgeryToken()
+        
+        <div id="error-message" class="alert alert-danger" role="alert" style="display: none;"></div>
+        
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger" role="alert">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        <!-- Company Information Section -->
+        <h6 class="section-title">Company Information</h6>
+        
+        <div class="form-floating mb-3">
+            <input asp-for="CompanyName" class="form-control" placeholder="Your Company Name" />
+            <label asp-for="CompanyName" class="form-label"></label>
+            <span asp-validation-for="CompanyName" class="text-danger"></span>
+        </div>
+
+        <div class="row g-2 mb-3">
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input asp-for="CompanyCode" class="form-control" placeholder="Company Code" />
+                    <label asp-for="CompanyCode" class="form-label"></label>
+                    <span asp-validation-for="CompanyCode" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input asp-for="CompanyPhone" class="form-control" placeholder="Phone Number" />
+                    <label asp-for="CompanyPhone" class="form-label"></label>
+                    <span asp-validation-for="CompanyPhone" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-floating mb-3">
+            <input asp-for="CompanyEmail" class="form-control" placeholder="name@company.com" />
+            <label asp-for="CompanyEmail" class="form-label"></label>
+            <span asp-validation-for="CompanyEmail" class="text-danger"></span>
+        </div>
+
+        <div class="form-floating mb-4">
+            <input asp-for="CompanyAddress" class="form-control" placeholder="Company Address" />
+            <label asp-for="CompanyAddress" class="form-label"></label>
+            <span asp-validation-for="CompanyAddress" class="text-danger"></span>
+        </div>
+
+        <hr class="my-4" />
+
+        <!-- Admin Account Section -->
+        <h6 class="section-title">Admin Account Information</h6>
+
+        <div class="row g-2 mb-3">
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input asp-for="AdminUsername" class="form-control" placeholder="Username" />
+                    <label asp-for="AdminUsername" class="form-label"></label>
+                    <span asp-validation-for="AdminUsername" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input asp-for="AdminEmail" class="form-control" placeholder="name@example.com" />
+                    <label asp-for="AdminEmail" class="form-label"></label>
+                    <span asp-validation-for="AdminEmail" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input asp-for="AdminFirstName" class="form-control" placeholder="First Name" />
+                    <label asp-for="AdminFirstName" class="form-label"></label>
+                    <span asp-validation-for="AdminFirstName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input asp-for="AdminLastName" class="form-control" placeholder="Last Name" />
+                    <label asp-for="AdminLastName" class="form-label"></label>
+                    <span asp-validation-for="AdminLastName" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input asp-for="AdminPassword" class="form-control" placeholder="Password" />
+                    <label asp-for="AdminPassword" class="form-label"></label>
+                    <span asp-validation-for="AdminPassword" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm Password" />
+                    <label asp-for="ConfirmPassword" class="form-label"></label>
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" id="agreeToTerms" required />
+            <label class="form-check-label" for="agreeToTerms">
+                I agree to the <a href="@Url.Action("Privacy", "Home")" target="_blank" class="text-decoration-none">Terms and Conditions</a>
+            </label>
+        </div>
+
+        <button id="create-company-submit" type="submit" class="btn btn-primary w-100 mb-3 d-flex align-items-center justify-content-center">
+            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            <span class="button-text">Create Company & Account</span>
+        </button>
+
+        <div class="text-center">
+            <span class="text-muted">Already have an account?</span>
+            <a asp-action="Login" asp-controller="Auth" class="text-decoration-none ms-2">Sign in</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            $('#createCompanyForm').on('submit', function(e) {
+                e.preventDefault();
+
+                var $form = $(this);
+                var $button = $('#create-company-submit');
+                var $spinner = $button.find('.spinner-border');
+                var $buttonText = $button.find('.button-text');
+                var $errorMessage = $('#error-message');
+
+                // Validate form
+                if (!$form.valid()) {
+                    return false;
+                }
+
+                // Check if terms are agreed
+                if (!$('#agreeToTerms').is(':checked')) {
+                    $errorMessage.text('You must agree to the Terms and Conditions.');
+                    $errorMessage.show();
+                    return false;
+                }
+
+                // Show loading state
+                $button.prop('disabled', true);
+                $spinner.removeClass('d-none');
+                $buttonText.text('Creating Company...');
+                $errorMessage.hide();
+
+                // Get anti-forgery token
+                var token = $form.find('input[name="__RequestVerificationToken"]').val();
+
+                // Serialize form data
+                var formData = {
+                    __RequestVerificationToken: token,
+                    CompanyName: $('#CompanyName').val(),
+                    CompanyCode: $('#CompanyCode').val(),
+                    CompanyEmail: $('#CompanyEmail').val(),
+                    CompanyPhone: $('#CompanyPhone').val(),
+                    CompanyAddress: $('#CompanyAddress').val(),
+                    AdminUsername: $('#AdminUsername').val(),
+                    AdminEmail: $('#AdminEmail').val(),
+                    AdminFirstName: $('#AdminFirstName').val(),
+                    AdminLastName: $('#AdminLastName').val(),
+                    AdminPassword: $('#AdminPassword').val(),
+                    ConfirmPassword: $('#ConfirmPassword').val()
+                };
+
+                // Send AJAX request
+                $.ajax({
+                    url: '@Url.Action("CreateCompany", "Home")',
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        // Form submission successful, redirect
+                        toastr.success('Company created successfully! Redirecting...', 'Success');
+                        setTimeout(function() {
+                            window.location.href = '@Url.Action("Index", "Contacts")';
+                        }, 1000);
+                    },
+                    error: function(xhr) {
+                        // Handle validation errors or server errors
+                        var response = xhr.responseJSON;
+
+                        if (response && response.errors) {
+                            // Display validation errors
+                            var errorMsg = 'Please correct the following errors:\n';
+                            $.each(response.errors, function(key, value) {
+                                errorMsg += '• ' + value + '\n';
+                            });
+                            $errorMessage.text(errorMsg);
+                        } else if (response && response.message) {
+                            $errorMessage.text(response.message);
+                        } else {
+                            $errorMessage.text(xhr.responseText || 'Failed to create company. Please try again.');
+                        }
+
+                        $errorMessage.show();
+
+                        // Reset button state
+                        $button.prop('disabled', false);
+                        $spinner.addClass('d-none');
+                        $buttonText.text('Create Company & Account');
+                    }
+                });
+
+                return false;
+            });
+        });
+    </script>
+}

@@ -1,8 +1,7 @@
 namespace SmartLeads.Domain.Models;
 
-public class Company
+public class Company : BaseEntity
 {
-    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Code { get; set; }
     public string? Address { get; set; }
@@ -13,10 +12,6 @@ public class Company
     public bool IsParent { get; set; } = false;
     public Guid? ParentCompanyId { get; set; }
     public Company? ParentCompany { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime? UpdatedAt { get; set; }
-    public bool IsDeleted { get; set; } = false;
-    public DateTime? DeletedAt { get; set; }
 
     // Child companies (subsidiaries)
     public ICollection<Company> ChildCompanies { get; set; } = new List<Company>();

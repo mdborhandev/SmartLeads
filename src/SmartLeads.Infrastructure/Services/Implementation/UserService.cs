@@ -113,7 +113,7 @@ public class UserService : IUserService
         return (true, token, null);
     }
 
-    public async Task<(bool Success, string? Token, string? Error)> RegisterAsync(string username, string email, string password, string firstName, string lastName)
+    public async Task<(bool Success, string? Token, string? Error)> RegisterAsync(string username, string email, string password, string firstName, string lastName, Guid? companyId = null)
     {
         // Check if username exists
         var existingUser = await _userRepository.GetByUsernameAsync(username);
@@ -135,7 +135,8 @@ public class UserService : IUserService
             Email = email,
             PasswordHash = _passwordHasher.HashPassword(password),
             FirstName = firstName,
-            LastName = lastName
+            LastName = lastName,
+            CompanyId = companyId
         };
 
         await _userRepository.AddAsync(user);

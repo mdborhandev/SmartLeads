@@ -1,0 +1,14 @@
+@* Card Header Partial - Reusable for all auth cards *@
+@{
+    string subtitle = ViewData["LogoSubtitle"] as string ?? "";
+}
+
+<div class="card-header-custom">
+    <h1 class="h4 fw-bold mb-1">
+        Smart<span class="highlight">Leads</span>
+    </h1>
+    @if (!string.IsNullOrEmpty(subtitle))
+    {
+        <p class="text-muted mb-0">@subtitle</p>
+    }
+</div>

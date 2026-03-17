@@ -91,3 +91,49 @@ public class ResetPasswordViewModel
     [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]
     public string ConfirmPassword { get; set; } = string.Empty;
 }
+
+public class CompanyRegistrationViewModel
+{
+    [Required]
+    [Display(Name = "Company Name")]
+    public string CompanyName { get; set; } = string.Empty;
+
+    [Display(Name = "Company Code")]
+    public string? CompanyCode { get; set; }
+
+    [EmailAddress]
+    [Display(Name = "Company Email")]
+    public string? CompanyEmail { get; set; }
+
+    [Display(Name = "Company Phone")]
+    public string? CompanyPhone { get; set; }
+
+    [Display(Name = "Company Address")]
+    public string? CompanyAddress { get; set; }
+
+    [Required]
+    [Display(Name = "Admin Username")]
+    public string AdminUsername { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
+    [Display(Name = "Admin Email")]
+    public string AdminEmail { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+    [DataType(DataType.Password)]
+    [Display(Name = "Admin Password")]
+    public string AdminPassword { get; set; } = string.Empty;
+
+    [DataType(DataType.Password)]
+    [Display(Name = "Confirm Admin Password")]
+    [Compare("AdminPassword", ErrorMessage = "The password and confirmation password do not match.")]
+    public string ConfirmPassword { get; set; } = string.Empty;
+
+    [Display(Name = "First Name")]
+    public string? AdminFirstName { get; set; }
+
+    [Display(Name = "Last Name")]
+    public string? AdminLastName { get; set; }
+}

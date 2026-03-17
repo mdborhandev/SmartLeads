@@ -10,5 +10,5 @@ public record ContactDto(
     string? JobTitle,
     string? Address,
     bool IsArchived,
-    Guid CompanyId = default,
+    Guid? CompanyId = default,
     Guid UserId = default);

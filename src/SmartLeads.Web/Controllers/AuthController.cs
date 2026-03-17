@@ -82,7 +82,8 @@ public class AuthController : Controller
                 model.Email,
                 model.Password,
                 model.FirstName,
-                model.LastName);
+                model.LastName,
+                null); // No company association for regular registration
 
             if (result.Success)
             {
@@ -310,7 +311,8 @@ public class AuthController : Controller
                 model.Email,
                 model.Password,
                 model.FirstName,
-                model.LastName);
+                model.LastName,
+                null); // No company association for regular registration
 
             if (result.Success)
             {
