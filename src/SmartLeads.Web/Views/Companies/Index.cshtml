@@ -1,0 +1,91 @@
+@model IEnumerable<SmartLeads.Domain.DTOs.CompanyDto>
+
+@{
+    ViewData["Title"] = "Companies";
+    Layout = "_Layout";
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0">All Companies</h4>
+            <span class="badge bg-primary">@Model.Count() Companies</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Company Name</th>
+                        <th>Code</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        @foreach (var company in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        @if (!string.IsNullOrEmpty(company.Logo))
+                                        {
+                                            <img src="@company.Logo" alt="@company.Name" class="rounded-circle me-2" width="40" height="40" />
+                                        }
+                                        <div>
+                                            <div class="fw-semibold">@company.Name</div>
+                                            @if (company.IsParent)
+                                            {
+                                                <small class="text-muted">Parent Company</small>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@(company.Code ?? "-")</td>
+                                <td>@(company.Email ?? "-")</td>
+                                <td>@(company.Phone ?? "-")</td>
+                                <td>
+                                    @if (company.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td>@company.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a href="#" class="btn btn-sm btn-outline-primary">
+                                            <i class='bx bx-edit'></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-outline-danger">
+                                            <i class='bx bx-trash'></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class='bx bx-building fs-1 mb-2 d-block'></i>
+                                    <p>No companies found. Create your first company to get started.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

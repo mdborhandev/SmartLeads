@@ -45,7 +45,37 @@ public class AuthController : Controller
                     Expires = DateTimeOffset.UtcNow.AddHours(1)
                 });
 
-                return RedirectToAction("Index", "Home");
+                // Check if superadmin - redirect to companies list
+                if (model.EmailOrUsername == "superadmin" || model.EmailOrUsername == "superadmin@smartleads.com")
+                {
+                    return RedirectToAction("Index", "Companies");
+                }
+
+                // For regular users, get user details to store CompanyId and UserId in cookies
+                var user = await _userService.GetUserByUsernameOrEmailAsync(model.EmailOrUsername);
+                if (user != null && user.CompanyId.HasValue)
+                {
+                    // Store UserId in cookie
+                    HttpContext.Response.Cookies.Append("UserId", user.Id.ToString(), new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict,
+                        Expires = DateTimeOffset.UtcNow.AddHours(1)
+                    });
+
+                    // Store CompanyId in cookie
+                    HttpContext.Response.Cookies.Append("CompanyId", user.CompanyId.Value.ToString(), new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict,
+                        Expires = DateTimeOffset.UtcNow.AddHours(1)
+                    });
+                }
+
+                // Regular user - redirect to contacts
+                return RedirectToAction("Index", "Contacts");
             }
             else
             {
@@ -282,7 +312,51 @@ public class AuthController : Controller
                     Expires = DateTimeOffset.UtcNow.AddHours(1)
                 });
 
-                return Ok(new { success = true, message = "Login successful" });
+                // Check if superadmin
+                bool isSuperAdmin = (model.EmailOrUsername == "superadmin" || model.EmailOrUsername == "superadmin@smartleads.com");
+
+                // Get user details for regular users
+                string? userId = null;
+                string? companyId = null;
+
+                if (!isSuperAdmin)
+                {
+                    var user = await _userService.GetUserByUsernameOrEmailAsync(model.EmailOrUsername);
+                    if (user != null)
+                    {
+                        userId = user.Id.ToString();
+                        companyId = user.CompanyId?.ToString();
+
+                        // Store in cookies
+                        if (user.CompanyId.HasValue)
+                        {
+                            HttpContext.Response.Cookies.Append("UserId", userId, new CookieOptions
+                            {
+                                HttpOnly = true,
+                                Secure = true,
+                                SameSite = SameSiteMode.Strict,
+                                Expires = DateTimeOffset.UtcNow.AddHours(1)
+                            });
+
+                            HttpContext.Response.Cookies.Append("CompanyId", companyId, new CookieOptions
+                            {
+                                HttpOnly = true,
+                                Secure = true,
+                                SameSite = SameSiteMode.Strict,
+                                Expires = DateTimeOffset.UtcNow.AddHours(1)
+                            });
+                        }
+                    }
+                }
+
+                return Ok(new { 
+                    success = true, 
+                    message = "Login successful",
+                    isSuperAdmin = isSuperAdmin,
+                    redirectUrl = isSuperAdmin ? Url.Action("Index", "Companies") : Url.Action("Index", "Contacts"),
+                    userId = userId,
+                    companyId = companyId
+                });
             }
             else
             {

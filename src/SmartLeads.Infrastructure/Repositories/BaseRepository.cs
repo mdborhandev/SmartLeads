@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 namespace SmartLeads.Infrastructure.Repositories;
 
 public abstract class BaseRepository<TEntity, TKey> : IBaseRepository<TEntity, TKey>
-    where TEntity : BaseEntity
+    where TEntity : class
 {
     protected readonly ApplicationDbContext _dbContext;
     private readonly DbSet<TEntity> _dbSet;

@@ -10,10 +10,10 @@
     <!-- Card Header (Inside Card - Top) -->
     @await Html.PartialAsync("_CardHeader", new ViewDataDictionary(ViewData) { { "LogoSubtitle", "Welcome back! 👋" } })
 
-    <form id="account">
+    <form id="account" method="post">
         @Html.AntiForgeryToken()
         
-        <div id="error-message" class="alert alert-danger" role="alert" style="display: none;"></div>
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
         <div class="form-floating mb-3">
             <input asp-for="EmailOrUsername" class="form-control" autocomplete="username" aria-required="true" placeholder="username or email" />
@@ -37,9 +37,8 @@
             <a asp-action="ForgotPassword" class="text-decoration-none">Forgot Password?</a>
         </div>
 
-        <button id="login-submit" type="submit" class="btn btn-primary w-100 mb-3 d-flex align-items-center justify-content-center">
-            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-            <span class="button-text">Sign in</span>
+        <button id="login-submit" type="submit" class="btn btn-primary w-100 mb-3">
+            Sign in
         </button>
 
         <div class="text-center">
@@ -51,67 +50,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        $(document).ready(function() {
-            $('#account').on('submit', function(e) {
-                e.preventDefault();
-
-                var $form = $(this);
-                var $button = $('#login-submit');
-                var $spinner = $button.find('.spinner-border');
-                var $buttonText = $button.find('.button-text');
-                var $errorMessage = $('#error-message');
-
-                // Validate form
-                if (!$form.valid()) {
-                    return false;
-                }
-
-                // Show loading state
-                $button.prop('disabled', true);
-                $spinner.removeClass('d-none');
-                $buttonText.text('Signing in...');
-                $errorMessage.hide();
-
-                // Get anti-forgery token
-                var token = $form.find('input[name="__RequestVerificationToken"]').val();
-
-                // Send AJAX request
-                $.ajax({
-                    url: '@Url.Action("ApiLogin", "Auth")',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    headers: {
-                        'RequestVerificationToken': token
-                    },
-                    data: JSON.stringify({
-                        emailOrUsername: $('#EmailOrUsername').val(),
-                        password: $('#Password').val(),
-                        rememberMe: $('#rememberMe').is(':checked')
-                    }),
-                    success: function(response) {
-                        // Show success message
-                        toastr.success(response.message, 'Success');
-
-                        // Redirect to home page
-                        setTimeout(function() {
-                            window.location.href = '@Url.Action("Landing", "Home")';
-                        }, 1000);
-                    },
-                    error: function(xhr) {
-                        var response = xhr.responseJSON;
-                        $errorMessage.text(response?.message || 'Login failed. Please check your credentials.');
-                        $errorMessage.show();
-
-                        // Reset button state
-                        $button.prop('disabled', false);
-                        $spinner.addClass('d-none');
-                        $buttonText.text('Sign in');
-                    }
-                });
-
-                return false;
-            });
-        });
-    </script>
 }

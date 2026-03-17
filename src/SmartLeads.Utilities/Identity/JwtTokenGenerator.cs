@@ -24,13 +24,29 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+
+        // Add CompanyId claim if user belongs to a company
+        if (user.CompanyId.HasValue)
+        {
+            claims.Add(new Claim("CompanyId", user.CompanyId.Value.ToString()));
+        }
+
+        // Add FirstName and LastName claims
+        if (!string.IsNullOrEmpty(user.FirstName))
+        {
+            claims.Add(new Claim("FirstName", user.FirstName));
+        }
+        if (!string.IsNullOrEmpty(user.LastName))
+        {
+            claims.Add(new Claim("LastName", user.LastName));
+        }
 
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],

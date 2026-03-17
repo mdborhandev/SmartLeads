@@ -1,6 +1,6 @@
 namespace SmartLeads.Domain.Models;
 
-public class Company : BaseEntity
+public class Company : BaseCompanyEntity
 {
     public string Name { get; set; } = string.Empty;
     public string? Code { get; set; }
@@ -8,7 +8,6 @@ public class Company : BaseEntity
     public string? Phone { get; set; }
     public string? Email { get; set; }
     public string? Logo { get; set; }
-    public bool IsActive { get; set; } = true;
     public bool IsParent { get; set; } = false;
     public Guid? ParentCompanyId { get; set; }
     public Company? ParentCompany { get; set; }
