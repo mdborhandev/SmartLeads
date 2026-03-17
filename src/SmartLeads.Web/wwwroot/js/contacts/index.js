@@ -204,7 +204,7 @@ function saveContact() {
         $('#lastNameError').text('Last name is required');
         isValid = false;
     }
-    if (data.email && !isValidEmail(data.email)) {
+    if (data.email && !validateEmail(data.email)) {
         $('#emailError').text('Invalid email format');
         isValid = false;
     }
@@ -273,13 +273,6 @@ function resetForm() {
 // Clear validation errors
 function clearErrors() {
     $('.text-danger').text('');
-}
-
-// Email validation
-function isValidEmail(email) {
-    if (!email) return true; // Empty is valid (optional field)
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
 }
 
 // Show toast notification

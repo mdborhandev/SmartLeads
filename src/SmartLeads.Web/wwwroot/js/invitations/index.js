@@ -163,7 +163,7 @@ async function sendInvitation() {
     if (!email) {
         document.getElementById('emailError').textContent = 'Email is required';
         isValid = false;
-    } else if (!isValidEmail(email)) {
+    } else if (!validateEmail(email)) {
         document.getElementById('emailError').textContent = 'Invalid email address';
         isValid = false;
     }
@@ -223,12 +223,6 @@ async function sendInvitation() {
         sendButton.disabled = false;
         sendButton.innerHTML = originalText;
     }
-}
-
-// Validate email
-function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
 }
 
 // Get anti-forgery token
