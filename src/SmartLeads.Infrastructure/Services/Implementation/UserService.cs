@@ -133,11 +133,23 @@ public class UserService : IUserService
 
     public async Task<(bool Success, string? Token, string? Error)> RegisterAsync(string username, string email, string password, string firstName, string lastName, Guid? companyId = null, UserRole role = UserRole.User)
     {
-        // Check if username exists
-        var existingUser = await _unitOfWork.userRepository.GetByUsernameAsync(username);
-        if (existingUser != null)
+        // Check if username exists in this company (if companyId is provided)
+        if (companyId.HasValue)
         {
-            return (false, null, "Username already exists.");
+            var existingUser = await _unitOfWork.userRepository.GetByUsernameAndCompanyIdAsync(username, companyId.Value);
+            if (existingUser != null)
+            {
+                return (false, null, "Username already exists in this company.");
+            }
+        }
+        else
+        {
+            // For global check (no company)
+            var existingUser = await _unitOfWork.userRepository.GetByUsernameAsync(username);
+            if (existingUser != null)
+            {
+                return (false, null, "Username already exists.");
+            }
         }
 
         // Check if email exists

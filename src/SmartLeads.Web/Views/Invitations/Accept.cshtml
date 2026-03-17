@@ -34,10 +34,19 @@
         </div>
     }
 
+    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ContainsKey(string.Empty))
+    {
+        <div class="alert alert-danger mb-3" role="alert">
+            <i class='bx bx-error-circle me-2'></i>
+            @foreach (var error in ViewData.ModelState[string.Empty].Errors)
+            {
+                <span>@error.ErrorMessage</span>
+            }
+        </div>
+    }
+
     <form asp-action="Accept" method="post">
         @Html.AntiForgeryToken()
-        
-        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
         <input type="hidden" asp-for="Token" />
         <input type="hidden" asp-for="Email" />
@@ -45,6 +54,12 @@
         <div class="alert alert-info mb-3">
             <i class='bx bx-info-circle me-2'></i>
             <strong>Invitation Email:</strong> @Model.Email
+        </div>
+
+        <div class="form-floating mb-3">
+            <input asp-for="Username" class="form-control" placeholder="Username" required minlength="3" maxlength="50" />
+            <label asp-for="Username" class="form-label"></label>
+            <span asp-validation-for="Username" class="text-danger"></span>
         </div>
 
         <div class="row g-2 mb-3">
@@ -65,28 +80,113 @@
         </div>
 
         <div class="form-floating mb-3">
-            <input asp-for="Password" class="form-control" type="password" placeholder="Password" />
+            <input asp-for="Password" class="form-control" type="password" placeholder="Password" required minlength="6" />
             <label asp-for="Password" class="form-label"></label>
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
 
         <div class="form-floating mb-3">
-            <input asp-for="ConfirmPassword" class="form-control" type="password" placeholder="Confirm Password" />
+            <input asp-for="ConfirmPassword" class="form-control" type="password" placeholder="Confirm Password" required />
             <label asp-for="ConfirmPassword" class="form-label"></label>
             <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100 mb-3 btn-lg">
+        <button type="submit" class="btn btn-primary w-100 mb-2 btn-lg">
             <i class='bx bx-check me-2'></i>Accept Invitation & Create Account
         </button>
 
-        <div class="text-center">
+        <div class="text-center mb-3">
+            <span class="text-muted">or</span>
+        </div>
+
+        <button type="button" class="btn btn-outline-danger w-100 btn-lg" onclick="rejectInvitation()">
+            <i class='bx bx-x me-2'></i>Reject Invitation
+        </button>
+
+        <div class="text-center mt-3">
             <span class="text-muted">Already have an account?</span>
             <a asp-action="Login" asp-controller="Auth" class="text-decoration-none ms-2">Sign in</a>
         </div>
     </form>
 </div>
 
+<!-- Reject Confirmation Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class='bx bx-error me-2'></i>Reject Invitation
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Are you sure you want to reject this invitation?</p>
+                <p class="text-danger fw-semibold mb-3">This action cannot be undone.</p>
+                
+                <div class="mb-3">
+                    <label class="form-label">Reason for rejection (optional):</label>
+                    <textarea id="rejectReason" class="form-control" rows="3" placeholder="Please let us know why you're rejecting this invitation..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">
+                    <i class='bx bx-x me-1'></i> Cancel
+                </button>
+                <button type="button" class="btn btn-danger" onclick="confirmReject()">
+                    <i class='bx bx-x-circle me-1'></i> Reject Invitation
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        let rejectModal = null;
+        
+        $(document).ready(function() {
+            rejectModal = new bootstrap.Modal(document.getElementById('rejectModal'));
+        });
+
+        function rejectInvitation() {
+            rejectModal.show();
+        }
+
+        async function confirmReject() {
+            const reason = document.getElementById('rejectReason').value;
+            const token = document.querySelector('input[name="Token"]').value;
+            const email = document.querySelector('input[name="Email"]').value;
+            
+            try {
+                const formData = new FormData();
+                formData.append('token', token);
+                formData.append('email', email);
+                formData.append('reason', reason || '');
+                formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+                
+                const response = await fetch('@Url.Action("Reject", "Invitations")', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    // Show success message
+                    toastr.success('Invitation rejected successfully', 'Success');
+                    
+                    // Redirect to login
+                    setTimeout(function() {
+                        window.location.href = '@Url.Action("Login", "Auth")';
+                    }, 1000);
+                } else {
+                    const result = await response.json();
+                    toastr.error(result?.message || 'Failed to reject invitation', 'Error');
+                }
+            } catch (error) {
+                console.error('Error rejecting invitation:', error);
+                toastr.error('Failed to reject invitation', 'Error');
+            }
+        }
+    </script>
 }

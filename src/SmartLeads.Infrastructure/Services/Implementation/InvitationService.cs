@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using SmartLeads.Domain.DTOs;
 using SmartLeads.Domain.Enums;
 using SmartLeads.Domain.Models;
@@ -29,15 +30,18 @@ public class InvitationService : IInvitationService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserService _userService;
     private readonly IEmailService _emailService;
+    private readonly IConfiguration _configuration;
 
     public InvitationService(
         IUnitOfWork unitOfWork,
         IUserService userService,
-        IEmailService emailService)
+        IEmailService emailService,
+        IConfiguration configuration)
     {
         _unitOfWork = unitOfWork;
         _userService = userService;
         _emailService = emailService;
+        _configuration = configuration;
     }
 
     public async Task<(bool Success, string? Message, Invitation? Invitation)> InviteUserAsync(
@@ -84,7 +88,7 @@ public class InvitationService : IInvitationService
             // Send email with invitation link
             try
             {
-                var baseUrl = "http://localhost:5000"; // TODO: Get from configuration
+                var baseUrl = _configuration["BaseUrl"] ?? "http://localhost:5000";
                 var acceptLink = $"{baseUrl}/Invitations/Accept?token={invitation.Token}&email={Uri.EscapeDataString(invitation.Email)}";
                 
                 var emailBody = GetInvitationEmailTemplate(invitation.Email, invitation.Role.ToString(), acceptLink, invitation.ExpiresAt);
@@ -122,6 +126,12 @@ public class InvitationService : IInvitationService
                 return (false, "Invalid invitation token or email.", null);
             }
 
+            // Check if invitation has a valid company
+            if (!invitation.CompanyId.HasValue)
+            {
+                return (false, "This invitation is invalid (no company associated).", null);
+            }
+
             // Check if invitation is expired
             if (invitation.ExpiresAt < DateTime.UtcNow)
             {
@@ -143,14 +153,21 @@ public class InvitationService : IInvitationService
                 return (false, "This invitation is no longer valid.", null);
             }
 
-            // Create user account with the role from invitation
+            // Check if username is already taken in this company
+            var existingUser = await _unitOfWork.userRepository.GetByUsernameAndCompanyIdAsync(request.Username, invitation.CompanyId.Value);
+            if (existingUser != null)
+            {
+                return (false, "This username is already taken in this company.", null);
+            }
+
+            // Create user account with the role from invitation and username from request
             var registerResult = await _userService.RegisterAsync(
-                request.Email, // Use email as username
+                request.Username,  // Use username from request
                 request.Email,
                 request.Password,
                 request.FirstName,
                 request.LastName,
-                invitation.CompanyId,
+                invitation.CompanyId.Value,
                 invitation.Role  // Pass the role from invitation
             );
 

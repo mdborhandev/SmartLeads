@@ -1,133 +1,86 @@
-@model IEnumerable<SmartLeads.Domain.DTOs.InvitationDto>
-
 @{
     ViewData["Title"] = "User Invitations";
-    Layout = "_Layout";
 }
 
-<div class="card border-0 shadow-sm">
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">User Invitations</h5>
+        <button type="button" class="btn btn-primary" onclick="openInviteModal()">
+            <i class='bx bx-plus me-1'></i> Invite User
+        </button>
+    </div>
     <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="mb-0">User Invitations</h4>
-            <a asp-action="Create" class="btn btn-primary">
-                <i class='bx bx-plus me-2'></i>Invite User
-            </a>
-        </div>
+        <!-- Tabulator Table -->
+        <div id="invitationsTable"></div>
 
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class='bx bx-check-circle me-2'></i>@TempData["SuccessMessage"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        }
-
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class='bx bx-error-circle me-2'></i>@TempData["ErrorMessage"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        }
-
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Invited By</th>
-                        <th>Invited Date</th>
-                        <th>Expires</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.Any())
-                    {
-                        @foreach (var invitation in Model)
-                        {
-                            <tr>
-                                <td>@invitation.Email</td>
-                                <td>
-                                    @if (invitation.Role == SmartLeads.Domain.Enums.UserRole.Admin)
-                                    {
-                                        <span class="badge bg-danger">@invitation.Role</span>
-                                    }
-                                    else if (invitation.Role == SmartLeads.Domain.Enums.UserRole.Manager)
-                                    {
-                                        <span class="badge bg-warning">@invitation.Role</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-info">@invitation.Role</span>
-                                    }
-                                </td>
-                                <td>@invitation.InvitedByUserName</td>
-                                <td>@invitation.InvitedAt.ToString("MMM dd, yyyy")</td>
-                                <td>
-                                    <span class="@(invitation.IsExpired ? "text-danger" : "")">
-                                        @invitation.ExpiresAt.ToString("MMM dd, yyyy")
-                                        @if (invitation.IsExpired)
-                                        {
-                                            <i class='bx bx-error ms-1'></i>
-                                        }
-                                    </span>
-                                </td>
-                                <td>
-                                    @if (invitation.Status == "Pending")
-                                    {
-                                        <span class="badge bg-warning">Pending</span>
-                                    }
-                                    else if (invitation.Status == "Accepted")
-                                    {
-                                        <span class="badge bg-success">Accepted</span>
-                                    }
-                                    else if (invitation.Status == "Rejected")
-                                    {
-                                        <span class="badge bg-danger">Rejected</span>
-                                    }
-                                    else if (invitation.Status == "Expired")
-                                    {
-                                        <span class="badge bg-secondary">Expired</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">Cancelled</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (invitation.Status == "Pending")
-                                    {
-                                        <form asp-action="Cancel" asp-route-id="@invitation.Id" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                                    onclick="return confirm('Are you sure you want to cancel this invitation?')">
-                                                <i class='bx bx-x'></i> Cancel
-                                            </button>
-                                        </form>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="7" class="text-center py-4">
-                                <div class="text-muted">
-                                    <i class='bx bx-envelope fs-1 mb-2 d-block'></i>
-                                    <p>No invitations found. Invite team members to join your company!</p>
-                                    <a asp-action="Create" class="btn btn-primary btn-sm">
-                                        <i class='bx bx-plus me-1'></i>Invite User
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-5" style="display: none;">
+            <i class='bx bx-envelope fs-1 text-muted mb-3'></i>
+            <p class="text-muted">No invitations found. Invite team members to join your company!</p>
         </div>
     </div>
 </div>
+
+<!-- Invite User Modal -->
+<div class="modal fade" id="inviteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class='bx bx-envelope me-2'></i>Invite User
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="inviteForm">
+                    <div class="mb-3">
+                        <div class="form-floating">
+                            <input type="email" id="email" class="form-control" placeholder="name@example.com" required />
+                            <label class="form-label">Email Address *</label>
+                        </div>
+                        <span class="text-danger" id="emailError"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-floating">
+                            <select id="role" class="form-select">
+                                <option value="0">User</option>
+                                <option value="1">Admin</option>
+                                <option value="2">Manager</option>
+                            </select>
+                            <label class="form-label">Role</label>
+                        </div>
+                        <span class="text-danger" id="roleError"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-floating">
+                            <select id="expiryDays" class="form-select">
+                                <option value="1">1 Day</option>
+                                <option value="3">3 Days</option>
+                                <option value="7" selected>7 Days</option>
+                                <option value="14">14 Days</option>
+                                <option value="30">30 Days</option>
+                            </select>
+                            <label class="form-label">Invitation Valid For</label>
+                        </div>
+                        <span class="text-danger" id="expiryDaysError"></span>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">
+                    <i class='bx bx-x me-1'></i> Cancel
+                </button>
+                <button type="button" class="btn btn-primary" onclick="sendInvitation()">
+                    <i class='bx bx-send me-1'></i> <span id="sendButtonText">Send Invitation</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js"></script>
+    <script src="~/js/invitations/index.js"></script>
+}

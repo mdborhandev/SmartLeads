@@ -27,6 +27,11 @@ public class AcceptInvitationRequest
     public string Token { get; set; } = string.Empty;
 
     [Required]
+    [StringLength(50, MinimumLength = 3)]
+    [Display(Name = "Username")]
+    public string Username { get; set; } = string.Empty;
+
+    [Required]
     [StringLength(100, MinimumLength = 6)]
     [DataType(DataType.Password)]
     [Display(Name = "Password")]
