@@ -1,0 +1,92 @@
+@model SmartLeads.Domain.DTOs.AcceptInvitationRequest
+
+@{
+    ViewData["Title"] = "Accept Invitation";
+    Layout = "_AuthLayout";
+}
+
+<style>
+    .invite-card {
+        background: var(--bs-body-bg);
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        padding: 2.5rem;
+        width: 100%;
+        max-width: 500px;
+    }
+    [data-bs-theme="dark"] .invite-card {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+    }
+</style>
+
+<div class="invite-card">
+    <div class="text-center mb-4">
+        <h2 class="h4 mb-1">
+            Smart<span class="highlight">Leads</span>
+        </h2>
+        <p class="text-muted mb-0">Accept Invitation & Create Account</p>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger mb-3" role="alert">
+            <i class='bx bx-error-circle me-2'></i>@TempData["ErrorMessage"]
+        </div>
+    }
+
+    <form asp-action="Accept" method="post">
+        @Html.AntiForgeryToken()
+        
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+        <input type="hidden" asp-for="Token" />
+        <input type="hidden" asp-for="Email" />
+
+        <div class="alert alert-info mb-3">
+            <i class='bx bx-info-circle me-2'></i>
+            <strong>Invitation Email:</strong> @Model.Email
+        </div>
+
+        <div class="row g-2 mb-3">
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input asp-for="FirstName" class="form-control" placeholder="First Name" />
+                    <label asp-for="FirstName" class="form-label"></label>
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input asp-for="LastName" class="form-control" placeholder="Last Name" />
+                    <label asp-for="LastName" class="form-label"></label>
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-floating mb-3">
+            <input asp-for="Password" class="form-control" type="password" placeholder="Password" />
+            <label asp-for="Password" class="form-label"></label>
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <div class="form-floating mb-3">
+            <input asp-for="ConfirmPassword" class="form-control" type="password" placeholder="Confirm Password" />
+            <label asp-for="ConfirmPassword" class="form-label"></label>
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mb-3 btn-lg">
+            <i class='bx bx-check me-2'></i>Accept Invitation & Create Account
+        </button>
+
+        <div class="text-center">
+            <span class="text-muted">Already have an account?</span>
+            <a asp-action="Login" asp-controller="Auth" class="text-decoration-none ms-2">Sign in</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

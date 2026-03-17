@@ -1,0 +1,67 @@
+@model SmartLeads.Domain.DTOs.InviteUserRequest
+
+@{
+    ViewData["Title"] = "Invite User";
+    Layout = "_Layout";
+}
+
+<div class="card border-0 shadow-sm" style="max-width: 600px;">
+    <div class="card-body p-4 p-md-5">
+        <div class="text-center mb-4">
+            <h4 class="mb-1">Invite Team Member</h4>
+            <p class="text-muted">Send an invitation to join your company</p>
+        </div>
+
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Email" class="form-control" placeholder="name@example.com" />
+                <label asp-for="Email" class="form-label"></label>
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <select asp-for="Role" class="form-select">
+                    <option value="@SmartLeads.Domain.Enums.UserRole.User">User</option>
+                    <option value="@SmartLeads.Domain.Enums.UserRole.Admin">Admin</option>
+                    <option value="@SmartLeads.Domain.Enums.UserRole.Manager">Manager</option>
+                </select>
+                <label asp-for="Role" class="form-label"></label>
+                <span asp-validation-for="Role" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-4">
+                <select asp-for="ExpiryDays" class="form-select">
+                    <option value="1">1 Day</option>
+                    <option value="3">3 Days</option>
+                    <option value="7" selected>7 Days</option>
+                    <option value="14">14 Days</option>
+                    <option value="30">30 Days</option>
+                </select>
+                <label asp-for="ExpiryDays" class="form-label">Invitation Valid For</label>
+                <span asp-validation-for="ExpiryDays" class="text-danger"></span>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class='bx bx-envelope me-2'></i>Send Invitation
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class='bx bx-arrow-back me-2'></i>Back to List
+                </a>
+            </div>
+        </form>
+
+        <div class="alert alert-info mt-4 mb-0">
+            <i class='bx bx-info-circle me-2'></i>
+            <strong>Note:</strong> The invitation will be sent via email. The recipient will need to create an account to accept the invitation.
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

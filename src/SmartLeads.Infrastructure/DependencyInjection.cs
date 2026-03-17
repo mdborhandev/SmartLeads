@@ -27,8 +27,10 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         
         // Register User Repository and Service
-        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserService, UserService>();
+
+        // Register Invitation Service
+        services.AddScoped<IInvitationService, InvitationService>();
 
         // JWT Authentication
         var jwtSettings = configuration.GetSection("JwtSettings");

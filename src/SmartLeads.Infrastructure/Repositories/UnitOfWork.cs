@@ -12,6 +12,7 @@ public class UnitOfWork : IUnitOfWork
     public IContactRepository contactRepository { get; private set; }
     public IUserRepository userRepository { get; private set; }
     public ICompanyRepository companyRepository { get; private set; }
+    public IInvitationRepository invitationRepository { get; private set; }
     #endregion
 
     public UnitOfWork(ApplicationDbContext context)
@@ -20,6 +21,7 @@ public class UnitOfWork : IUnitOfWork
         contactRepository = new ContactRepository(context);
         userRepository = new UserRepository(context);
         companyRepository = new CompanyRepository(context);
+        invitationRepository = new InvitationRepository(context);
     }
 
     public async Task SaveAsync(CancellationToken token = default)

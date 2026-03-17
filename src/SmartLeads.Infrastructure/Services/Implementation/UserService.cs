@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using SmartLeads.Domain.Enums;
 using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Repositories.Interface;
 using SmartLeads.Infrastructure.Services.Interface;
@@ -11,7 +12,6 @@ namespace SmartLeads.Infrastructure.Services.Implementation;
 
 public class UserService : IUserService
 {
-    private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IEmailService _emailService;
@@ -19,14 +19,12 @@ public class UserService : IUserService
     private readonly IConfiguration _configuration;
 
     public UserService(
-        IUserRepository userRepository,
         IUnitOfWork unitOfWork,
         IPasswordHasher passwordHasher,
         IEmailService emailService,
         IJwtTokenGenerator jwtTokenGenerator,
         IConfiguration configuration)
     {
-        _userRepository = userRepository;
         _unitOfWork = unitOfWork;
         _passwordHasher = passwordHasher;
         _emailService = emailService;
@@ -36,7 +34,7 @@ public class UserService : IUserService
 
     public async Task<bool> SendPasswordResetEmailAsync(string email, string subject, string emailBodyTemplate, string baseUrl)
     {
-        var user = await _userRepository.GetByEmailAsync(email);
+        var user = await _unitOfWork.userRepository.GetByEmailAsync(email);
         
         // Always return true to prevent email enumeration
         if (user == null)
@@ -65,7 +63,7 @@ public class UserService : IUserService
 
     public async Task<bool> ResetPasswordAsync(string email, string token, string newPassword)
     {
-        var user = await _userRepository.GetByEmailAsync(email);
+        var user = await _unitOfWork.userRepository.GetByEmailAsync(email);
 
         if (user == null)
         {
@@ -116,7 +114,7 @@ public class UserService : IUserService
         }
 
         // Regular user login
-        var user = await _userRepository.GetByUsernameOrEmailAsync(usernameOrEmail);
+        var user = await _unitOfWork.userRepository.GetByUsernameOrEmailAsync(usernameOrEmail);
 
         if (user == null)
         {
@@ -133,17 +131,17 @@ public class UserService : IUserService
         return (true, token, null);
     }
 
-    public async Task<(bool Success, string? Token, string? Error)> RegisterAsync(string username, string email, string password, string firstName, string lastName, Guid? companyId = null)
+    public async Task<(bool Success, string? Token, string? Error)> RegisterAsync(string username, string email, string password, string firstName, string lastName, Guid? companyId = null, UserRole role = UserRole.User)
     {
         // Check if username exists
-        var existingUser = await _userRepository.GetByUsernameAsync(username);
+        var existingUser = await _unitOfWork.userRepository.GetByUsernameAsync(username);
         if (existingUser != null)
         {
             return (false, null, "Username already exists.");
         }
 
         // Check if email exists
-        var existingEmail = await _userRepository.GetByEmailAsync(email);
+        var existingEmail = await _unitOfWork.userRepository.GetByEmailAsync(email);
         if (existingEmail != null)
         {
             return (false, null, "Email already exists.");
@@ -156,10 +154,11 @@ public class UserService : IUserService
             PasswordHash = _passwordHasher.HashPassword(password),
             FirstName = firstName,
             LastName = lastName,
-            CompanyId = companyId
+            CompanyId = companyId,
+            Role = role
         };
 
-        await _userRepository.AddAsync(user);
+        await _unitOfWork.userRepository.AddAsync(user);
         await _unitOfWork.SaveAsync();
 
         var token = _jwtTokenGenerator.GenerateToken(user);
@@ -169,12 +168,12 @@ public class UserService : IUserService
 
     public async Task<Domain.Models.User?> GetUserByUsernameOrEmailAsync(string usernameOrEmail)
     {
-        return await _userRepository.GetByUsernameOrEmailAsync(usernameOrEmail);
+        return await _unitOfWork.userRepository.GetByUsernameOrEmailAsync(usernameOrEmail);
     }
 
     public async Task<bool> UpdateProfileAsync(string username, string email, string firstName, string lastName)
     {
-        var user = await _userRepository.GetByUsernameOrEmailAsync(username);
+        var user = await _unitOfWork.userRepository.GetByUsernameOrEmailAsync(username);
         
         if (user == null)
         {

@@ -1,3 +1,5 @@
+using SmartLeads.Domain.Enums;
+
 namespace SmartLeads.Domain.Models;
 
 public class User : BaseEntity
@@ -7,6 +9,7 @@ public class User : BaseEntity
     public string PasswordHash { get; set; } = string.Empty;
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
+    public UserRole Role { get; set; } = UserRole.User;
 
     // Refresh token support
     public string? RefreshToken { get; set; }

@@ -17,6 +17,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Note> Notes { get; set; }
     public DbSet<Attachment> Attachments { get; set; }
     public DbSet<Company> Companies { get; set; }
+    public DbSet<Invitation> Invitations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -86,6 +87,19 @@ public class ApplicationDbContext : DbContext
             .HasOne(ct => ct.Tag)
             .WithMany(t => t.ContactTags)
             .HasForeignKey(ct => ct.TagId);
+
+        // Invitation belongs to Company and User (InvitedBy)
+        modelBuilder.Entity<Invitation>()
+            .HasOne(i => i.Company)
+            .WithMany()
+            .HasForeignKey(i => i.CompanyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Invitation>()
+            .HasOne(i => i.InvitedByUser)
+            .WithMany()
+            .HasForeignKey(i => i.InvitedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
