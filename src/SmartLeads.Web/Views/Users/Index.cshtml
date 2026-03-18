@@ -22,75 +22,7 @@
             </div>
         }
 
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Employee ID</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Full Name</th>
-                        <th>Department</th>
-                        <th>Designation</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model != null && Model.Any())
-                    {
-                        int i = 1;
-                        foreach (var user in Model)
-                        {
-                            <tr>
-                                <td>@i</td>
-                                <td><span class="badge bg-info">@(user.EmployeeId ?? "N/A")</span></td>
-                                <td><strong>@user.Username</strong></td>
-                                <td>@user.Email</td>
-                                <td>@user.FirstName @user.LastName</td>
-                                <td>@(user.Department ?? "-")</td>
-                                <td>@(user.Designation ?? "-")</td>
-                                <td>
-                                    <span class="badge bg-@GetRoleBadgeClass(user.Role)">
-                                        @GetRoleDisplayName(user.Role)
-                                    </span>
-                                </td>
-                                <td>
-                                    @if (user.IsActive)
-                                    {
-                                        <span class="badge bg-success">Active</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">Inactive</span>
-                                    }
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary me-2" onclick="openEditModal('@user.Id', '@user.Username', '@user.Email', '@(user.FirstName ?? "")', '@(user.LastName ?? "")', '@user.Role', '@(user.EmployeeId ?? "")', '@(user.Department ?? "")', '@(user.Designation ?? "")', '@(user.PhoneNumber ?? "")', '@(user.Address ?? "")', '@(user.DateOfJoining?.ToString("yyyy-MM-dd") ?? "")', '@user.IsActive.ToString().ToLower()')">
-                                        <i class="bx bx-edit"></i> Edit
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteUser('@user.Id', '@user.Username')">
-                                        <i class="bx bx-trash"></i> Delete
-                                    </button>
-                                </td>
-                            </tr>
-                            i++;
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="10" class="text-center text-muted py-4">
-                                <i class="bx bx-user-x display-4"></i>
-                                <p class="mt-2">No users found</p>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+        <div id="userTable"></div>
     </div>
 </div>
 
@@ -212,6 +144,9 @@
 </div>
 
 @section Scripts {
+    <!-- Tabulator JS -->
+    <script src="https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* Ensure modal body is scrollable */
@@ -252,11 +187,176 @@
     
     <script>
         let userModal = null;
+        let userTable = null;
         
-        // Initialize modal on page load
+        // User data from server
+        const usersData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(u => new {
+            u.Id,
+            u.Username,
+            u.Email,
+            FullName = $"{u.FirstName} {u.LastName}".Trim(),
+            u.EmployeeId,
+            u.Department,
+            u.Designation,
+            u.Role,
+            u.IsActive,
+            RoleName = GetRoleDisplayName(u.Role),
+            RoleBadge = GetRoleBadgeClass(u.Role)
+        })));
+        
+        // Initialize modal and table on page load
         document.addEventListener('DOMContentLoaded', function() {
             userModal = new bootstrap.Modal(document.getElementById('userModal'));
+            
+            // Initialize Tabulator
+            userTable = new Tabulator("#userTable", {
+                data: usersData,
+                layout: "fitColumns",
+                height: "500px",
+                pagination: "local",
+                paginationSize: 10,
+                paginationSizeSelector: [10, 25, 50, 100],
+                movableColumns: true,
+                resizableRows: false,
+                columns: [
+                    {
+                        title: "#",
+                        formatter: "rownum",
+                        hozAlign: "center",
+                        headerSort: false,
+                        width: 50
+                    },
+                    {
+                        title: "Employee ID",
+                        field: "EmployeeId",
+                        hozAlign: "center",
+                        formatter: function(cell) {
+                            const value = cell.getValue();
+                            return value ? `<span class="badge bg-info">${value}</span>` : '<span class="badge bg-secondary">N/A</span>';
+                        }
+                    },
+                    {
+                        title: "Username",
+                        field: "Username",
+                        hozAlign: "left",
+                        formatter: function(cell) {
+                            return `<strong>${cell.getValue()}</strong>`;
+                        }
+                    },
+                    {
+                        title: "Email",
+                        field: "Email",
+                        hozAlign: "left"
+                    },
+                    {
+                        title: "Full Name",
+                        field: "FullName",
+                        hozAlign: "left"
+                    },
+                    {
+                        title: "Department",
+                        field: "Department",
+                        hozAlign: "left",
+                        formatter: function(cell) {
+                            const value = cell.getValue();
+                            return value || "-";
+                        }
+                    },
+                    {
+                        title: "Designation",
+                        field: "Designation",
+                        hozAlign: "left",
+                        formatter: function(cell) {
+                            const value = cell.getValue();
+                            return value || "-";
+                        }
+                    },
+                    {
+                        title: "Role",
+                        field: "RoleName",
+                        hozAlign: "center",
+                        formatter: function(cell) {
+                            const row = cell.getRow().getData();
+                            return `<span class="badge bg-${row.RoleBadge}">${row.RoleName}</span>`;
+                        }
+                    },
+                    {
+                        title: "Status",
+                        field: "IsActive",
+                        hozAlign: "center",
+                        formatter: function(cell) {
+                            const value = cell.getValue();
+                            return value 
+                                ? '<span class="badge bg-success">Active</span>' 
+                                : '<span class="badge bg-secondary">Inactive</span>';
+                        }
+                    },
+                    {
+                        title: "Actions",
+                        field: "Id",
+                        hozAlign: "center",
+                        headerSort: false,
+                        formatter: function(cell) {
+                            const row = cell.getRow().getData();
+                            return `
+                                <button class="btn btn-sm btn-primary me-2" 
+                                    onclick="openEditModalFromTable(
+                                        '${row.Id}',
+                                        '${row.Username.replace(/'/g, "\\'")}',
+                                        '${row.Email.replace(/'/g, "\\'")}',
+                                        '${(row.FullName || '').replace(/'/g, "\\'")}',
+                                        ${row.Role},
+                                        '${(row.EmployeeId || '').replace(/'/g, "\\'")}',
+                                        '${(row.Department || '').replace(/'/g, "\\'")}',
+                                        '${(row.Designation || '').replace(/'/g, "\\'")}',
+                                        ${row.IsActive}
+                                    )">
+                                    <i class="bx bx-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteUser('${row.Id}', '${row.Username.replace(/'/g, "\\'")}')">
+                                    <i class="bx bx-trash"></i> Delete
+                                </button>
+                            `;
+                        }
+                    }
+                ],
+                locale: "en",
+                langs: {
+                    "en": {
+                        "pagination": {
+                            "first": "First",
+                            "prev": "Previous",
+                            "next": "Next",
+                            "last": "Last",
+                        }
+                    }
+                }
+            });
         });
+
+        // Open Edit Modal from Tabulator
+        function openEditModalFromTable(id, username, email, fullName, role, employeeId, department, designation, isActive) {
+            // Split full name into first and last name
+            const nameParts = fullName.split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+            
+            openEditModal(
+                id,
+                username,
+                email,
+                firstName,
+                lastName,
+                role,
+                employeeId,
+                department,
+                designation,
+                '', // phoneNumber not in table
+                '', // address not in table
+                '', // dateOfJoining not in table
+                isActive.toString().toLowerCase()
+            );
+        }
 
         // Open Create Modal
         function openCreateModal() {
