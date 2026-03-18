@@ -9,4 +9,5 @@ public interface IUserRepository : IGenericRepository<User>
     Task<User?> GetByUsernameAsync(string username);
     Task<User?> GetByUsernameAndCompanyIdAsync(string username, Guid companyId, CancellationToken token = default);
     Task<User?> GetUserByIdAndCompanyIdAsync(Guid id, Guid companyId, CancellationToken token = default);
+    Task<IEnumerable<User>> GetAllUsersAsync();
 }

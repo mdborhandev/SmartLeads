@@ -115,3 +115,88 @@ public class CompanyRegistrationViewModel
     [Display(Name = "Last Name")]
     public string? AdminLastName { get; set; }
 }
+
+public class CreateUserViewModel
+{
+    [Required]
+    [Display(Name = "Username")]
+    public string Username { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
+    [Display(Name = "Email Address")]
+    public string Email { get; set; } = string.Empty;
+
+    [Display(Name = "First Name")]
+    public string? FirstName { get; set; }
+
+    [Display(Name = "Last Name")]
+    public string? LastName { get; set; }
+
+    [Display(Name = "Role")]
+    public UserRole Role { get; set; } = UserRole.User;
+    
+    // Employee Information
+    [Display(Name = "Employee ID")]
+    public string? EmployeeId { get; set; }
+    
+    [Display(Name = "Department")]
+    public string? Department { get; set; }
+    
+    [Display(Name = "Designation")]
+    public string? Designation { get; set; }
+    
+    [Display(Name = "Phone Number")]
+    public string? PhoneNumber { get; set; }
+    
+    [Display(Name = "Address")]
+    public string? Address { get; set; }
+    
+    [Display(Name = "Date of Joining")]
+    public DateTime? DateOfJoining { get; set; }
+}
+
+public class EditUserViewModel
+{
+    public Guid Id { get; set; }
+
+    [Required]
+    [Display(Name = "Username")]
+    public string Username { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
+    [Display(Name = "Email Address")]
+    public string Email { get; set; } = string.Empty;
+
+    [Display(Name = "First Name")]
+    public string? FirstName { get; set; }
+
+    [Display(Name = "Last Name")]
+    public string? LastName { get; set; }
+
+    [Display(Name = "Role")]
+    public UserRole Role { get; set; } = UserRole.User;
+    
+    // Employee Information
+    [Display(Name = "Employee ID")]
+    public string? EmployeeId { get; set; }
+    
+    [Display(Name = "Department")]
+    public string? Department { get; set; }
+    
+    [Display(Name = "Designation")]
+    public string? Designation { get; set; }
+    
+    [Display(Name = "Phone Number")]
+    public string? PhoneNumber { get; set; }
+    
+    [Display(Name = "Address")]
+    public string? Address { get; set; }
+    
+    [Display(Name = "Date of Joining")]
+    public DateTime? DateOfJoining { get; set; }
+    
+    [Display(Name = "Is Active")]
+    public bool IsActive { get; set; } = true;
+}

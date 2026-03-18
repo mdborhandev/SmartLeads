@@ -38,4 +38,11 @@ public class UserRepository : GenericRepository<User>, IUserRepository
         return await _dbContext.Users
             .FirstOrDefaultAsync(u => u.Id == id && u.CompanyId == companyId && !u.IsDeleted, token);
     }
+
+    public async Task<IEnumerable<User>> GetAllUsersAsync()
+    {
+        return await _dbContext.Users
+            .OrderByDescending(u => u.CreatedAt)
+            .ToListAsync();
+    }
 }

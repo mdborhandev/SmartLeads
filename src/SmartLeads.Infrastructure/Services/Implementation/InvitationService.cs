@@ -6,18 +6,28 @@ using SmartLeads.Infrastructure.Repositories.Interface;
 using SmartLeads.Infrastructure.Services.Interface;
 using SmartLeads.Utilities.Email;
 using SmartLeads.Utilities.Interfaces;
+using System.Text.Json;
 
 namespace SmartLeads.Infrastructure.Services.Implementation;
 
 public interface IInvitationService
 {
     Task<(bool Success, string? Message, Invitation? Invitation)> InviteUserAsync(
-        string email, 
-        UserRole role, 
-        int expiryDays, 
-        Guid companyId, 
-        Guid invitedByUserId);
-    
+        string email,
+        UserRole role,
+        int expiryDays,
+        Guid companyId,
+        Guid invitedByUserId,
+        string? firstName = null,
+        string? lastName = null,
+        string? username = null,
+        string? employeeId = null,
+        string? department = null,
+        string? designation = null,
+        string? phoneNumber = null,
+        string? address = null,
+        DateTime? dateOfJoining = null);
+
     Task<(bool Success, string? Message, User? User)> AcceptInvitationAsync(AcceptInvitationRequest request);
     Task<(bool Success, string? Message)> RejectInvitationAsync(Guid invitationId, string? reason = null);
     Task<(bool Success, string? Message)> CancelInvitationAsync(Guid invitationId);
@@ -45,11 +55,20 @@ public class InvitationService : IInvitationService
     }
 
     public async Task<(bool Success, string? Message, Invitation? Invitation)> InviteUserAsync(
-        string email, 
-        UserRole role, 
-        int expiryDays, 
-        Guid companyId, 
-        Guid invitedByUserId)
+        string email,
+        UserRole role,
+        int expiryDays,
+        Guid companyId,
+        Guid invitedByUserId,
+        string? firstName = null,
+        string? lastName = null,
+        string? username = null,
+        string? employeeId = null,
+        string? department = null,
+        string? designation = null,
+        string? phoneNumber = null,
+        string? address = null,
+        DateTime? dateOfJoining = null)
     {
         try
         {
@@ -70,7 +89,7 @@ public class InvitationService : IInvitationService
                 return (false, "An invitation has already been sent to this email.", existingPendingInvite);
             }
 
-            // Create new invitation
+            // Create new invitation with additional user information
             var invitation = new Invitation
             {
                 Email = email.ToLower().Trim(),
@@ -79,7 +98,20 @@ public class InvitationService : IInvitationService
                 InvitedByUserId = invitedByUserId,
                 Token = Guid.NewGuid().ToString("N"),
                 ExpiresAt = DateTime.UtcNow.AddDays(expiryDays),
-                Status = InvitationStatus.Pending
+                Status = InvitationStatus.Pending,
+                // Store additional user information in metadata (JSON)
+                Metadata = JsonSerializer.Serialize(new Dictionary<string, string>
+                {
+                    { "FirstName", firstName ?? "" },
+                    { "LastName", lastName ?? "" },
+                    { "Username", username ?? "" },
+                    { "EmployeeId", employeeId ?? "" },
+                    { "Department", department ?? "" },
+                    { "Designation", designation ?? "" },
+                    { "PhoneNumber", phoneNumber ?? "" },
+                    { "Address", address ?? "" },
+                    { "DateOfJoining", dateOfJoining?.ToString("yyyy-MM-dd") ?? "" }
+                })
             };
 
             await _unitOfWork.invitationRepository.AddAsync(invitation);

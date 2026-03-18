@@ -14,6 +14,9 @@ public class Invitation : BaseEntity
     public DateTime? AcceptedAt { get; set; }
     public string? RejectedReason { get; set; }
     public InvitationStatus Status { get; set; } = InvitationStatus.Pending;
+    
+    // Store additional user information as JSON (for pre-filling user data when accepting invitation)
+    public string? Metadata { get; set; }
 }
 
 public enum InvitationStatus
