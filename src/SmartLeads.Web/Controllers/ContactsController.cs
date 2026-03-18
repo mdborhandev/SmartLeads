@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using SmartLeads.Domain.DTOs;
@@ -6,7 +5,6 @@ using SmartLeads.Infrastructure.Repositories.Interface;
 
 namespace SmartLeads.Web.Controllers;
 
-[Authorize]
 public class ContactsController : Controller
 {
     private readonly IUnitOfWork _unitOfWork;

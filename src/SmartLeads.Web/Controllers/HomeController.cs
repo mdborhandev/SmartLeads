@@ -32,12 +32,7 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        // If user is already logged in, redirect to contacts
-        if (User.Identity?.IsAuthenticated == true)
-        {
-            return RedirectToAction("Index", "Contacts");
-        }
-
+        // Show dashboard for authenticated users
         return View();
     }
 

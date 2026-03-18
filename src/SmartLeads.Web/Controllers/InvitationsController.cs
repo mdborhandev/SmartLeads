@@ -8,7 +8,6 @@ using SmartLeads.Infrastructure.Services.Implementation;
 
 namespace SmartLeads.Web.Controllers;
 
-[Authorize]
 public class InvitationsController : Controller
 {
     private readonly IInvitationService _invitationService;

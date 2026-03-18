@@ -94,26 +94,6 @@ public class UserService : IUserService
 
     public async Task<(bool Success, string? Token, string? Error)> LoginAsync(string usernameOrEmail, string password)
     {
-        // Check for superadmin credentials (hardcoded)
-        // Username: superadmin, Password: SuperAdmin@123
-        if ((usernameOrEmail == "superadmin" || usernameOrEmail == "superadmin@smartleads.com") 
-            && password == "SuperAdmin@123")
-        {
-            // Create a superadmin user object (not from database)
-            var superAdminUser = new User
-            {
-                Id = Guid.Empty,
-                Username = "superadmin",
-                Email = "superadmin@smartleads.com",
-                FirstName = "Super",
-                LastName = "Admin"
-            };
-
-            var superAdminToken = _jwtTokenGenerator.GenerateToken(superAdminUser);
-            return (true, superAdminToken, null);
-        }
-
-        // Regular user login
         var user = await _unitOfWork.userRepository.GetByUsernameOrEmailAsync(usernameOrEmail);
 
         if (user == null)
