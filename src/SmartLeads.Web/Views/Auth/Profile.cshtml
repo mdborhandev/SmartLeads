@@ -1,8 +1,18 @@
 @model SmartLeads.Domain.DTOs.UserProfileViewModel
+@using SmartLeads.Domain.Enums
 
 @{
     ViewData["Title"] = "My Profile";
     Layout = "_Layout";
+
+    string GetRoleDisplayName(UserRole role) => role switch
+    {
+        UserRole.SuperAdmin => "Super Admin",
+        UserRole.Admin => "Admin",
+        UserRole.Manager => "Manager",
+        UserRole.User => "User",
+        _ => "User"
+    };
 }
 
 <div class="card">
@@ -30,7 +40,7 @@
 
         <form asp-action="Profile" method="post">
             @Html.AntiForgeryToken()
-            
+
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="row mb-3">
@@ -70,11 +80,20 @@
             <div class="row mb-3">
                 <div class="col-md-6">
                     <div class="form-floating">
+                        <input type="text" class="form-control" value="@GetRoleDisplayName(Model.Role)" readonly />
+                        <label class="form-label">Role</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-floating">
                         <input type="text" class="form-control" value="@(Model?.CreatedAt.ToString("MMMM dd, yyyy") ?? "N/A")" readonly />
                         <label class="form-label">Member Since</label>
                     </div>
                 </div>
-                <div class="col-md-6">
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
                     <div class="form-floating">
                         <input type="text" class="form-control" value="@(Model?.UpdatedAt?.ToString("MMMM dd, yyyy") ?? "N/A")" readonly />
                         <label class="form-label">Last Updated</label>

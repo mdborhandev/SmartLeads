@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SmartLeads.Domain.Enums;
 
 namespace SmartLeads.Domain.DTOs;
 
@@ -28,6 +29,9 @@ public class UserProfileViewModel
 
     [Display(Name = "Last Name")]
     public string? LastName { get; set; }
+
+    [Display(Name = "Role")]
+    public UserRole Role { get; set; } = UserRole.User;
 
     [Display(Name = "Member Since")]
     public DateTime CreatedAt { get; set; }

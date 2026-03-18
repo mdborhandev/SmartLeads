@@ -115,7 +115,7 @@ public class AuthController : Controller
 
             // Get user from repository
             var user = await _userService.GetUserByUsernameOrEmailAsync(usernameOrEmail);
-            
+
             if (user == null)
             {
                 return RedirectToAction("Login");
@@ -127,6 +127,7 @@ public class AuthController : Controller
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                Role = user.Role,
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt
             };

@@ -4,6 +4,7 @@ using SmartLeads.Domain.DTOs;
 using SmartLeads.Infrastructure.Services.Interface;
 using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Repositories.Interface;
+using SmartLeads.Domain.Enums;
 
 namespace SmartLeads.Web.Controllers;
 
@@ -109,14 +110,15 @@ public class HomeController : Controller
             await _unitOfWork.companyRepository.AddAsync(company);
             await _unitOfWork.SaveAsync();
 
-            // Register admin user for the company
+            // Register admin user for the company as SuperAdmin
             var registerResult = await _userService.RegisterAsync(
                 model.AdminUsername,
                 model.AdminEmail,
                 model.AdminPassword,
                 model.AdminFirstName,
                 model.AdminLastName,
-                company.Id // Associate user with company
+                company.Id, // Associate user with company
+                UserRole.SuperAdmin // Set as SuperAdmin
             );
 
             if (registerResult.Success)
