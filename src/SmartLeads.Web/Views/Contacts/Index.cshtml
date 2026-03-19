@@ -163,8 +163,6 @@
 </div>
 
 @section Scripts {
-    <script src="https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script>
         // Tabulator Table Initialization and AJAX Handling for Contacts
         let contactsTable;
@@ -252,13 +250,29 @@
                             console.log("Parsed saved data:", savedData);
                             
                             if (savedData.colDefs && Array.isArray(savedData.colDefs)) {
-                                // Update TableFields visibility based on saved settings
+                                // Reorder TableFields based on saved order
+                                const newTableFields = [];
+                                
+                                // First add columns in saved order
                                 savedData.colDefs.forEach(savedCol => {
                                     const tableCol = TableFields.find(col => col.field === savedCol.field);
                                     if (tableCol) {
                                         tableCol.visible = savedCol.visible !== undefined ? savedCol.visible : true;
+                                        newTableFields.push(tableCol);
                                     }
                                 });
+                                
+                                // Then add any new columns that weren't in saved config (like Actions)
+                                TableFields.forEach(col => {
+                                    if (!newTableFields.find(c => c.field === col.field)) {
+                                        newTableFields.push(col);
+                                    }
+                                });
+                                
+                                // Replace TableFields with reordered array
+                                TableFields.length = 0;
+                                TableFields.push(...newTableFields);
+                                
                                 console.log("Updated TableFields:", TableFields);
                             }
                         } catch (e) {
@@ -337,6 +351,13 @@
 
             newColumns = [...newColumns, ...fixedColumns];
             contactsTable.setColumns(newColumns);
+
+            // Update TableFields array to match new order (for saving)
+            const actionColumn = TableFields.find(col => col.field === 'id');
+            TableFields = newColumns;
+            if (actionColumn && !TableFields.find(col => col.field === 'id')) {
+                TableFields.push(actionColumn);
+            }
 
             // Re-populate checkboxes
             populateCheckbox();
