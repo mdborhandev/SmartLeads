@@ -23,8 +23,22 @@ public class UsersController : Controller
     // GET: Users
     public async Task<IActionResult> Index()
     {
-        var users = await _unitOfWork.userRepository.GetAllUsersAsync();
-        return View(users);
+        return View();
+    }
+
+    // GET: Users/Data - API endpoint for server-side pagination and search
+    [HttpGet]
+    public async Task<IActionResult> GetUsersData([FromQuery] PaginationRequest request)
+    {
+        var companyId = Guid.Parse(User.FindFirst("CompanyId")?.Value ?? Guid.Empty.ToString());
+        
+        if (companyId == Guid.Empty)
+        {
+            return BadRequest(new { error = "Invalid company context" });
+        }
+
+        var result = await _unitOfWork.userRepository.GetUsersPagedAsync(companyId, request);
+        return Ok(result);
     }
 
     // POST: Users/Create - Send Invitation
