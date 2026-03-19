@@ -13,6 +13,7 @@ public class UnitOfWork : IUnitOfWork
     public IUserRepository userRepository { get; private set; }
     public ICompanyRepository companyRepository { get; private set; }
     public IInvitationRepository invitationRepository { get; private set; }
+    public IColumnFilterRepository columnFilterRepository { get; private set; }
     #endregion
 
     public UnitOfWork(ApplicationDbContext context)
@@ -22,6 +23,7 @@ public class UnitOfWork : IUnitOfWork
         userRepository = new UserRepository(context);
         companyRepository = new CompanyRepository(context);
         invitationRepository = new InvitationRepository(context);
+        columnFilterRepository = new ColumnFilterRepository(context);
     }
 
     public async Task SaveAsync(CancellationToken token = default)

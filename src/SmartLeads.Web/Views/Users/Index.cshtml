@@ -28,7 +28,33 @@
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="d-grid d-md-flex justify-content-md-end">
+                <div class="d-grid d-md-flex justify-content-md-end gap-2">
+                    <!-- Column Filter Dropdown -->
+                    <div class="dropdown d-inline-block">
+                        <button class="btn btn-outline-primary" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bx bx-cog"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end gear-dropdown1" aria-labelledby="dropdownMenuButton1">
+                            <div class="row p-4 main-dropdown-size overflow-hidden">
+                                <div class="col">
+                                    <span class="fw-bold ms-3">Columns</span>
+                                    <hr class="m-0 w-75 ms-3 w-sm-50" />
+                                    <ul class="list-unstyled" id="UsersColumnList">
+                                        <!-- Column checkboxes will be populated here -->
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="d-flex">
+                                <div class="p-4">
+                                    <button id="saveUsersFilter" class="btn btn-outline-primary">Save Filter</button>
+                                </div>
+                                <div class="p-4">
+                                    <button id="deleteUsersFilter" class="btn btn-outline-danger" onclick="DeleteFilter_Users('Users')">Remove Filter</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Export Dropdown -->
                     <div class="dropdown">
                         <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bx bx-export me-1"></i> Export
@@ -167,6 +193,8 @@
 @section Scripts {
     <!-- Tabulator JS -->
     <script src="https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js"></script>
+    <!-- SortableJS for drag-and-drop -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -220,11 +248,346 @@
         let searchTimeout = null;
         let currentSearch = '';
 
+        // Define table columns with visibility settings
+        var TableFields = [
+            {
+                title: "#",
+                field: "rownum",
+                formatter: "rownum",
+                hozAlign: "center",
+                headerSort: false,
+                width: 50,
+                visible: true
+            },
+            {
+                title: "Employee ID",
+                field: "employeeId",
+                hozAlign: "center",
+                visible: true,
+                formatter: function(cell) {
+                    const value = cell.getValue();
+                    return value ? `<span class="badge bg-info">${value}</span>` : '<span class="badge bg-secondary">N/A</span>';
+                }
+            },
+            {
+                title: "Username",
+                field: "username",
+                hozAlign: "left",
+                visible: true,
+                formatter: function(cell) {
+                    return `<strong>${cell.getValue()}</strong>`;
+                }
+            },
+            {
+                title: "Email",
+                field: "email",
+                hozAlign: "left",
+                visible: true
+            },
+            {
+                title: "Full Name",
+                field: "fullName",
+                hozAlign: "left",
+                visible: true
+            },
+            {
+                title: "Department",
+                field: "department",
+                hozAlign: "left",
+                visible: true,
+                formatter: function(cell) {
+                    const value = cell.getValue();
+                    return value || "-";
+                }
+            },
+            {
+                title: "Designation",
+                field: "designation",
+                hozAlign: "left",
+                visible: true,
+                formatter: function(cell) {
+                    const value = cell.getValue();
+                    return value || "-";
+                }
+            },
+            {
+                title: "Role",
+                field: "roleName",
+                hozAlign: "center",
+                visible: true,
+                formatter: function(cell) {
+                    const row = cell.getRow().getData();
+                    return `<span class="badge bg-${row.roleBadge}">${row.roleName}</span>`;
+                }
+            },
+            {
+                title: "Status",
+                field: "isActive",
+                hozAlign: "center",
+                visible: true,
+                formatter: function(cell) {
+                    const value = cell.getValue();
+                    return value
+                        ? '<span class="badge bg-success">Active</span>'
+                        : '<span class="badge bg-secondary">Inactive</span>';
+                }
+            },
+            {
+                title: "Actions",
+                field: "id",
+                hozAlign: "center",
+                headerSort: false,
+                download: false,
+                print: false,
+                frozen: true,
+                visible: true,
+                formatter: function(cell) {
+                    const row = cell.getRow().getData();
+                    const id = row.id || '';
+                    const username = (row.username || '').toString().replace(/'/g, "\\'");
+                    const email = (row.email || '').toString().replace(/'/g, "\\'");
+                    const fullName = (row.fullName || '').toString().replace(/'/g, "\\'");
+                    const role = row.role || 0;
+                    const employeeId = (row.employeeId || '').toString().replace(/'/g, "\\'");
+                    const department = (row.department || '').toString().replace(/'/g, "\\'");
+                    const designation = (row.designation || '').toString().replace(/'/g, "\\'");
+                    const isActive = row.isActive || false;
+
+                    return `
+                        <button class="btn btn-sm btn-primary me-2"
+                            onclick="openEditModalFromTable(
+                                '${id}',
+                                '${username}',
+                                '${email}',
+                                '${fullName}',
+                                ${role},
+                                '${employeeId}',
+                                '${department}',
+                                '${designation}',
+                                ${isActive}
+                            )">
+                            <i class="bx bx-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteUser('${id}', '${username}')">
+                            <i class="bx bx-trash"></i> Delete
+                        </button>
+                    `;
+                }
+            }
+        ];
+
         // Initialize modal and table on page load
         document.addEventListener('DOMContentLoaded', function() {
             userModal = new bootstrap.Modal(document.getElementById('userModal'));
+            
+            // Load column filter settings and initialize table
+            UsersGear();
+        });
 
-            // Initialize Tabulator with server-side pagination
+        // Load column filter settings and initialize table
+        function UsersGear() {
+            $.ajax({
+                url: '@Url.Action("GetFilteredColumn", "ColumnFilter")',
+                type: 'GET',
+                data: { type: 'Users' },
+                success: function (response) {
+                    console.log("GetFilteredColumn response:", response);
+                    
+                    if ((response.Success == 1 || response.success == 1) && response.data && response.data.keyValue) {
+                        try {
+                            const savedData = JSON.parse(response.data.keyValue);
+                            console.log("Parsed saved data:", savedData);
+                            
+                            if (savedData.colDefs && Array.isArray(savedData.colDefs)) {
+                                // Update TableFields visibility based on saved settings
+                                savedData.colDefs.forEach(savedCol => {
+                                    const tableCol = TableFields.find(col => col.field === savedCol.field);
+                                    if (tableCol) {
+                                        tableCol.visible = savedCol.visible !== undefined ? savedCol.visible : true;
+                                    }
+                                });
+                                console.log("Updated TableFields:", TableFields);
+                            }
+                        } catch (e) {
+                            console.error("Error parsing saved columns:", e);
+                        }
+                    }
+                    populateCheckbox();
+                    initializeUserTable();
+                    setupSearchFilter();
+                    setupExportButtons();
+                    setupColumnFilterSave();
+                },
+                error: function (error) {
+                    console.error("Error fetching column settings:", error);
+                    populateCheckbox();
+                    initializeUserTable();
+                    setupSearchFilter();
+                    setupExportButtons();
+                    setupColumnFilterSave();
+                }
+            });
+        }
+
+        // Populate column filter checkboxes
+        function populateCheckbox() {
+            let items = TableFields
+                .filter(x => x.field !== 'id') // Exclude actions column
+                .map(x => {
+                    return `
+                        <li class="d-flex justify-content-between align-items-center px-3 py-1 draggable-item" data-field="${x.field}">
+                            <span class="d-flex align-items-center">
+                                <i class="bx bx-menu me-2 handle" style="cursor: move;"></i> ${x.title}
+                            </span>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input toggle-column users-column" type="checkbox" role="switch"
+                                       id="${x.field}" value="${x.field}" ${x.visible ? 'checked' : ''}
+                                       onclick="showHideColumn('${x.field}')">
+                            </div>
+                        </li>`;
+                });
+
+            const columnList = document.getElementById('UsersColumnList');
+            columnList.innerHTML = items.join('');
+            enableDragAndDrop();
+        }
+
+        // Enable drag and drop for column ordering
+        function enableDragAndDrop() {
+            new Sortable(document.getElementById('UsersColumnList'), {
+                animation: 200,
+                handle: '.handle',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                forceFallback: true,
+                fallbackTolerance: 5,
+                scroll: true,
+                scrollSensitivity: 30,
+                scrollSpeed: 10,
+                onEnd: function (evt) {
+                    updateColumnOrder();
+                }
+            });
+        }
+
+        // Update column order based on drag and drop
+        function updateColumnOrder() {
+            let newOrder = [];
+            document.querySelectorAll('#UsersColumnList .draggable-item').forEach(item => {
+                const field = item.getAttribute('data-field');
+                const title = item.querySelector('span').innerText.trim();
+                const visible = item.querySelector('input').checked;
+                newOrder.push({ field: field, title: title, visible: visible });
+            });
+
+            let allColumns = userTable.getColumns().map(col => col.getDefinition());
+            let fixedColumns = allColumns.filter(col => col.field === 'id');
+            let newColumns = newOrder.map(col => {
+                let existingColumn = userTable.getColumn(col.field);
+                return existingColumn ? existingColumn.getDefinition() : { title: col.title, field: col.field, visible: col.visible };
+            });
+
+            newColumns = [...newColumns, ...fixedColumns];
+            userTable.setColumns(newColumns);
+
+            // Re-populate checkboxes
+            populateCheckbox();
+        }
+
+        // Show/hide individual column
+        function showHideColumn(colName) {
+            userTable.toggleColumn(colName);
+        }
+
+        // Save column filter settings
+        function setupColumnFilterSave() {
+            $("#saveUsersFilter").on("click", function () {
+                var colDefs = userTable.getColumnDefinitions();
+
+                $(".users-column").each(function () {
+                    var field = $(this).val();
+                    var isVisible = $(this).is(":checked");
+
+                    colDefs.forEach(function (colDef) {
+                        if (colDef.field === field) {
+                            colDef.visible = isVisible;
+                        }
+                    });
+                });
+
+                var filteredColDefs = colDefs.filter(colDef => colDef.field !== 'id');
+                var finaldata = { colDefs: filteredColDefs };
+                var jsonData = JSON.stringify(finaldata);
+
+                console.log("Saving column filter:", jsonData);
+
+                $.ajax({
+                    url: '@Url.Action("ColumnFilterCreation", "ColumnFilter")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ keyValue: jsonData, type: 'Users' }),
+                    success: function (response) {
+                        console.log("Save response:", response);
+                        // Handle both Success and success (case-insensitive)
+                        if (response.Success === 1 || response.success === 1 || response.Success === true || response.success === true) {
+                            toastr.success(response.Message || response.message || "Filter saved successfully", "Success", { "toastClass": "toast-green" });
+                            $('#dropdownMenuButton1').dropdown('hide');
+                        } else {
+                            toastr.error(response.Message || response.message || "Unknown error", "Error");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Save error:", xhr.responseText, status, error);
+                        // Try to parse error response
+                        try {
+                            var errResponse = JSON.parse(xhr.responseText);
+                            toastr.error(errResponse.Message || errResponse.message || "Error saving filter settings.", "Error");
+                        } catch (e) {
+                            toastr.error("Error saving filter settings.", "Error");
+                        }
+                    }
+                });
+            });
+        }
+
+        // Delete column filter settings
+        function DeleteFilter_Users(data) {
+            $.ajax({
+                url: '@Url.Action("DeleteColumnFilter", "ColumnFilter")',
+                type: "GET",
+                data: { type: data },
+                success: function (response) {
+                    console.log("Delete response:", response);
+                    if (response.Success == 1 || response.success == 1) {
+                        toastr.success(response.Message || response.message || "Deleted successfully", "Success", { "toastClass": "toast-green" });
+                        UsersGear();
+                    } else {
+                        toastr.error(response.Message || response.message || "Error deleting filter", "Error", { "toastClass": "toast-red" });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Delete error:", xhr.responseText);
+                    toastr.error("Error during delete.", "Error", { "toastClass": "toast-red" });
+                }
+            });
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function (event) {
+            let dropdown = document.querySelector(".gear-dropdown1");
+            let button = document.getElementById("dropdownMenuButton1");
+            if (dropdown && button && !dropdown.contains(event.target) && !button.contains(event.target)) {
+                dropdown.classList.remove("show");
+            }
+        });
+
+        document.querySelector(".gear-dropdown1").addEventListener("click", function (event) {
+            event.stopPropagation();
+        });
+
+        // Initialize Tabulator with server-side pagination
+        function initializeUserTable() {
             userTable = new Tabulator("#userTable", {
                 ajaxURL: '@Url.Action("GetUsersData", "Users")',
                 ajaxParams: function() {
@@ -267,119 +630,7 @@
                     // For Tabulator 5.x remote pagination, return only the data array
                     return response.data || [];
                 },
-                columns: [
-                    {
-                        title: "#",
-                        formatter: "rownum",
-                        hozAlign: "center",
-                        headerSort: false,
-                        width: 50
-                    },
-                    {
-                        title: "Employee ID",
-                        field: "employeeId",
-                        hozAlign: "center",
-                        formatter: function(cell) {
-                            const value = cell.getValue();
-                            return value ? `<span class="badge bg-info">${value}</span>` : '<span class="badge bg-secondary">N/A</span>';
-                        }
-                    },
-                    {
-                        title: "Username",
-                        field: "username",
-                        hozAlign: "left",
-                        formatter: function(cell) {
-                            return `<strong>${cell.getValue()}</strong>`;
-                        }
-                    },
-                    {
-                        title: "Email",
-                        field: "email",
-                        hozAlign: "left"
-                    },
-                    {
-                        title: "Full Name",
-                        field: "fullName",
-                        hozAlign: "left"
-                    },
-                    {
-                        title: "Department",
-                        field: "department",
-                        hozAlign: "left",
-                        formatter: function(cell) {
-                            const value = cell.getValue();
-                            return value || "-";
-                        }
-                    },
-                    {
-                        title: "Designation",
-                        field: "designation",
-                        hozAlign: "left",
-                        formatter: function(cell) {
-                            const value = cell.getValue();
-                            return value || "-";
-                        }
-                    },
-                    {
-                        title: "Role",
-                        field: "roleName",
-                        hozAlign: "center",
-                        formatter: function(cell) {
-                            const row = cell.getRow().getData();
-                            return `<span class="badge bg-${row.roleBadge}">${row.roleName}</span>`;
-                        }
-                    },
-                    {
-                        title: "Status",
-                        field: "isActive",
-                        hozAlign: "center",
-                        formatter: function(cell) {
-                            const value = cell.getValue();
-                            return value
-                                ? '<span class="badge bg-success">Active</span>'
-                                : '<span class="badge bg-secondary">Inactive</span>';
-                        }
-                    },
-                    {
-                        title: "Actions",
-                        field: "id",
-                        hozAlign: "center",
-                        headerSort: false,
-                        download: false,
-                        formatter: function(cell) {
-                            const row = cell.getRow().getData();
-                            const id = row.id || '';
-                            const username = (row.username || '').toString().replace(/'/g, "\\'");
-                            const email = (row.email || '').toString().replace(/'/g, "\\'");
-                            const fullName = (row.fullName || '').toString().replace(/'/g, "\\'");
-                            const role = row.role || 0;
-                            const employeeId = (row.employeeId || '').toString().replace(/'/g, "\\'");
-                            const department = (row.department || '').toString().replace(/'/g, "\\'");
-                            const designation = (row.designation || '').toString().replace(/'/g, "\\'");
-                            const isActive = row.isActive || false;
-                            
-                            return `
-                                <button class="btn btn-sm btn-primary me-2"
-                                    onclick="openEditModalFromTable(
-                                        '${id}',
-                                        '${username}',
-                                        '${email}',
-                                        '${fullName}',
-                                        ${role},
-                                        '${employeeId}',
-                                        '${department}',
-                                        '${designation}',
-                                        ${isActive}
-                                    )">
-                                    <i class="bx bx-edit"></i> Edit
-                                </button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteUser('${id}', '${username}')">
-                                    <i class="bx bx-trash"></i> Delete
-                                </button>
-                            `;
-                        }
-                    }
-                ],
+                columns: TableFields,
                 locale: "en",
                 langs: {
                     "en": {
@@ -394,8 +645,10 @@
                     }
                 }
             });
+        }
 
-            // Search input with debounce
+        // Setup search filter
+        function setupSearchFilter() {
             document.getElementById('searchInput').addEventListener('input', function(e) {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
@@ -406,7 +659,10 @@
                     }
                 }, 500); // 500ms debounce
             });
+        }
 
+        // Setup export buttons
+        function setupExportButtons() {
             document.getElementById('exportCsvBtn').addEventListener('click', function() {
                 if (!userTable) {
                     return;
@@ -435,7 +691,7 @@
                     }
                 });
             });
-        });
+        }
 
         // Open Edit Modal from Tabulator
         function openEditModalFromTable(id, username, email, fullName, role, employeeId, department, designation, isActive) {

@@ -6,6 +6,7 @@ public interface IUnitOfWork : IAsyncDisposable
     IUserRepository userRepository { get; }
     ICompanyRepository companyRepository { get; }
     IInvitationRepository invitationRepository { get; }
+    IColumnFilterRepository columnFilterRepository { get; }
 
     Task SaveAsync(CancellationToken token = default);
 }

@@ -18,6 +18,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Attachment> Attachments { get; set; }
     public DbSet<Company> Companies { get; set; }
     public DbSet<Invitation> Invitations { get; set; }
+    public DbSet<ColumnFilter> ColumnFilters { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -99,6 +100,13 @@ public class ApplicationDbContext : DbContext
             .HasOne(i => i.InvitedByUser)
             .WithMany()
             .HasForeignKey(i => i.InvitedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // ColumnFilter belongs to Company and User (CreatedByUser)
+        modelBuilder.Entity<ColumnFilter>()
+            .HasOne(cf => cf.CreatedByUser)
+            .WithMany()
+            .HasForeignKey(cf => cf.CreatedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 
