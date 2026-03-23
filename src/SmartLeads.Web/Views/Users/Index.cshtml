@@ -7,7 +7,7 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">All Users</h5>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal" onclick="openCreateModal()">
+        <button type="button" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#userOffcanvas" onclick="openCreateModal()">
             <i class="bx bx-plus me-1"></i> Invite User
         </button>
     </div>
@@ -73,126 +73,123 @@
     </div>
 </div>
 
-<!-- User Modal -->
-<div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalTitle">Invite User</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- User Offcanvas -->
+<div class="offcanvas offcanvas-end w-100" tabindex="-1" id="userOffcanvas" aria-labelledby="userOffcanvasLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="userOffcanvasLabel">Invite User</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="userForm" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="userId" name="Id" />
+            <input type="hidden" id="formAction" value="create" />
+            
+            <div class="alert alert-info" id="invitationNotice">
+                <i class="bx bx-info-circle me-2"></i>
+                <strong>Note:</strong> An invitation email will be sent to the user. They will set their own password upon accepting the invitation.
             </div>
-            <form id="userForm" method="post">
-                @Html.AntiForgeryToken()
-                <div class="modal-body">
-                    <input type="hidden" id="userId" name="Id" />
-                    <input type="hidden" id="formAction" value="create" />
-                    
-                    <div class="alert alert-info" id="invitationNotice">
-                        <i class="bx bx-info-circle me-2"></i>
-                        <strong>Note:</strong> An invitation email will be sent to the user. They will set their own password upon accepting the invitation.
-                    </div>
-                    
-                    <h6 class="mb-3">Basic Information</h6>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="Username" required />
-                            <span class="text-danger" id="usernameError"></span>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="Email" required />
-                            <span class="text-danger" id="emailError"></span>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="firstName" class="form-label">First Name</label>
-                            <input type="text" class="form-control" id="firstName" name="FirstName" />
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="lastName" class="form-label">Last Name</label>
-                            <input type="text" class="form-control" id="lastName" name="LastName" />
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="role" class="form-label">Role</label>
-                            <select class="form-select" id="role" name="Role" required>
-                                <option value="0">User</option>
-                                <option value="1">Admin</option>
-                                <option value="2">Manager</option>
-                                <option value="3">Super Admin</option>
-                            </select>
-                            <span class="text-danger" id="roleError"></span>
-                        </div>
-                    </div>
-                    
-                    <hr class="my-4" />
-                    
-                    <h6 class="mb-3">Employee Information</h6>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="employeeId" class="form-label">Employee ID</label>
-                            <input type="text" class="form-control" id="employeeId" name="EmployeeId" placeholder="e.g., EMP001" />
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="department" class="form-label">Department</label>
-                            <input type="text" class="form-control" id="department" name="Department" placeholder="e.g., IT, HR, Sales" />
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="designation" class="form-label">Designation</label>
-                            <input type="text" class="form-control" id="designation" name="Designation" placeholder="e.g., Software Engineer" />
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="phoneNumber" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="phoneNumber" name="PhoneNumber" />
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="dateOfJoining" class="form-label">Date of Joining</label>
-                            <input type="date" class="form-control" id="dateOfJoining" name="DateOfJoining" />
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="isActive" class="form-label">Status</label>
-                            <select class="form-select" id="isActive" name="IsActive">
-                                <option value="true">Active</option>
-                                <option value="false">Inactive</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-12 mb-3">
-                            <label for="address" class="form-label">Address</label>
-                            <textarea class="form-control" id="address" name="Address" rows="2"></textarea>
-                        </div>
-                    </div>
+            
+            <h6 class="mb-3">Basic Information</h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="Username" required />
+                    <span class="text-danger" id="usernameError"></span>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="submitBtn">Send Invitation</button>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="Email" required />
+                    <span class="text-danger" id="emailError"></span>
                 </div>
-            </form>
-        </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="firstName" class="form-label">First Name</label>
+                    <input type="text" class="form-control" id="firstName" name="FirstName" />
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="lastName" class="form-label">Last Name</label>
+                    <input type="text" class="form-control" id="lastName" name="LastName" />
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="role" class="form-label">Role</label>
+                    <select class="form-select" id="role" name="Role" required>
+                        <option value="0">User</option>
+                        <option value="1">Admin</option>
+                        <option value="2">Manager</option>
+                        <option value="3">Super Admin</option>
+                    </select>
+                    <span class="text-danger" id="roleError"></span>
+                </div>
+            </div>
+            
+            <hr class="my-4" />
+            
+            <h6 class="mb-3">Employee Information</h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="employeeId" class="form-label">Employee ID</label>
+                    <input type="text" class="form-control" id="employeeId" name="EmployeeId" placeholder="e.g., EMP001" />
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="department" class="form-label">Department</label>
+                    <input type="text" class="form-control" id="department" name="Department" placeholder="e.g., IT, HR, Sales" />
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="designation" class="form-label">Designation</label>
+                    <input type="text" class="form-control" id="designation" name="Designation" placeholder="e.g., Software Engineer" />
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="phoneNumber" class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" id="phoneNumber" name="PhoneNumber" />
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="dateOfJoining" class="form-label">Date of Joining</label>
+                    <input type="date" class="form-control" id="dateOfJoining" name="DateOfJoining" />
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="isActive" class="form-label">Status</label>
+                    <select class="form-select" id="isActive" name="IsActive">
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <label for="address" class="form-label">Address</label>
+                    <textarea class="form-control" id="address" name="Address" rows="2"></textarea>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Send Invitation</button>
+            </div>
+        </form>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        let userModal = null;
+        let userOffcanvas = null;
         let userTable = null;
         let searchTimeout = null;
         let currentSearch = '';
@@ -325,9 +322,9 @@
             }
         ];
 
-        // Initialize modal and table on page load
+        // Initialize offcanvas and table on page load
         document.addEventListener('DOMContentLoaded', function() {
-            userModal = new bootstrap.Modal(document.getElementById('userModal'));
+            userOffcanvas = new bootstrap.Offcanvas(document.getElementById('userOffcanvas'));
             
             // Load column filter settings and initialize table
             UsersGear();
@@ -692,7 +689,7 @@
 
         // Open Create Modal
         function openCreateModal() {
-            document.getElementById('modalTitle').textContent = 'Invite User';
+            document.getElementById('userOffcanvasLabel').textContent = 'Invite User';
             document.getElementById('formAction').value = 'create';
             document.getElementById('userForm').reset();
             document.getElementById('userId').value = '';
@@ -705,7 +702,7 @@
 
         // Open Edit Modal
         function openEditModal(id, username, email, firstName, lastName, role, employeeId, department, designation, phoneNumber, address, dateOfJoining, isActive) {
-            document.getElementById('modalTitle').textContent = 'Edit User';
+            document.getElementById('userOffcanvasLabel').textContent = 'Edit User';
             document.getElementById('formAction').value = 'edit';
             document.getElementById('userId').value = id;
             document.getElementById('username').value = username;
@@ -724,13 +721,13 @@
             document.getElementById('invitationNotice').style.display = 'none';
             document.getElementById('submitBtn').textContent = 'Update User';
             clearErrors();
-            
-            // Show the modal
-            if (userModal) {
-                userModal.show();
+
+            // Show the offcanvas
+            if (userOffcanvas) {
+                userOffcanvas.show();
             } else {
-                userModal = new bootstrap.Modal(document.getElementById('userModal'));
-                userModal.show();
+                userOffcanvas = new bootstrap.Offcanvas(document.getElementById('userOffcanvas'));
+                userOffcanvas.show();
             }
         }
 
@@ -767,11 +764,11 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    // Close modal
-                    if (userModal) {
-                        userModal.hide();
+                    // Close offcanvas
+                    if (userOffcanvas) {
+                        userOffcanvas.hide();
                     }
-                    
+
                     // Show success message
                     Swal.fire({
                         icon: 'success',
