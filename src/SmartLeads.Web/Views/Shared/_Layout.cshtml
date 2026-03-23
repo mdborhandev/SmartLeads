@@ -1,6 +1,7 @@
 ﻿@using SmartLeads.Domain.Enums
 @using SmartLeads.Infrastructure.Services.Interface
 @inject IUserService _userService
+
 @{
     string GetRoleDisplayName(UserRole role) => role switch
     {
@@ -17,7 +18,7 @@
     string lastName = "";
     string fullName = "";
     string greeting = "Good day";
-    
+
     // Try to get role from claims if available
     var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role);
     if (roleClaim != null)
@@ -27,7 +28,7 @@
             roleDisplay = GetRoleDisplayName(role);
         }
     }
-    
+
     // Get user details for first name and last name
     if (User.Identity?.IsAuthenticated == true && !string.IsNullOrEmpty(userDisplayName))
     {
@@ -36,8 +37,8 @@
         {
             firstName = user.FirstName ?? "";
             lastName = user.LastName ?? "";
-            fullName = string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName) 
-                ? userDisplayName 
+            fullName = string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName)
+                ? userDisplayName
                 : $"{firstName} {lastName}".Trim();
         }
     }
@@ -237,10 +238,7 @@
                             else
                             {
                                 <li class="nav-item">
-                                    <a href="@Url.Action("Login", "Auth")" class="btn btn-sm btn-primary me-2">Login</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="@Url.Action("Register", "Auth")" class="btn btn-sm btn-outline-primary">Register</a>
+                                    <a href="@Url.Action("Login", "Auth")" class="btn btn-sm btn-primary">Login</a>
                                 </li>
                             }
                         </ul>

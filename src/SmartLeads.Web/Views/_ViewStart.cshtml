@@ -1,3 +1,16 @@
 ﻿@{
+    // Redirect unauthenticated users to login page (except for Auth controller views)
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString()?.ToLower();
+    
+    if (!User.Identity?.IsAuthenticated ?? true)
+    {
+        // Only allow access to Auth controller (Login, Register, etc.)
+        if (controller != "auth")
+        {
+            Context.Response.Redirect("/Auth/Login");
+            return;
+        }
+    }
+
     Layout = "_Layout";
 }
