@@ -56,38 +56,34 @@
             <strong>Invitation Email:</strong> @Model.Email
         </div>
 
-        <div class="form-floating mb-3">
-            <input asp-for="Username" class="form-control" placeholder="Username" required minlength="3" maxlength="50" />
-            <label asp-for="Username" class="form-label"></label>
+        <div class="mb-3">
+            <label asp-for="Username" class="form-label">Username</label>
+            <input asp-for="Username" class="form-control" placeholder="Choose a username" required minlength="3" maxlength="50" />
             <span asp-validation-for="Username" class="text-danger"></span>
         </div>
 
         <div class="row g-2 mb-3">
             <div class="col-md-6">
-                <div class="form-floating">
-                    <input asp-for="FirstName" class="form-control" placeholder="First Name" />
-                    <label asp-for="FirstName" class="form-label"></label>
-                    <span asp-validation-for="FirstName" class="text-danger"></span>
-                </div>
+                <label asp-for="FirstName" class="form-label">First Name</label>
+                <input asp-for="FirstName" class="form-control" placeholder="Enter first name" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
             </div>
             <div class="col-md-6">
-                <div class="form-floating">
-                    <input asp-for="LastName" class="form-control" placeholder="Last Name" />
-                    <label asp-for="LastName" class="form-label"></label>
-                    <span asp-validation-for="LastName" class="text-danger"></span>
-                </div>
+                <label asp-for="LastName" class="form-label">Last Name</label>
+                <input asp-for="LastName" class="form-control" placeholder="Enter last name" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
             </div>
         </div>
 
-        <div class="form-floating mb-3">
-            <input asp-for="Password" class="form-control" type="password" placeholder="Password" required minlength="6" />
-            <label asp-for="Password" class="form-label"></label>
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label">Password</label>
+            <input asp-for="Password" class="form-control" type="password" placeholder="Choose a password" required minlength="6" />
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
 
-        <div class="form-floating mb-3">
-            <input asp-for="ConfirmPassword" class="form-control" type="password" placeholder="Confirm Password" required />
-            <label asp-for="ConfirmPassword" class="form-label"></label>
+        <div class="mb-3">
+            <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
+            <input asp-for="ConfirmPassword" class="form-control" type="password" placeholder="Confirm your password" required />
             <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
         </div>
 

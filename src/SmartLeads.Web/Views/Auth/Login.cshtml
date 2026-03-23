@@ -12,18 +12,18 @@
 
     <form id="account" method="post">
         @Html.AntiForgeryToken()
-        
+
         <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-        <div class="form-floating mb-3">
-            <input asp-for="EmailOrUsername" class="form-control" autocomplete="username" aria-required="true" placeholder="username or email" />
-            <label asp-for="EmailOrUsername" class="form-label"></label>
+        <div class="mb-3">
+            <label asp-for="EmailOrUsername" class="form-label">Email or Username</label>
+            <input asp-for="EmailOrUsername" class="form-control" autocomplete="username" aria-required="true" placeholder="Enter your email or username" />
             <span asp-validation-for="EmailOrUsername" class="text-danger"></span>
         </div>
 
-        <div class="form-floating mb-3">
-            <input asp-for="Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
-            <label asp-for="Password" class="form-label"></label>
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label">Password</label>
+            <input asp-for="Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Enter your password" type="password" />
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
 
@@ -43,7 +43,7 @@
 
         <div class="text-center">
             <span class="text-muted">Don't have an account?</span>
-            <a href="javascript:void(0)" class="text-decoration-none ms-2" title="Contact your administrator for an invitation">Contact Admin</a>
+            <a asp-action="Landing" asp-controller="Home" class="text-decoration-none ms-2" title="Contact your administrator for an invitation">Contact Admin</a>
         </div>
     </form>
 </div>

@@ -1,16 +1,25 @@
 ﻿@{
-    // Redirect unauthenticated users to login page (except for Auth controller views)
+    // Redirect unauthenticated users to login page (except for public pages)
     var controller = ViewContext.RouteData.Values["controller"]?.ToString()?.ToLower();
-    
+    var action = ViewContext.RouteData.Values["action"]?.ToString()?.ToLower();
+
     if (!User.Identity?.IsAuthenticated ?? true)
     {
-        // Only allow access to Auth controller (Login, Register, etc.)
-        if (controller != "auth")
+        // Allow access to Auth controller and public Home pages
+        if (controller == "auth")
         {
-            Context.Response.Redirect("/Auth/Login");
+            // Auth controller is always accessible (Login, Register, etc.)
             return;
         }
+        
+        if (controller == "home" && (action == "landing" || action == "privacy" || action == "components" || action == "createcompany"))
+        {
+            // Public Home pages
+            return;
+        }
+        
+        // All other pages require authentication
+        Context.Response.Redirect("/Auth/Login");
+        return;
     }
-
-    Layout = "_Layout";
 }
