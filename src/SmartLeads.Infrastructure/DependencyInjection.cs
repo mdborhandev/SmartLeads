@@ -93,10 +93,8 @@ public static class DependencyInjection
 
     private static string GetCompanyConnectionString(IConfiguration configuration)
     {
-        // Default to the CompanyConnection string if available
-        // In production, this will be overridden per-request based on the user's company
+        // Use CompanyConnection string (SmartLeadsDb - contains company-specific data)
         return configuration.GetConnectionString("CompanyConnection")
-               ?? configuration.GetConnectionString("DefaultConnection")
                ?? throw new InvalidOperationException("Company connection string not found");
     }
 }

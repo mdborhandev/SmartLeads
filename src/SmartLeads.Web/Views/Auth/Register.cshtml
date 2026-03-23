@@ -1,0 +1,78 @@
+@model SmartLeads.Domain.DTOs.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Register";
+    Layout = "_AuthLayout";
+}
+
+<!-- Register Form Card -->
+<div class="auth-card">
+    <!-- Card Header -->
+    <div class="text-center mb-4">
+        <h2 class="h4 fw-bold mb-2">Create your account 👋</h2>
+        <p class="text-muted">Join SmartLeads today!</p>
+    </div>
+
+    <form id="register" method="post">
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+        <div class="mb-3">
+            <label asp-for="Username" class="form-label">Username</label>
+            <input asp-for="Username" class="form-control" autocomplete="username" aria-required="true" placeholder="Choose a username" />
+            <span asp-validation-for="Username" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label">Email Address</label>
+            <input asp-for="Email" class="form-control" autocomplete="email" aria-required="true" placeholder="Enter your email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="FirstName" class="form-label">First Name</label>
+                <input asp-for="FirstName" class="form-control" autocomplete="given-name" placeholder="First name" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="LastName" class="form-label">Last Name</label>
+                <input asp-for="LastName" class="form-control" autocomplete="family-name" placeholder="Last name" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label">Password</label>
+            <input asp-for="Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Create a password" type="password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+            <small class="text-muted">Must be at least 6 characters</small>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
+            <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Confirm your password" type="password" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+        </div>
+
+        <button id="register-submit" type="submit" class="btn btn-primary w-100 mb-3">
+            Create Account
+        </button>
+
+        <div class="text-center">
+            <span class="text-muted">Already have an account?</span>
+            <a asp-action="Login" class="text-decoration-none ms-2 fw-semibold">Sign in</a>
+        </div>
+
+        <div class="alert alert-info mt-3 mb-0" role="alert">
+            <small>
+                <i class="fas fa-info-circle"></i> After registration, you'll need to join a company or create one to access all features.
+            </small>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

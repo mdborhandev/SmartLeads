@@ -12,7 +12,7 @@ using SmartLeads.Infrastructure.Persistence;
 namespace SmartLeads.Infrastructure.Persistence.Migrations.System
 {
     [DbContext(typeof(SystemDbContext))]
-    [Migration("20260323183914_InitialSystemDb")]
+    [Migration("20260323192435_InitialSystemDb")]
     partial class InitialSystemDb
     {
         /// <inheritdoc />

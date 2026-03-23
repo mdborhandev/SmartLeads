@@ -4,6 +4,11 @@ using SmartLeads.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Enable detailed errors and logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews()
     .AddRazorRuntimeCompilation();
@@ -14,24 +19,43 @@ builder.Services.AddInfrastructure(builder.Configuration);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
+// Map Auth controller routes explicitly
+app.MapControllerRoute(
+    name: "auth",
+    pattern: "Auth/{action=Login}/{id?}",
+    defaults: new { controller = "Auth" });
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Landing}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Landing}/{id?}");
+
+// Show startup information
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("===========================================");
+logger.LogInformation("SmartLeads Application Started");
+logger.LogInformation("Access the application at: http://localhost:5284");
+logger.LogInformation("Landing Page: http://localhost:5284/");
+logger.LogInformation("Register: http://localhost:5284/Auth/Register");
+logger.LogInformation("Login: http://localhost:5284/Auth/Login");
+logger.LogInformation("===========================================");
+logger.LogInformation("Press Ctrl+C to stop the application");
 
 app.Run();

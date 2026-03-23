@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 using SmartLeads.Domain.Enums;
 using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Repositories.Interface;
@@ -198,7 +199,7 @@ public class UserService : IUserService
     public async Task<bool> UpdateProfileAsync(string username, string email, string firstName, string lastName)
     {
         var user = await _unitOfWork.userRepository.GetByUsernameOrEmailAsync(username);
-        
+
         if (user == null)
         {
             return false;
@@ -210,8 +211,16 @@ public class UserService : IUserService
         user.UpdatedAt = DateTime.UtcNow;
 
         await _unitOfWork.SaveAsync();
-        
+
         return true;
+    }
+
+    public async Task<IEnumerable<UserCompany>?> GetUserCompaniesAsync(Guid userId)
+    {
+        return await _unitOfWork.systemDbContext.UserCompanies
+            .Include(uc => uc.Company)
+            .Where(uc => uc.UserId == userId && uc.IsActive && !uc.IsDeleted)
+            .ToListAsync();
     }
 
     private string GenerateResetToken()

@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using SmartLeads.Domain.DTOs;
 using SmartLeads.Infrastructure.Repositories.Interface;
+using SmartLeads.Web.Filters;
 
 namespace SmartLeads.Web.Controllers;
 
+[RequireCompany]
 public class ContactsController : Controller
 {
     private readonly IUnitOfWork _unitOfWork;

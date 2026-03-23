@@ -6,9 +6,12 @@
 }
 
 <!-- Login Form Card -->
-<div class="login-card">
-    <!-- Card Header (Inside Card - Top) -->
-    @await Html.PartialAsync("_CardHeader", new ViewDataDictionary(ViewData) { { "LogoSubtitle", "Welcome back! 👋" } })
+<div class="auth-card">
+    <!-- Card Header -->
+    <div class="text-center mb-4">
+        <h2 class="h4 fw-bold mb-2">Welcome back! 👋</h2>
+        <p class="text-muted">Sign in to your SmartLeads account</p>
+    </div>
 
     <form id="account" method="post">
         @Html.AntiForgeryToken()
@@ -41,9 +44,15 @@
             Sign in
         </button>
 
-        <div class="text-center">
+        <div class="text-center mb-3">
             <span class="text-muted">Don't have an account?</span>
-            <a asp-action="Landing" asp-controller="Home" class="text-decoration-none ms-2" title="Contact your administrator for an invitation">Contact Admin</a>
+            <a asp-action="Register" class="text-decoration-none ms-2 fw-semibold">Create one now</a>
+        </div>
+
+        <div class="text-center">
+            <a asp-action="Landing" asp-controller="Home" class="text-decoration-none text-muted small">
+                ← Back to home
+            </a>
         </div>
     </form>
 </div>

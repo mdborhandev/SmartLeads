@@ -17,6 +17,78 @@ public class AuthController : Controller
     }
 
     [HttpGet]
+    public IActionResult Register()
+    {
+        // If user is already logged in, redirect to dashboard
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            return RedirectToAction("Index", "Contacts");
+        }
+        
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Register(RegisterViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        try
+        {
+            // Register user (without company - user will join company later or create one)
+            var result = await _userService.RegisterAsync(
+                model.Username,
+                model.Email,
+                model.Password,
+                model.FirstName,
+                model.LastName
+            );
+
+            if (result.Success)
+            {
+                // Auto login after registration
+                HttpContext.Response.Cookies.Append("JwtToken", result.Token!, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddHours(1)
+                });
+
+                // Store UserId in cookie
+                var user = await _userService.GetUserByUsernameOrEmailAsync(model.Username);
+                if (user != null)
+                {
+                    HttpContext.Response.Cookies.Append("UserId", user.Id.ToString(), new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict,
+                        Expires = DateTimeOffset.UtcNow.AddHours(1)
+                    });
+                }
+
+                // Redirect to NoCompany page since user doesn't have a company yet
+                return RedirectToAction("NoCompany", "Auth");
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, result.Error ?? "Registration failed");
+                return View(model);
+            }
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(model);
+        }
+    }
+
+    [HttpGet]
     public IActionResult Login()
     {
         return View();
@@ -57,8 +129,14 @@ public class AuthController : Controller
                         SameSite = SameSiteMode.Strict,
                         Expires = DateTimeOffset.UtcNow.AddHours(1)
                     });
-                    // Note: CompanyId will be set when user selects a company
-                    // Use UserCompany to get user's companies
+                }
+
+                // Check if user has any company association
+                var hasCompany = await _userService.GetUserCompaniesAsync(user.Id);
+                if (hasCompany == null || !hasCompany.Any())
+                {
+                    // Redirect to NoCompany page
+                    return RedirectToAction("NoCompany");
                 }
 
                 // Redirect to contacts
@@ -396,6 +474,49 @@ public class AuthController : Controller
     </div>
 </body>
 </html>";
+    }
+
+    #endregion
+
+    #region No Company Actions
+
+    /// <summary>
+    /// Displayed when user is not associated with any company
+    /// </summary>
+    [HttpGet]
+    public IActionResult NoCompany()
+    {
+        // Check if user is logged in
+        if (!User.Identity?.IsAuthenticated ?? true)
+        {
+            return RedirectToAction("Login");
+        }
+
+        return View("_NoCompanyLayout");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> JoinCompany(string companyCode)
+    {
+        if (string.IsNullOrEmpty(companyCode))
+        {
+            TempData["ErrorMessage"] = "Please enter a valid company code";
+            return RedirectToAction("NoCompany");
+        }
+
+        // TODO: Implement company joining logic
+        // For now, just redirect
+        return RedirectToAction("Index", "Contacts");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateCompany()
+    {
+        // TODO: Implement company creation logic
+        // For now, just redirect
+        return RedirectToAction("Index", "Companies");
     }
 
     #endregion
