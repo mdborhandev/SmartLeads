@@ -41,7 +41,7 @@ public class ColumnFilterController : BaseController
         try
         {
             var columnFilter = await _unitOfWork.columnFilterRepository.GetColumnFilterByUserAndListNameAsync(
-                UserId, CompanyId, request.Type, token);
+                UserId, null, request.Type, token);
 
             if (columnFilter == null)
             {
@@ -49,7 +49,6 @@ public class ColumnFilterController : BaseController
                 var newFilter = new ColumnFilter
                 {
                     Id = Guid.NewGuid(),
-                    CompanyId = CompanyId,
                     CreatedByUserId = UserId,
                     ListName = request.Type,
                     KeyValue = request.KeyValue,

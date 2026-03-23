@@ -8,9 +8,9 @@ using SmartLeads.Infrastructure.Persistence;
 using SmartLeads.Infrastructure.Repositories;
 using SmartLeads.Infrastructure.Repositories.Implementation;
 using SmartLeads.Infrastructure.Repositories.Interface;
+using SmartLeads.Infrastructure.Services;
 using SmartLeads.Infrastructure.Services.Implementation;
 using SmartLeads.Infrastructure.Services.Interface;
-using SmartLeads.Utilities.Interfaces;
 
 namespace SmartLeads.Infrastructure;
 
@@ -18,18 +18,42 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+        // Register Memory Cache
+        services.AddMemoryCache();
+        
+        // Register HTTP Context Accessor (needed for CompanyContext)
+        services.AddHttpContextAccessor();
+
+        // Register System DbContext (for Users, Companies, UserCompanies, Invitations)
+        services.AddDbContext<SystemDbContext>(options =>
+            options.UseNpgsql(configuration.GetConnectionString("SystemConnection")));
+
+        // Register Company DbContext (for company-specific data)
+        // Note: Connection string will be resolved per-company at runtime
+        services.AddDbContext<CompanyDbContext>(options =>
+            options.UseNpgsql(GetCompanyConnectionString(configuration)));
+
+        // Register Company Context Factory
+        services.AddScoped<ICompanyDbContextFactory, CompanyDbContextFactory>();
+
+        // Register Company Context (tracks current user's company)
+        services.AddScoped<ICompanyContext, CompanyContext>();
 
         // Register generic repository for backward compatibility
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
+        // Register Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        
-        // Register User Repository and Service
-        services.AddScoped<IUserService, UserService>();
 
-        // Register Invitation Service
+        // Register Repositories
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ICompanyRepository, CompanyRepository>();
+        services.AddScoped<IContactRepository, ContactRepository>();
+        services.AddScoped<IInvitationRepository, InvitationRepository>();
+        services.AddScoped<IColumnFilterRepository, ColumnFilterRepository>();
+
+        // Register Services
+        services.AddScoped<IUserService, UserService>();
         services.AddScoped<IInvitationService, InvitationService>();
 
         // JWT Authentication
@@ -51,7 +75,7 @@ public static class DependencyInjection
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = jwtSettings["Issuer"],
                 ValidAudience = jwtSettings["Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret))
+                IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secret))
             };
 
             options.Events = new JwtBearerEvents
@@ -65,5 +89,14 @@ public static class DependencyInjection
         });
 
         return services;
+    }
+
+    private static string GetCompanyConnectionString(IConfiguration configuration)
+    {
+        // Default to the CompanyConnection string if available
+        // In production, this will be overridden per-request based on the user's company
+        return configuration.GetConnectionString("CompanyConnection")
+               ?? configuration.GetConnectionString("DefaultConnection")
+               ?? throw new InvalidOperationException("Company connection string not found");
     }
 }

@@ -7,4 +7,7 @@ public class Note : BaseEntity
 
     public Guid ContactId { get; set; }
     public Contact Contact { get; set; } = null!;
+    
+    public Guid UserId { get; set; }
+    public User User { get; set; } = null!;
 }

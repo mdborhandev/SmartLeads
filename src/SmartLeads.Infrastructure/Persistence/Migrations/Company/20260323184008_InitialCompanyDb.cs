@@ -3,16 +3,16 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace SmartLeads.Infrastructure.Persistence.Migrations
+namespace SmartLeads.Infrastructure.Persistence.Migrations.Company
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialCompanyDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Companies",
+                name: "Company",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -32,17 +32,16 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Companies", x => x.Id);
+                    table.PrimaryKey("PK_Company", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Companies_Companies_ParentCompanyId",
+                        name: "FK_Company_Company_ParentCompanyId",
                         column: x => x.ParentCompanyId,
-                        principalTable: "Companies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        principalTable: "Company",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "User",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -51,20 +50,37 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                     PasswordHash = table.Column<string>(type: "text", nullable: false),
                     FirstName = table.Column<string>(type: "text", nullable: true),
                     LastName = table.Column<string>(type: "text", nullable: true),
+                    ProfilePicture = table.Column<string>(type: "text", nullable: true),
                     Role = table.Column<int>(type: "integer", nullable: false),
-                    EmployeeId = table.Column<string>(type: "text", nullable: true),
+                    IsPasswordSetByUser = table.Column<bool>(type: "boolean", nullable: false),
+                    RefreshToken = table.Column<string>(type: "text", nullable: true),
+                    RefreshTokenExpiryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ResetPasswordToken = table.Column<string>(type: "text", nullable: true),
+                    ResetPasswordTokenExpiryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_User", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Employee",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EmployeeId = table.Column<string>(type: "text", nullable: false),
                     Department = table.Column<string>(type: "text", nullable: true),
                     Designation = table.Column<string>(type: "text", nullable: true),
                     PhoneNumber = table.Column<string>(type: "text", nullable: true),
                     Address = table.Column<string>(type: "text", nullable: true),
                     DateOfJoining = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    IsPasswordSetByUser = table.Column<bool>(type: "boolean", nullable: false),
-                    RefreshToken = table.Column<string>(type: "text", nullable: true),
-                    RefreshTokenExpiryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    ResetPasswordToken = table.Column<string>(type: "text", nullable: true),
-                    ResetPasswordTokenExpiryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CompanyId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
@@ -72,13 +88,13 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.PrimaryKey("PK_Employee", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Users_Companies_CompanyId",
+                        name: "FK_Employee_Company_CompanyId",
                         column: x => x.CompanyId,
-                        principalTable: "Companies",
+                        principalTable: "Company",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -89,7 +105,6 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                     CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     ListName = table.Column<string>(type: "text", nullable: true),
                     KeyValue = table.Column<string>(type: "text", nullable: true),
-                    CompanyId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
@@ -99,14 +114,9 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_ColumnFilters", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ColumnFilters_Companies_CompanyId",
-                        column: x => x.CompanyId,
-                        principalTable: "Companies",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_ColumnFilters_Users_CreatedByUserId",
+                        name: "FK_ColumnFilters_User_CreatedByUserId",
                         column: x => x.CreatedByUserId,
-                        principalTable: "Users",
+                        principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -135,15 +145,14 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_Contacts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Contacts_Companies_CompanyId",
+                        name: "FK_Contacts_Company_CompanyId",
                         column: x => x.CompanyId,
-                        principalTable: "Companies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        principalTable: "Company",
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Contacts_Users_UserId",
+                        name: "FK_Contacts_User_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -166,24 +175,25 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_Groups", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Groups_Companies_CompanyId",
+                        name: "FK_Groups_Company_CompanyId",
                         column: x => x.CompanyId,
-                        principalTable: "Companies",
+                        principalTable: "Company",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Groups_Users_UserId",
+                        name: "FK_Groups_User_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Invitations",
+                name: "Invitation",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
                     InvitedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
                     Role = table.Column<int>(type: "integer", nullable: false),
                     Token = table.Column<string>(type: "text", nullable: false),
@@ -193,27 +203,27 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                     RejectedReason = table.Column<string>(type: "text", nullable: true),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     Metadata = table.Column<string>(type: "text", nullable: true),
-                    CompanyId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Invitations", x => x.Id);
+                    table.PrimaryKey("PK_Invitation", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Invitations_Companies_CompanyId",
+                        name: "FK_Invitation_Company_CompanyId",
                         column: x => x.CompanyId,
-                        principalTable: "Companies",
+                        principalTable: "Company",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Invitations_Users_InvitedByUserId",
+                        name: "FK_Invitation_User_InvitedByUserId",
                         column: x => x.InvitedByUserId,
-                        principalTable: "Users",
+                        principalTable: "User",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -234,14 +244,76 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_Tags", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Tags_Companies_CompanyId",
+                        name: "FK_Tags_Company_CompanyId",
                         column: x => x.CompanyId,
-                        principalTable: "Companies",
+                        principalTable: "Company",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Tags_Users_UserId",
+                        name: "FK_Tags_User_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserCompany",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsDefault = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserCompany", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserCompany_Company_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Company",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserCompany_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EmployeeUser",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    EmployeeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsPrimary = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EmployeeUser", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EmployeeUser_Employee_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employee",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EmployeeUser_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -266,16 +338,16 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_Attachments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Attachments_Companies_CompanyId",
+                        name: "FK_Attachments_Company_CompanyId",
                         column: x => x.CompanyId,
-                        principalTable: "Companies",
+                        principalTable: "Company",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Attachments_Contacts_ContactId",
                         column: x => x.ContactId,
                         principalTable: "Contacts",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -286,7 +358,7 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                     Title = table.Column<string>(type: "text", nullable: false),
                     Content = table.Column<string>(type: "text", nullable: false),
                     ContactId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     CompanyId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -297,25 +369,26 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_Notes", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Notes_Companies_CompanyId",
+                        name: "FK_Notes_Company_CompanyId",
                         column: x => x.CompanyId,
-                        principalTable: "Companies",
+                        principalTable: "Company",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Notes_Contacts_ContactId",
                         column: x => x.ContactId,
                         principalTable: "Contacts",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Notes_Users_UserId",
+                        name: "FK_Notes_User_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id");
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ContactGroup",
+                name: "ContactGroups",
                 columns: table => new
                 {
                     ContactId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -323,15 +396,15 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ContactGroup", x => new { x.ContactId, x.GroupId });
+                    table.PrimaryKey("PK_ContactGroups", x => new { x.ContactId, x.GroupId });
                     table.ForeignKey(
-                        name: "FK_ContactGroup_Contacts_ContactId",
+                        name: "FK_ContactGroups_Contacts_ContactId",
                         column: x => x.ContactId,
                         principalTable: "Contacts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ContactGroup_Groups_GroupId",
+                        name: "FK_ContactGroups_Groups_GroupId",
                         column: x => x.GroupId,
                         principalTable: "Groups",
                         principalColumn: "Id",
@@ -339,7 +412,7 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ContactTag",
+                name: "ContactTags",
                 columns: table => new
                 {
                     ContactId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -347,15 +420,15 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ContactTag", x => new { x.ContactId, x.TagId });
+                    table.PrimaryKey("PK_ContactTags", x => new { x.ContactId, x.TagId });
                     table.ForeignKey(
-                        name: "FK_ContactTag_Contacts_ContactId",
+                        name: "FK_ContactTags_Contacts_ContactId",
                         column: x => x.ContactId,
                         principalTable: "Contacts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ContactTag_Tags_TagId",
+                        name: "FK_ContactTags_Tags_TagId",
                         column: x => x.TagId,
                         principalTable: "Tags",
                         principalColumn: "Id",
@@ -373,23 +446,18 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 column: "ContactId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ColumnFilters_CompanyId",
-                table: "ColumnFilters",
-                column: "CompanyId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ColumnFilters_CreatedByUserId",
                 table: "ColumnFilters",
                 column: "CreatedByUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Companies_ParentCompanyId",
-                table: "Companies",
+                name: "IX_Company_ParentCompanyId",
+                table: "Company",
                 column: "ParentCompanyId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ContactGroup_GroupId",
-                table: "ContactGroup",
+                name: "IX_ContactGroups_GroupId",
+                table: "ContactGroups",
                 column: "GroupId");
 
             migrationBuilder.CreateIndex(
@@ -403,9 +471,24 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ContactTag_TagId",
-                table: "ContactTag",
+                name: "IX_ContactTags_TagId",
+                table: "ContactTags",
                 column: "TagId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Employee_CompanyId",
+                table: "Employee",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmployeeUser_EmployeeId",
+                table: "EmployeeUser",
+                column: "EmployeeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmployeeUser_UserId",
+                table: "EmployeeUser",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Groups_CompanyId",
@@ -418,13 +501,13 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Invitations_CompanyId",
-                table: "Invitations",
+                name: "IX_Invitation_CompanyId",
+                table: "Invitation",
                 column: "CompanyId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Invitations_InvitedByUserId",
-                table: "Invitations",
+                name: "IX_Invitation_InvitedByUserId",
+                table: "Invitation",
                 column: "InvitedByUserId");
 
             migrationBuilder.CreateIndex(
@@ -453,9 +536,14 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_CompanyId",
-                table: "Users",
+                name: "IX_UserCompany_CompanyId",
+                table: "UserCompany",
                 column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserCompany_UserId",
+                table: "UserCompany",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -468,16 +556,22 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 name: "ColumnFilters");
 
             migrationBuilder.DropTable(
-                name: "ContactGroup");
+                name: "ContactGroups");
 
             migrationBuilder.DropTable(
-                name: "ContactTag");
+                name: "ContactTags");
 
             migrationBuilder.DropTable(
-                name: "Invitations");
+                name: "EmployeeUser");
+
+            migrationBuilder.DropTable(
+                name: "Invitation");
 
             migrationBuilder.DropTable(
                 name: "Notes");
+
+            migrationBuilder.DropTable(
+                name: "UserCompany");
 
             migrationBuilder.DropTable(
                 name: "Groups");
@@ -486,13 +580,16 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 name: "Tags");
 
             migrationBuilder.DropTable(
+                name: "Employee");
+
+            migrationBuilder.DropTable(
                 name: "Contacts");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Company");
 
             migrationBuilder.DropTable(
-                name: "Companies");
+                name: "User");
         }
     }
 }

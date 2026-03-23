@@ -1,3 +1,5 @@
+using SmartLeads.Infrastructure.Persistence;
+
 namespace SmartLeads.Infrastructure.Repositories.Interface;
 
 public interface IUnitOfWork : IAsyncDisposable
@@ -7,6 +9,8 @@ public interface IUnitOfWork : IAsyncDisposable
     ICompanyRepository companyRepository { get; }
     IInvitationRepository invitationRepository { get; }
     IColumnFilterRepository columnFilterRepository { get; }
+    
+    SystemDbContext systemDbContext { get; }
 
     Task SaveAsync(CancellationToken token = default);
 }

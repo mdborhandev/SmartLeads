@@ -53,7 +53,7 @@ public class ContactsController : Controller
         var contact = new Domain.Models.Contact
         {
             UserId = UserId,
-            CompanyId = CompanyId,
+            // CompanyId is not needed - contacts are in company-specific database
             FirstName = request.FirstName,
             LastName = request.LastName,
             Email = request.Email,
@@ -142,7 +142,7 @@ public class ContactsController : Controller
         var contact = new Domain.Models.Contact
         {
             UserId = UserId,
-            CompanyId = CompanyId,
+            // CompanyId is not needed - contacts are in company-specific database
             FirstName = request.FirstName,
             LastName = request.LastName,
             Email = request.Email,

@@ -6,65 +6,79 @@ using SmartLeads.Infrastructure.Repositories.Interface;
 
 namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
-public class UserRepository : GenericRepository<User>, IUserRepository
+public class UserRepository : GenericSystemRepository<User>, IUserRepository
 {
-    public UserRepository(ApplicationDbContext dbContext) : base(dbContext)
+    private readonly SystemDbContext _systemDbContext;
+
+    public UserRepository(SystemDbContext systemDbContext) : base(systemDbContext)
     {
+        _systemDbContext = systemDbContext;
     }
 
     public async Task<User?> GetByUsernameOrEmailAsync(string usernameOrEmail)
     {
-        return await _dbContext.Users
+        return await _systemDbContext.Users
             .FirstOrDefaultAsync(u => u.Username == usernameOrEmail || u.Email == usernameOrEmail);
     }
 
     public async Task<User?> GetByEmailAsync(string email)
     {
-        return await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+        return await _systemDbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
 
     public async Task<User?> GetByUsernameAsync(string username)
     {
-        return await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
+        return await _systemDbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
     }
 
     public async Task<User?> GetByUsernameAndCompanyIdAsync(string username, Guid companyId, CancellationToken token = default)
     {
-        return await _dbContext.Users
-            .FirstOrDefaultAsync(u => u.Username == username && u.CompanyId == companyId && !u.IsDeleted, token);
+        // Get user through UserCompany junction
+        var userCompany = await _systemDbContext.UserCompanies
+            .Include(uc => uc.User)
+            .FirstOrDefaultAsync(uc => uc.User.Username == username && uc.CompanyId == companyId && !uc.IsDeleted, token);
+        
+        return userCompany?.User;
     }
 
     public async Task<User?> GetUserByIdAndCompanyIdAsync(Guid id, Guid companyId, CancellationToken token = default)
     {
-        return await _dbContext.Users
-            .FirstOrDefaultAsync(u => u.Id == id && u.CompanyId == companyId && !u.IsDeleted, token);
+        // Get user through UserCompany junction
+        var userCompany = await _systemDbContext.UserCompanies
+            .Include(uc => uc.User)
+            .FirstOrDefaultAsync(uc => uc.UserId == id && uc.CompanyId == companyId && !uc.IsDeleted, token);
+        
+        return userCompany?.User;
     }
 
     public async Task<IEnumerable<User>> GetAllUsersAsync()
     {
-        return await _dbContext.Users
+        return await _systemDbContext.Users
             .OrderByDescending(u => u.CreatedAt)
             .ToListAsync();
     }
 
     public async Task<PaginationResponse<UserTableDto>> GetUsersPagedAsync(Guid companyId, PaginationRequest request, CancellationToken token = default)
     {
-        var query = _dbContext.Users
-            .Where(u => u.CompanyId == companyId && !u.IsDeleted)
+        // Query through Employee -> EmployeeUser -> User
+        var query = _systemDbContext.Employees
+            .Where(e => e.CompanyId == companyId && !e.IsDeleted && e.IsActive)
+            .Include(e => e.EmployeeUsers)
+                .ThenInclude(eu => eu.User)
             .AsQueryable();
 
         // Apply search filter
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             var search = request.Search.ToLower();
-            query = query.Where(u =>
-                u.Username.ToLower().Contains(search) ||
-                u.Email.ToLower().Contains(search) ||
-                u.FirstName.ToLower().Contains(search) ||
-                u.LastName.ToLower().Contains(search) ||
-                (u.EmployeeId != null && u.EmployeeId.ToLower().Contains(search)) ||
-                (u.Department != null && u.Department.ToLower().Contains(search)) ||
-                (u.Designation != null && u.Designation.ToLower().Contains(search))
+            query = query.Where(e =>
+                e.EmployeeUsers.Any(eu => eu.User.Username.ToLower().Contains(search)) ||
+                e.EmployeeUsers.Any(eu => eu.User.Email.ToLower().Contains(search)) ||
+                e.EmployeeUsers.Any(eu => eu.User.FirstName.ToLower().Contains(search)) ||
+                e.EmployeeUsers.Any(eu => eu.User.LastName.ToLower().Contains(search)) ||
+                (e.EmployeeId != null && e.EmployeeId.ToLower().Contains(search)) ||
+                (e.Department != null && e.Department.ToLower().Contains(search)) ||
+                (e.Designation != null && e.Designation.ToLower().Contains(search))
             );
         }
 
@@ -74,44 +88,56 @@ public class UserRepository : GenericRepository<User>, IUserRepository
         // Apply sorting
         var sortField = request.SortField?.ToLower();
         var sortOrder = request.SortOrder?.ToLower() ?? "desc";
-        
+
         query = sortField switch
         {
-            "username" => sortOrder == "desc" ? query.OrderByDescending(u => u.Username) : query.OrderBy(u => u.Username),
-            "email" => sortOrder == "desc" ? query.OrderByDescending(u => u.Email) : query.OrderBy(u => u.Email),
-            "fullname" => sortOrder == "desc" ? query.OrderByDescending(u => u.LastName).ThenByDescending(u => u.FirstName) : query.OrderBy(u => u.FirstName).ThenBy(u => u.LastName),
-            "employeeid" => sortOrder == "desc" ? query.OrderByDescending(u => u.EmployeeId) : query.OrderBy(u => u.EmployeeId),
-            "department" => sortOrder == "desc" ? query.OrderByDescending(u => u.Department) : query.OrderBy(u => u.Department),
-            "designation" => sortOrder == "desc" ? query.OrderByDescending(u => u.Designation) : query.OrderBy(u => u.Designation),
-            "role" => sortOrder == "desc" ? query.OrderByDescending(u => u.Role) : query.OrderBy(u => u.Role),
-            "isactive" => sortOrder == "desc" ? query.OrderByDescending(u => u.IsActive) : query.OrderBy(u => u.IsActive),
-            "createdat" => sortOrder == "desc" ? query.OrderByDescending(u => u.CreatedAt) : query.OrderBy(u => u.CreatedAt),
-            _ => query.OrderByDescending(u => u.CreatedAt)
+            "username" => sortOrder == "desc" 
+                ? query.OrderByDescending(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Username) 
+                : query.OrderBy(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Username),
+            "email" => sortOrder == "desc" 
+                ? query.OrderByDescending(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Email) 
+                : query.OrderBy(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Email),
+            "fullname" => sortOrder == "desc" 
+                ? query.OrderByDescending(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.LastName)
+                    .ThenByDescending(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.FirstName) 
+                : query.OrderBy(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.FirstName)
+                    .ThenBy(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.LastName),
+            "employeeid" => sortOrder == "desc" ? query.OrderByDescending(e => e.EmployeeId) : query.OrderBy(e => e.EmployeeId),
+            "department" => sortOrder == "desc" ? query.OrderByDescending(e => e.Department) : query.OrderBy(e => e.Department),
+            "designation" => sortOrder == "desc" ? query.OrderByDescending(e => e.Designation) : query.OrderBy(e => e.Designation),
+            "role" => sortOrder == "desc" 
+                ? query.OrderByDescending(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Role) 
+                : query.OrderBy(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Role),
+            "isactive" => sortOrder == "desc" ? query.OrderByDescending(e => e.IsActive) : query.OrderBy(e => e.IsActive),
+            "createdat" => sortOrder == "desc" 
+                ? query.OrderByDescending(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.CreatedAt) 
+                : query.OrderBy(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.CreatedAt),
+            _ => query.OrderByDescending(e => e.CreatedAt)
         };
 
         // Apply pagination
-        var users = await query
+        var employees = await query
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(u => new UserTableDto
+            .Select(e => new UserTableDto
             {
-                Id = u.Id,
-                Username = u.Username,
-                Email = u.Email,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                EmployeeId = u.EmployeeId,
-                Department = u.Department,
-                Designation = u.Designation,
-                Role = u.Role,
-                IsActive = u.IsActive,
-                CreatedAt = u.CreatedAt
+                Id = e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Id,
+                Username = e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Username,
+                Email = e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Email,
+                FirstName = e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.FirstName,
+                LastName = e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.LastName,
+                EmployeeId = e.EmployeeId,
+                Department = e.Department,
+                Designation = e.Designation,
+                Role = e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Role,
+                IsActive = e.IsActive,
+                CreatedAt = e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.CreatedAt
             })
             .ToListAsync(token);
 
         return new PaginationResponse<UserTableDto>
         {
-            Data = users,
+            Data = employees,
             TotalCount = totalCount,
             Page = request.Page,
             PageSize = request.PageSize,

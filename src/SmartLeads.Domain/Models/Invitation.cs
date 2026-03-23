@@ -2,11 +2,16 @@ using SmartLeads.Domain.Enums;
 
 namespace SmartLeads.Domain.Models;
 
-public class Invitation : BaseEntity
+/// <summary>
+/// Invitation sent by a company to invite users.
+/// </summary>
+public class Invitation : BaseSystemEntity
 {
     public string Email { get; set; } = string.Empty;
+    public Guid CompanyId { get; set; }
+    public Company Company { get; set; } = null!;
     public Guid InvitedByUserId { get; set; }
-    public User? InvitedByUser { get; set; }
+    public User InvitedByUser { get; set; } = null!;
     public UserRole Role { get; set; } = UserRole.User;
     public string Token { get; set; } = string.Empty;
     public DateTime ExpiresAt { get; set; }
@@ -14,9 +19,7 @@ public class Invitation : BaseEntity
     public DateTime? AcceptedAt { get; set; }
     public string? RejectedReason { get; set; }
     public InvitationStatus Status { get; set; } = InvitationStatus.Pending;
-    
-    // Store additional user information as JSON (for pre-filling user data when accepting invitation)
-    public string? Metadata { get; set; }
+    public string? Metadata { get; set; }  // Additional info as JSON
 }
 
 public enum InvitationStatus

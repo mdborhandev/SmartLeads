@@ -1,6 +1,6 @@
 namespace SmartLeads.Domain.Models;
 
-public class Company : BaseCompanyEntity
+public class Company : BaseSystemEntity
 {
     public string Name { get; set; } = string.Empty;
     public string? Code { get; set; }
@@ -16,10 +16,12 @@ public class Company : BaseCompanyEntity
     public ICollection<Company> ChildCompanies { get; set; } = new List<Company>();
 
     // Navigation properties
-    public ICollection<User> Users { get; set; } = new List<User>();
+    public ICollection<UserCompany> UserCompanies { get; set; } = new List<UserCompany>();
+    public ICollection<Employee> Employees { get; set; } = new List<Employee>();
     public ICollection<Contact> Contacts { get; set; } = new List<Contact>();
     public ICollection<Group> Groups { get; set; } = new List<Group>();
     public ICollection<Tag> Tags { get; set; } = new List<Tag>();
     public ICollection<Note> Notes { get; set; } = new List<Note>();
     public ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
+    public ICollection<Invitation> Invitations { get; set; } = new List<Invitation>();
 }

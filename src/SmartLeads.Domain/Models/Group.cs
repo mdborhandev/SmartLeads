@@ -15,8 +15,13 @@ public class Group : BaseEntity
 public class ContactGroup
 {
     public Guid ContactId { get; set; }
-    public Contact Contact { get; set; } = null!;
-
     public Guid GroupId { get; set; }
+    
+    public Contact Contact { get; set; } = null!;
     public Group Group { get; set; } = null!;
+}
+
+// Marker interface to identify company-specific entities
+public interface ICompanyEntity
+{
 }

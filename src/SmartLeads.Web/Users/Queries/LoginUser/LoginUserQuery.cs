@@ -10,12 +10,12 @@ public record LoginUserQuery(string EmailOrUsername, string Password) : IRequest
 
 public class LoginUserQueryHandler : IRequestHandler<LoginUserQuery, AuthResponse>
 {
-    private readonly IGenericRepository<User> _userRepository;
+    private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
     public LoginUserQueryHandler(
-        IGenericRepository<User> userRepository,
+        IUserRepository userRepository,
         IPasswordHasher passwordHasher,
         IJwtTokenGenerator jwtTokenGenerator)
     {
@@ -26,8 +26,7 @@ public class LoginUserQueryHandler : IRequestHandler<LoginUserQuery, AuthRespons
 
     public async Task<AuthResponse> Handle(LoginUserQuery request, CancellationToken cancellationToken)
     {
-        var users = await _userRepository.FindAsync(u => u.Email == request.EmailOrUsername || u.Username == request.EmailOrUsername);
-        var user = users.FirstOrDefault();
+        var user = await _userRepository.GetByUsernameOrEmailAsync(request.EmailOrUsername);
 
         if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
         {

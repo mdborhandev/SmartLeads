@@ -3,22 +3,28 @@ using SmartLeads.Domain.Models;
 
 namespace SmartLeads.Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext
+/// <summary>
+/// Company-specific database context for managing tenant data.
+/// Each company has its own database with isolated data for contacts, groups, tags, notes, etc.
+/// </summary>
+public class CompanyDbContext : DbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    public CompanyDbContext(DbContextOptions<CompanyDbContext> options)
         : base(options)
     {
     }
 
-    public DbSet<User> Users { get; set; }
+    // Company-specific entities
     public DbSet<Contact> Contacts { get; set; }
     public DbSet<Group> Groups { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<Note> Notes { get; set; }
     public DbSet<Attachment> Attachments { get; set; }
-    public DbSet<Company> Companies { get; set; }
-    public DbSet<Invitation> Invitations { get; set; }
     public DbSet<ColumnFilter> ColumnFilters { get; set; }
+
+    // Junction tables
+    public DbSet<ContactGroup> ContactGroups { get; set; }
+    public DbSet<ContactTag> ContactTags { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,46 +40,46 @@ public class ApplicationDbContext : DbContext
             }
         }
 
-        // Company self-referencing relationship (hierarchical)
-        modelBuilder.Entity<Company>()
-            .HasOne(c => c.ParentCompany)
-            .WithMany(c => c.ChildCompanies)
-            .HasForeignKey(c => c.ParentCompanyId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // User belongs to Company
-        modelBuilder.Entity<User>()
-            .HasOne(u => u.Company)
-            .WithMany(c => c.Users)
-            .HasForeignKey(u => u.CompanyId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // Contact belongs to Company and User
-        modelBuilder.Entity<Contact>()
-            .HasOne(c => c.Company)
-            .WithMany(c => c.Contacts)
-            .HasForeignKey(c => c.CompanyId)
-            .OnDelete(DeleteBehavior.Restrict);
-
+        // Contact belongs to User (Owner)
         modelBuilder.Entity<Contact>()
             .HasOne(c => c.User)
-            .WithMany(u => u.Contacts)
+            .WithMany()
             .HasForeignKey(c => c.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Note belongs to Contact and User
+        modelBuilder.Entity<Note>()
+            .HasOne(n => n.Contact)
+            .WithMany(c => c.Notes)
+            .HasForeignKey(n => n.ContactId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Note>()
+            .HasOne(n => n.User)
+            .WithMany()
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Attachment belongs to Contact
+        modelBuilder.Entity<Attachment>()
+            .HasOne(a => a.Contact)
+            .WithMany(c => c.Attachments)
+            .HasForeignKey(a => a.ContactId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Many-to-Many: Contact <-> Group
-        modelBuilder.Entity<ContactGroup>()
-            .HasKey(cg => new { cg.ContactId, cg.GroupId });
+        modelBuilder.Entity<ContactGroup>(entity =>
+        {
+            entity.HasKey(cg => new { cg.ContactId, cg.GroupId });
 
-        modelBuilder.Entity<ContactGroup>()
-            .HasOne(cg => cg.Contact)
-            .WithMany(c => c.ContactGroups)
-            .HasForeignKey(cg => cg.ContactId);
+            entity.HasOne(cg => cg.Contact)
+                .WithMany(c => c.ContactGroups)
+                .HasForeignKey(cg => cg.ContactId);
 
-        modelBuilder.Entity<ContactGroup>()
-            .HasOne(cg => cg.Group)
-            .WithMany(g => g.ContactGroups)
-            .HasForeignKey(cg => cg.GroupId);
+            entity.HasOne(cg => cg.Group)
+                .WithMany(g => g.ContactGroups)
+                .HasForeignKey(cg => cg.GroupId);
+        });
 
         // Many-to-Many: Contact <-> Tag
         modelBuilder.Entity<ContactTag>()
@@ -89,20 +95,7 @@ public class ApplicationDbContext : DbContext
             .WithMany(t => t.ContactTags)
             .HasForeignKey(ct => ct.TagId);
 
-        // Invitation belongs to Company and User (InvitedBy)
-        modelBuilder.Entity<Invitation>()
-            .HasOne(i => i.Company)
-            .WithMany()
-            .HasForeignKey(i => i.CompanyId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<Invitation>()
-            .HasOne(i => i.InvitedByUser)
-            .WithMany()
-            .HasForeignKey(i => i.InvitedByUserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // ColumnFilter belongs to Company and User (CreatedByUser)
+        // ColumnFilter belongs to User
         modelBuilder.Entity<ColumnFilter>()
             .HasOne(cf => cf.CreatedByUser)
             .WithMany()

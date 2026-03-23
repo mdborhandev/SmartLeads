@@ -125,12 +125,14 @@ public class UsersController : Controller
             FirstName = user.FirstName,
             LastName = user.LastName,
             Role = user.Role,
-            EmployeeId = user.EmployeeId,
-            Department = user.Department,
-            Designation = user.Designation,
-            PhoneNumber = user.PhoneNumber,
-            Address = user.Address,
-            DateOfJoining = user.DateOfJoining,
+            // Employee info will be loaded from Employee table based on company context
+            // For now, leave these empty - they should be loaded from Employee + EmployeeUser
+            EmployeeId = null,
+            Department = null,
+            Designation = null,
+            PhoneNumber = null,
+            Address = null,
+            DateOfJoining = null,
             IsActive = user.IsActive
         };
 
@@ -169,14 +171,12 @@ public class UsersController : Controller
         user.FirstName = model.FirstName;
         user.LastName = model.LastName;
         user.Role = model.Role;
-        user.EmployeeId = model.EmployeeId;
-        user.Department = model.Department;
-        user.Designation = model.Designation;
-        user.PhoneNumber = model.PhoneNumber;
-        user.Address = model.Address;
-        user.DateOfJoining = model.DateOfJoining;
         user.IsActive = model.IsActive;
         user.UpdatedAt = DateTime.UtcNow;
+
+        // Note: Employee information (Department, Designation, etc.) should be updated
+        // through the Employee table based on the current company context
+        // This requires loading the Employee record for the current company and user
 
         await _unitOfWork.SaveAsync();
 

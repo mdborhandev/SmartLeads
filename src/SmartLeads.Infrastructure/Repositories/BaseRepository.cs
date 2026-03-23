@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using SmartLeads.Domain.Models;
-using SmartLeads.Infrastructure.Persistence;
 using SmartLeads.Infrastructure.Repositories.Interface;
 using System.Linq.Expressions;
 
@@ -10,11 +9,11 @@ namespace SmartLeads.Infrastructure.Repositories;
 public abstract class BaseRepository<TEntity, TKey> : IBaseRepository<TEntity, TKey>
     where TEntity : class
 {
-    protected readonly ApplicationDbContext _dbContext;
+    protected readonly DbContext _dbContext;
     private readonly DbSet<TEntity> _dbSet;
     protected int CommandTimeout { get; set; }
 
-    public BaseRepository(ApplicationDbContext dbContext)
+    public BaseRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
         _dbSet = _dbContext.Set<TEntity>();

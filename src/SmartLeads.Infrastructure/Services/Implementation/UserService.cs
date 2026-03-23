@@ -146,12 +146,44 @@ public class UserService : IUserService
             PasswordHash = _passwordHasher.HashPassword(password),
             FirstName = firstName,
             LastName = lastName,
-            CompanyId = companyId,
             Role = role
         };
 
         await _unitOfWork.userRepository.AddAsync(user);
         await _unitOfWork.SaveAsync();
+
+        // Create UserCompany association and Employee record if companyId is provided
+        if (companyId.HasValue && companyId.Value != Guid.Empty)
+        {
+            // Create UserCompany link
+            var userCompany = new UserCompany
+            {
+                UserId = user.Id,
+                CompanyId = companyId.Value,
+                IsDefault = true  // First company is default
+            };
+            await _unitOfWork.systemDbContext.UserCompanies.AddAsync(userCompany);
+
+            // Create Employee record
+            var employee = new Employee
+            {
+                CompanyId = companyId.Value,
+                EmployeeId = $"EMP{user.Id.ToString().Substring(0, 8).ToUpper()}",
+                IsActive = true
+            };
+            await _unitOfWork.systemDbContext.Employees.AddAsync(employee);
+            await _unitOfWork.systemDbContext.SaveChangesAsync();
+
+            // Link Employee to User
+            var employeeUser = new EmployeeUser
+            {
+                EmployeeId = employee.Id,
+                UserId = user.Id,
+                IsPrimary = true
+            };
+            await _unitOfWork.systemDbContext.EmployeeUsers.AddAsync(employeeUser);
+            await _unitOfWork.systemDbContext.SaveChangesAsync();
+        }
 
         var token = _jwtTokenGenerator.GenerateToken(user);
 

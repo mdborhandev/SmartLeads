@@ -7,8 +7,11 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
 public class InvitationRepository : BaseRepository<Invitation, Guid>, IInvitationRepository
 {
-    public InvitationRepository(ApplicationDbContext dbContext) : base(dbContext)
+    private readonly SystemDbContext _systemDbContext;
+
+    public InvitationRepository(SystemDbContext dbContext) : base(dbContext)
     {
+        _systemDbContext = dbContext;
     }
 
     public async Task<Invitation?> GetByTokenAsync(string token, CancellationToken cancellationToken = default)
@@ -29,7 +32,7 @@ public class InvitationRepository : BaseRepository<Invitation, Guid>, IInvitatio
     public async Task<IList<Invitation>> GetPendingByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken = default)
     {
         return await GetByConditionAsync(
-            i => i.CompanyId == companyId && !i.IsDeleted && i.Status == InvitationStatus.Pending, 
+            i => i.CompanyId == companyId && !i.IsDeleted && i.Status == InvitationStatus.Pending,
             cancellationToken
         );
     }

@@ -9,12 +9,12 @@ public record ResetPasswordCommand(string Email, string Token, string NewPasswor
 
 public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand, Unit>
 {
-    private readonly IGenericRepository<User> _userRepository;
+    private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IUnitOfWork _unitOfWork;
 
     public ResetPasswordCommandHandler(
-        IGenericRepository<User> userRepository,
+        IUserRepository userRepository,
         IPasswordHasher passwordHasher,
         IUnitOfWork unitOfWork)
     {
@@ -25,8 +25,7 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
 
     public async Task<Unit> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
     {
-        var users = await _userRepository.FindAsync(u => u.Email == request.Email);
-        var user = users.FirstOrDefault();
+        var user = await _userRepository.GetByEmailAsync(request.Email);
 
         if (user == null)
         {

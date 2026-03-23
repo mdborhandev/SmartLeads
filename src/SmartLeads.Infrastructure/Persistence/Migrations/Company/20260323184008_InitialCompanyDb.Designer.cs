@@ -9,11 +9,11 @@ using SmartLeads.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace SmartLeads.Infrastructure.Persistence.Migrations
+namespace SmartLeads.Infrastructure.Persistence.Migrations.Company
 {
-    [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260323150512_InitialCreate")]
-    partial class InitialCreate
+    [DbContext(typeof(CompanyDbContext))]
+    [Migration("20260323184008_InitialCompanyDb")]
+    partial class InitialCompanyDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -79,9 +79,6 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("CompanyId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -104,8 +101,6 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CompanyId");
 
                     b.HasIndex("CreatedByUserId");
 
@@ -162,7 +157,7 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ParentCompanyId");
 
-                    b.ToTable("Companies");
+                    b.ToTable("Company");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Contact", b =>
@@ -236,7 +231,7 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("ContactGroup");
+                    b.ToTable("ContactGroups");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.ContactTag", b =>
@@ -251,7 +246,96 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TagId");
 
-                    b.ToTable("ContactTag");
+                    b.ToTable("ContactTags");
+                });
+
+            modelBuilder.Entity("SmartLeads.Domain.Models.Employee", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DateOfJoining")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Department")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Designation")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EmployeeId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.ToTable("Employee");
+                });
+
+            modelBuilder.Entity("SmartLeads.Domain.Models.EmployeeUser", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EmployeeUser");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Group", b =>
@@ -303,7 +387,7 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("AcceptedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("CompanyId")
+                    b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -323,6 +407,9 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsAccepted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
@@ -353,7 +440,7 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("InvitedByUserId");
 
-                    b.ToTable("Invitations");
+                    b.ToTable("Invitation");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Note", b =>
@@ -388,7 +475,7 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("UserId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -448,32 +535,14 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Address")
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("CompanyId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DateOfJoining")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Department")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Designation")
-                        .HasColumnType("text");
-
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("EmployeeId")
                         .HasColumnType("text");
 
                     b.Property<string>("FirstName")
@@ -495,7 +564,7 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("PhoneNumber")
+                    b.Property<string>("ProfilePicture")
                         .HasColumnType("text");
 
                     b.Property<string>("RefreshToken")
@@ -522,40 +591,69 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.ToTable("User");
+                });
+
+            modelBuilder.Entity("SmartLeads.Domain.Models.UserCompany", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("Users");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserCompany");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Attachment", b =>
                 {
-                    b.HasOne("SmartLeads.Domain.Models.Company", "Company")
+                    b.HasOne("SmartLeads.Domain.Models.Company", null)
                         .WithMany("Attachments")
                         .HasForeignKey("CompanyId");
 
                     b.HasOne("SmartLeads.Domain.Models.Contact", "Contact")
                         .WithMany("Attachments")
                         .HasForeignKey("ContactId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Company");
 
                     b.Navigation("Contact");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.ColumnFilter", b =>
                 {
-                    b.HasOne("SmartLeads.Domain.Models.Company", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyId");
-
                     b.HasOne("SmartLeads.Domain.Models.User", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Company");
 
                     b.Navigation("CreatedByUser");
                 });
@@ -564,26 +662,22 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                 {
                     b.HasOne("SmartLeads.Domain.Models.Company", "ParentCompany")
                         .WithMany("ChildCompanies")
-                        .HasForeignKey("ParentCompanyId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("ParentCompanyId");
 
                     b.Navigation("ParentCompany");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Contact", b =>
                 {
-                    b.HasOne("SmartLeads.Domain.Models.Company", "Company")
+                    b.HasOne("SmartLeads.Domain.Models.Company", null)
                         .WithMany("Contacts")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("CompanyId");
 
                     b.HasOne("SmartLeads.Domain.Models.User", "User")
-                        .WithMany("Contacts")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Company");
 
                     b.Navigation("User");
                 });
@@ -626,9 +720,39 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                     b.Navigation("Tag");
                 });
 
-            modelBuilder.Entity("SmartLeads.Domain.Models.Group", b =>
+            modelBuilder.Entity("SmartLeads.Domain.Models.Employee", b =>
                 {
                     b.HasOne("SmartLeads.Domain.Models.Company", "Company")
+                        .WithMany("Employees")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("SmartLeads.Domain.Models.EmployeeUser", b =>
+                {
+                    b.HasOne("SmartLeads.Domain.Models.Employee", "Employee")
+                        .WithMany("EmployeeUsers")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartLeads.Domain.Models.User", "User")
+                        .WithMany("EmployeeUsers")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SmartLeads.Domain.Models.Group", b =>
+                {
+                    b.HasOne("SmartLeads.Domain.Models.Company", null)
                         .WithMany("Groups")
                         .HasForeignKey("CompanyId");
 
@@ -638,22 +762,21 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Company");
-
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Invitation", b =>
                 {
                     b.HasOne("SmartLeads.Domain.Models.Company", "Company")
-                        .WithMany()
+                        .WithMany("Invitations")
                         .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("SmartLeads.Domain.Models.User", "InvitedByUser")
-                        .WithMany()
+                        .WithMany("InvitationsSent")
                         .HasForeignKey("InvitedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Company");
@@ -663,28 +786,30 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Note", b =>
                 {
-                    b.HasOne("SmartLeads.Domain.Models.Company", "Company")
+                    b.HasOne("SmartLeads.Domain.Models.Company", null)
                         .WithMany("Notes")
                         .HasForeignKey("CompanyId");
 
                     b.HasOne("SmartLeads.Domain.Models.Contact", "Contact")
                         .WithMany("Notes")
                         .HasForeignKey("ContactId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SmartLeads.Domain.Models.User", null)
-                        .WithMany("Notes")
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Company");
+                    b.HasOne("SmartLeads.Domain.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Contact");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Tag", b =>
                 {
-                    b.HasOne("SmartLeads.Domain.Models.Company", "Company")
+                    b.HasOne("SmartLeads.Domain.Models.Company", null)
                         .WithMany("Tags")
                         .HasForeignKey("CompanyId");
 
@@ -694,19 +819,26 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Company");
-
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SmartLeads.Domain.Models.User", b =>
+            modelBuilder.Entity("SmartLeads.Domain.Models.UserCompany", b =>
                 {
                     b.HasOne("SmartLeads.Domain.Models.Company", "Company")
-                        .WithMany("Users")
+                        .WithMany("UserCompanies")
                         .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartLeads.Domain.Models.User", "User")
+                        .WithMany("UserCompanies")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Company");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Company", b =>
@@ -717,13 +849,17 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
                     b.Navigation("Contacts");
 
+                    b.Navigation("Employees");
+
                     b.Navigation("Groups");
+
+                    b.Navigation("Invitations");
 
                     b.Navigation("Notes");
 
                     b.Navigation("Tags");
 
-                    b.Navigation("Users");
+                    b.Navigation("UserCompanies");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.Contact", b =>
@@ -737,6 +873,11 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
                     b.Navigation("Notes");
                 });
 
+            modelBuilder.Entity("SmartLeads.Domain.Models.Employee", b =>
+                {
+                    b.Navigation("EmployeeUsers");
+                });
+
             modelBuilder.Entity("SmartLeads.Domain.Models.Group", b =>
                 {
                     b.Navigation("ContactGroups");
@@ -749,9 +890,11 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("SmartLeads.Domain.Models.User", b =>
                 {
-                    b.Navigation("Contacts");
+                    b.Navigation("EmployeeUsers");
 
-                    b.Navigation("Notes");
+                    b.Navigation("InvitationsSent");
+
+                    b.Navigation("UserCompanies");
                 });
 #pragma warning restore 612, 618
         }

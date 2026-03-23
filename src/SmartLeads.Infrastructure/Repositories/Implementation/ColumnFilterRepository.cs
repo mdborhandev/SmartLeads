@@ -7,14 +7,16 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
 public class ColumnFilterRepository : BaseRepository<ColumnFilter, Guid>, IColumnFilterRepository
 {
-    public ColumnFilterRepository(ApplicationDbContext dbContext) : base(dbContext)
+    private readonly CompanyDbContext _companyDbContext;
+
+    public ColumnFilterRepository(CompanyDbContext dbContext) : base(dbContext)
     {
+        _companyDbContext = dbContext;
     }
 
     public async Task<ColumnFilter?> GetColumnFilterByUserAndListNameAsync(Guid userId, Guid? companyId, string listName, CancellationToken token = default)
     {
-        return await SingleOrDefaultAsync(cf => cf.CreatedByUserId == userId 
-                                     && cf.CompanyId == companyId 
+        return await SingleOrDefaultAsync(cf => cf.CreatedByUserId == userId
                                      && cf.ListName == listName, token);
     }
 }

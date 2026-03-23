@@ -159,7 +159,7 @@ public class InvitationService : IInvitationService
             }
 
             // Check if invitation has a valid company
-            if (!invitation.CompanyId.HasValue)
+            if (invitation.CompanyId == Guid.Empty)
             {
                 return (false, "This invitation is invalid (no company associated).", null);
             }
@@ -186,7 +186,7 @@ public class InvitationService : IInvitationService
             }
 
             // Check if username is already taken in this company
-            var existingUser = await _unitOfWork.userRepository.GetByUsernameAndCompanyIdAsync(request.Username, invitation.CompanyId.Value);
+            var existingUser = await _unitOfWork.userRepository.GetByUsernameAndCompanyIdAsync(request.Username, invitation.CompanyId);
             if (existingUser != null)
             {
                 return (false, "This username is already taken in this company.", null);
@@ -199,7 +199,7 @@ public class InvitationService : IInvitationService
                 request.Password,
                 request.FirstName,
                 request.LastName,
-                invitation.CompanyId.Value,
+                invitation.CompanyId,
                 invitation.Role  // Pass the role from invitation
             );
 

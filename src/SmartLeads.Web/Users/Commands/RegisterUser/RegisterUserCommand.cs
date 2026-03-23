@@ -2,6 +2,7 @@ using MediatR;
 using SmartLeads.Domain.DTOs;
 using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Repositories.Interface;
+using SmartLeads.Infrastructure.Services.Interface;
 using SmartLeads.Utilities.Interfaces;
 
 namespace SmartLeads.Web.Users.Commands.RegisterUser;
@@ -16,44 +17,37 @@ public record RegisterUserCommand(
 public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, AuthResponse>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IGenericRepository<User> _userRepository;
+    private readonly IUserService _userService;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
     public RegisterUserCommandHandler(
         IUnitOfWork unitOfWork,
-        IGenericRepository<User> userRepository,
+        IUserService userService,
         IPasswordHasher passwordHasher,
         IJwtTokenGenerator jwtTokenGenerator)
     {
         _unitOfWork = unitOfWork;
-        _userRepository = userRepository;
+        _userService = userService;
         _passwordHasher = passwordHasher;
         _jwtTokenGenerator = jwtTokenGenerator;
     }
 
     public async Task<AuthResponse> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        var existingUser = await _userRepository.FindAsync(u => u.Username == request.Username || u.Email == request.Email);
-        if (existingUser.Any())
+        var (success, token, error) = await _userService.RegisterAsync(
+            request.Username,
+            request.Email,
+            request.Password,
+            request.FirstName,
+            request.LastName
+        );
+
+        if (!success || token == null)
         {
-            throw new Exception("User already exists.");
+            throw new Exception(error ?? "Registration failed.");
         }
 
-        var user = new User
-        {
-            Username = request.Username,
-            Email = request.Email,
-            PasswordHash = _passwordHasher.HashPassword(request.Password),
-            FirstName = request.FirstName,
-            LastName = request.LastName
-        };
-
-        await _userRepository.AddAsync(user, cancellationToken);
-        await _unitOfWork.SaveAsync(cancellationToken);
-
-        var token = _jwtTokenGenerator.GenerateToken(user);
-
-        return new AuthResponse(token, user.Username, user.Email);
+        return new AuthResponse(token, request.Username, request.Email);
     }
 }

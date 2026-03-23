@@ -9,12 +9,12 @@ public record ForgotPasswordCommand(string Email) : IRequest<Unit>;
 
 public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordCommand, Unit>
 {
-    private readonly IGenericRepository<User> _userRepository;
+    private readonly IUserRepository _userRepository;
     private readonly IEmailService _emailService;
     private readonly IUnitOfWork _unitOfWork;
 
     public ForgotPasswordCommandHandler(
-        IGenericRepository<User> userRepository,
+        IUserRepository userRepository,
         IEmailService emailService,
         IUnitOfWork unitOfWork)
     {
@@ -25,8 +25,7 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
 
     public async Task<Unit> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
     {
-        var users = await _userRepository.FindAsync(u => u.Email == request.Email);
-        var user = users.FirstOrDefault();
+        var user = await _userRepository.GetByEmailAsync(request.Email);
 
         // Always return success to prevent email enumeration
         if (user == null)

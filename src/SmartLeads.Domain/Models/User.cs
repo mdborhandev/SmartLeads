@@ -2,36 +2,29 @@ using SmartLeads.Domain.Enums;
 
 namespace SmartLeads.Domain.Models;
 
-public class User : BaseEntity
+/// <summary>
+/// User account for authentication and basic profile information.
+/// Users can be associated with multiple companies through EmployeeUser.
+/// </summary>
+public class User : BaseSystemEntity
 {
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
+    public string? ProfilePicture { get; set; }
     public UserRole Role { get; set; } = UserRole.User;
-    
-    // Employee Information
-    public string? EmployeeId { get; set; }  // Unique employee code (e.g., EMP001)
-    public string? Department { get; set; }  // Department name
-    public string? Designation { get; set; } // Job title/position
-    public string? PhoneNumber { get; set; } // Contact number
-    public string? Address { get; set; }     // Address
-    public DateTime? DateOfJoining { get; set; } // Joining date
-    public bool IsActive { get; set; } = true; // Active/Inactive status
-    
-    // Invitation tracking
-    public bool IsPasswordSetByUser { get; set; } = false; // True if user set their own password via invitation
 
-    // Refresh token support
+    // Invitation tracking
+    public bool IsPasswordSetByUser { get; set; } = false;
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }
-
-    // Password reset support
     public string? ResetPasswordToken { get; set; }
     public DateTime? ResetPasswordTokenExpiryTime { get; set; }
 
     // Navigation properties
-    public ICollection<Contact> Contacts { get; set; } = new List<Contact>();
-    public ICollection<Note> Notes { get; set; } = new List<Note>();
+    public ICollection<UserCompany> UserCompanies { get; set; } = new List<UserCompany>();
+    public ICollection<EmployeeUser> EmployeeUsers { get; set; } = new List<EmployeeUser>();
+    public ICollection<Invitation> InvitationsSent { get; set; } = new List<Invitation>();
 }

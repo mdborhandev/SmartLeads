@@ -45,9 +45,9 @@ public class AuthController : Controller
                     Expires = DateTimeOffset.UtcNow.AddHours(1)
                 });
 
-                // Get user details to store CompanyId and UserId in cookies
+                // Get user details to store UserId in cookie
                 var user = await _userService.GetUserByUsernameOrEmailAsync(model.EmailOrUsername);
-                if (user != null && user.CompanyId.HasValue)
+                if (user != null)
                 {
                     // Store UserId in cookie
                     HttpContext.Response.Cookies.Append("UserId", user.Id.ToString(), new CookieOptions
@@ -57,15 +57,8 @@ public class AuthController : Controller
                         SameSite = SameSiteMode.Strict,
                         Expires = DateTimeOffset.UtcNow.AddHours(1)
                     });
-
-                    // Store CompanyId in cookie
-                    HttpContext.Response.Cookies.Append("CompanyId", user.CompanyId.Value.ToString(), new CookieOptions
-                    {
-                        HttpOnly = true,
-                        Secure = true,
-                        SameSite = SameSiteMode.Strict,
-                        Expires = DateTimeOffset.UtcNow.AddHours(1)
-                    });
+                    // Note: CompanyId will be set when user selects a company
+                    // Use UserCompany to get user's companies
                 }
 
                 // Redirect to contacts
@@ -260,40 +253,27 @@ public class AuthController : Controller
                 // Get user details
                 var user = await _userService.GetUserByUsernameOrEmailAsync(model.EmailOrUsername);
                 string? userId = null;
-                string? companyId = null;
 
                 if (user != null)
                 {
                     userId = user.Id.ToString();
-                    companyId = user.CompanyId?.ToString();
 
-                    // Store in cookies if company exists
-                    if (user.CompanyId.HasValue)
+                    // Store UserId in cookie
+                    HttpContext.Response.Cookies.Append("UserId", userId, new CookieOptions
                     {
-                        HttpContext.Response.Cookies.Append("UserId", userId, new CookieOptions
-                        {
-                            HttpOnly = true,
-                            Secure = true,
-                            SameSite = SameSiteMode.Strict,
-                            Expires = DateTimeOffset.UtcNow.AddHours(1)
-                        });
-
-                        HttpContext.Response.Cookies.Append("CompanyId", companyId, new CookieOptions
-                        {
-                            HttpOnly = true,
-                            Secure = true,
-                            SameSite = SameSiteMode.Strict,
-                            Expires = DateTimeOffset.UtcNow.AddHours(1)
-                        });
-                    }
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict,
+                        Expires = DateTimeOffset.UtcNow.AddHours(1)
+                    });
+                    // Note: CompanyId will be set when user selects a company
                 }
 
                 return Ok(new {
                     success = true,
                     message = "Login successful",
                     redirectUrl = Url.Action("Index", "Contacts"),
-                    userId = userId,
-                    companyId = companyId
+                    userId = userId
                 });
             }
             else

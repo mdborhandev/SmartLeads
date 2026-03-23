@@ -32,11 +32,8 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-        // Add CompanyId claim if user belongs to a company
-        if (user.CompanyId.HasValue)
-        {
-            claims.Add(new Claim("CompanyId", user.CompanyId.Value.ToString()));
-        }
+        // Note: CompanyId claim is now added at login time based on the selected company
+        // Users can belong to multiple companies, so the company context is selected per-session
 
         // Add FirstName and LastName claims
         if (!string.IsNullOrEmpty(user.FirstName))

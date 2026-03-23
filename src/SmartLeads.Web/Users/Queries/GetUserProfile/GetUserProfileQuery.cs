@@ -16,17 +16,16 @@ public record UserProfileDto(
 
 public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, UserProfileDto>
 {
-    private readonly IGenericRepository<User> _userRepository;
+    private readonly IUserRepository _userRepository;
 
-    public GetUserProfileQueryHandler(IGenericRepository<User> userRepository)
+    public GetUserProfileQueryHandler(IUserRepository userRepository)
     {
         _userRepository = userRepository;
     }
 
     public async Task<UserProfileDto> Handle(GetUserProfileQuery request, CancellationToken cancellationToken)
     {
-        var users = await _userRepository.FindAsync(u => u.Username == request.UsernameOrEmail || u.Email == request.UsernameOrEmail);
-        var user = users.FirstOrDefault();
+        var user = await _userRepository.GetByUsernameOrEmailAsync(request.UsernameOrEmail);
 
         if (user == null)
         {

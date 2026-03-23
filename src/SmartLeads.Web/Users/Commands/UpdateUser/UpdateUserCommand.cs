@@ -14,11 +14,11 @@ public record UpdateUserCommand(
 public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Unit>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IGenericRepository<User> _userRepository;
+    private readonly IUserRepository _userRepository;
 
     public UpdateUserCommandHandler(
         IUnitOfWork unitOfWork,
-        IGenericRepository<User> userRepository)
+        IUserRepository userRepository)
     {
         _unitOfWork = unitOfWork;
         _userRepository = userRepository;
@@ -26,8 +26,7 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Unit>
 
     public async Task<Unit> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
     {
-        var users = await _userRepository.FindAsync(u => u.Username == request.Username || u.Email == request.Email);
-        var user = users.FirstOrDefault(u => u.Username == request.Username || u.Email == request.Email);
+        var user = await _userRepository.GetByUsernameOrEmailAsync(request.Username);
 
         if (user == null)
         {
@@ -35,11 +34,8 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Unit>
         }
 
         // Check if username or email is already taken by another user
-        var existingUser = await _userRepository.FindAsync(u => 
-            (u.Username == request.Username && u.Id != user.Id) ||
-            (u.Email == request.Email && u.Id != user.Id));
-
-        if (existingUser.Any())
+        var existingUser = await _userRepository.GetByUsernameOrEmailAsync(request.Username);
+        if (existingUser != null && existingUser.Id != user.Id)
         {
             throw new Exception("Username or email already exists.");
         }
