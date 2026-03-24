@@ -9,10 +9,12 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 public class UserRepository : GenericSystemRepository<User>, IUserRepository
 {
     private readonly SystemDbContext _systemDbContext;
+    private readonly DefaultDbContext _defaultDbContext;
 
-    public UserRepository(SystemDbContext systemDbContext) : base(systemDbContext)
+    public UserRepository(SystemDbContext systemDbContext, DefaultDbContext defaultDbContext) : base(systemDbContext)
     {
         _systemDbContext = systemDbContext;
+        _defaultDbContext = defaultDbContext;
     }
 
     public async Task<User?> GetByUsernameOrEmailAsync(string usernameOrEmail)
@@ -60,84 +62,97 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
 
     public async Task<PaginationResponse<UserTableDto>> GetUsersPagedAsync(Guid companyId, PaginationRequest request, CancellationToken token = default)
     {
-        // Query through Employee -> EmployeeUser -> User
-        var query = _systemDbContext.Employees
+        var employees = await _defaultDbContext.Employees
             .Where(e => e.CompanyId == companyId && !e.IsDeleted && e.IsActive)
             .Include(e => e.EmployeeUsers)
-                .ThenInclude(eu => eu.User)
+            .ToListAsync(token);
+
+        var userIds = employees
+            .SelectMany(e => e.EmployeeUsers)
+            .Select(eu => eu.UserId)
+            .Distinct()
+            .ToList();
+
+        var users = await _systemDbContext.Users
+            .Where(u => userIds.Contains(u.Id) && !u.IsDeleted && u.IsActive)
+            .ToListAsync(token);
+
+        var usersById = users.ToDictionary(u => u.Id);
+
+        var rows = employees
+            .Select(e =>
+            {
+                var primaryLink = e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)
+                    ?? e.EmployeeUsers.FirstOrDefault();
+
+                if (primaryLink == null || !usersById.TryGetValue(primaryLink.UserId, out var user))
+                {
+                    return null;
+                }
+
+                return new UserTableDto
+                {
+                    Id = user.Id,
+                    Username = user.Username,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    EmployeeId = e.EmployeeId,
+                    Department = e.Department,
+                    Designation = e.Designation,
+                    Role = user.Role,
+                    IsActive = e.IsActive,
+                    CreatedAt = user.CreatedAt
+                };
+            })
+            .Where(x => x != null)
+            .Select(x => x!)
             .AsQueryable();
 
-        // Apply search filter
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             var search = request.Search.ToLower();
-            query = query.Where(e =>
-                e.EmployeeUsers.Any(eu => eu.User.Username.ToLower().Contains(search)) ||
-                e.EmployeeUsers.Any(eu => eu.User.Email.ToLower().Contains(search)) ||
-                e.EmployeeUsers.Any(eu => eu.User.FirstName.ToLower().Contains(search)) ||
-                e.EmployeeUsers.Any(eu => eu.User.LastName.ToLower().Contains(search)) ||
-                (e.EmployeeId != null && e.EmployeeId.ToLower().Contains(search)) ||
-                (e.Department != null && e.Department.ToLower().Contains(search)) ||
-                (e.Designation != null && e.Designation.ToLower().Contains(search))
+            rows = rows.Where(e =>
+                e.Username.ToLower().Contains(search) ||
+                e.Email.ToLower().Contains(search) ||
+                ((e.FirstName ?? string.Empty).ToLower().Contains(search)) ||
+                ((e.LastName ?? string.Empty).ToLower().Contains(search)) ||
+                ((e.EmployeeId ?? string.Empty).ToLower().Contains(search)) ||
+                ((e.Department ?? string.Empty).ToLower().Contains(search)) ||
+                ((e.Designation ?? string.Empty).ToLower().Contains(search))
             );
         }
 
-        // Get total count before pagination
-        var totalCount = await query.CountAsync(token);
+        var totalCount = rows.Count();
 
         // Apply sorting
         var sortField = request.SortField?.ToLower();
         var sortOrder = request.SortOrder?.ToLower() ?? "desc";
 
-        query = sortField switch
+        rows = sortField switch
         {
-            "username" => sortOrder == "desc" 
-                ? query.OrderByDescending(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Username) 
-                : query.OrderBy(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Username),
-            "email" => sortOrder == "desc" 
-                ? query.OrderByDescending(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Email) 
-                : query.OrderBy(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Email),
-            "fullname" => sortOrder == "desc" 
-                ? query.OrderByDescending(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.LastName)
-                    .ThenByDescending(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.FirstName) 
-                : query.OrderBy(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.FirstName)
-                    .ThenBy(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.LastName),
-            "employeeid" => sortOrder == "desc" ? query.OrderByDescending(e => e.EmployeeId) : query.OrderBy(e => e.EmployeeId),
-            "department" => sortOrder == "desc" ? query.OrderByDescending(e => e.Department) : query.OrderBy(e => e.Department),
-            "designation" => sortOrder == "desc" ? query.OrderByDescending(e => e.Designation) : query.OrderBy(e => e.Designation),
-            "role" => sortOrder == "desc" 
-                ? query.OrderByDescending(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Role) 
-                : query.OrderBy(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Role),
-            "isactive" => sortOrder == "desc" ? query.OrderByDescending(e => e.IsActive) : query.OrderBy(e => e.IsActive),
-            "createdat" => sortOrder == "desc" 
-                ? query.OrderByDescending(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.CreatedAt) 
-                : query.OrderBy(e => e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.CreatedAt),
-            _ => query.OrderByDescending(e => e.CreatedAt)
+            "username" => sortOrder == "desc" ? rows.OrderByDescending(e => e.Username) : rows.OrderBy(e => e.Username),
+            "email" => sortOrder == "desc" ? rows.OrderByDescending(e => e.Email) : rows.OrderBy(e => e.Email),
+            "fullname" => sortOrder == "desc"
+                ? rows.OrderByDescending(e => e.LastName).ThenByDescending(e => e.FirstName)
+                : rows.OrderBy(e => e.FirstName).ThenBy(e => e.LastName),
+            "employeeid" => sortOrder == "desc" ? rows.OrderByDescending(e => e.EmployeeId) : rows.OrderBy(e => e.EmployeeId),
+            "department" => sortOrder == "desc" ? rows.OrderByDescending(e => e.Department) : rows.OrderBy(e => e.Department),
+            "designation" => sortOrder == "desc" ? rows.OrderByDescending(e => e.Designation) : rows.OrderBy(e => e.Designation),
+            "role" => sortOrder == "desc" ? rows.OrderByDescending(e => e.Role) : rows.OrderBy(e => e.Role),
+            "isactive" => sortOrder == "desc" ? rows.OrderByDescending(e => e.IsActive) : rows.OrderBy(e => e.IsActive),
+            "createdat" => sortOrder == "desc" ? rows.OrderByDescending(e => e.CreatedAt) : rows.OrderBy(e => e.CreatedAt),
+            _ => rows.OrderByDescending(e => e.CreatedAt)
         };
 
-        // Apply pagination
-        var employees = await query
+        var pagedUsers = rows
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(e => new UserTableDto
-            {
-                Id = e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Id,
-                Username = e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Username,
-                Email = e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Email,
-                FirstName = e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.FirstName,
-                LastName = e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.LastName,
-                EmployeeId = e.EmployeeId,
-                Department = e.Department,
-                Designation = e.Designation,
-                Role = e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.Role,
-                IsActive = e.IsActive,
-                CreatedAt = e.EmployeeUsers.FirstOrDefault(eu => eu.IsPrimary)!.User.CreatedAt
-            })
-            .ToListAsync(token);
+            .ToList();
 
         return new PaginationResponse<UserTableDto>
         {
-            Data = employees,
+            Data = pagedUsers,
             TotalCount = totalCount,
             Page = request.Page,
             PageSize = request.PageSize,

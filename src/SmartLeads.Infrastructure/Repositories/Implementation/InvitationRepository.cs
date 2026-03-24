@@ -7,11 +7,11 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
 public class InvitationRepository : BaseRepository<Invitation, Guid>, IInvitationRepository
 {
-    private readonly SystemDbContext _systemDbContext;
+    private readonly DefaultDbContext _defaultDbContext;
 
-    public InvitationRepository(SystemDbContext dbContext) : base(dbContext)
+    public InvitationRepository(DefaultDbContext dbContext) : base(dbContext)
     {
-        _systemDbContext = dbContext;
+        _defaultDbContext = dbContext;
     }
 
     public async Task<Invitation?> GetByTokenAsync(string token, CancellationToken cancellationToken = default)

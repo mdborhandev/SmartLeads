@@ -13,11 +13,11 @@ public class GenericSystemRepository<TEntity> : BaseRepository<TEntity, Guid>, I
     }
 }
 
-// Generic repository for company entities (Contact, Group, Tag, etc.)
+// Generic repository for default database entities (Contact, Group, Tag, etc.)
 public class GenericCompanyRepository<TEntity> : BaseRepository<TEntity, Guid>, IGenericCompanyRepository<TEntity>
     where TEntity : BaseEntity
 {
-    public GenericCompanyRepository(CompanyDbContext dbContext) : base(dbContext)
+    public GenericCompanyRepository(DefaultDbContext dbContext) : base(dbContext)
     {
     }
 }
@@ -25,7 +25,7 @@ public class GenericCompanyRepository<TEntity> : BaseRepository<TEntity, Guid>, 
 // Backward compatible alias
 public class GenericRepository<TEntity> : GenericCompanyRepository<TEntity> where TEntity : BaseEntity
 {
-    public GenericRepository(CompanyDbContext dbContext) : base(dbContext)
+    public GenericRepository(DefaultDbContext dbContext) : base(dbContext)
     {
     }
 }

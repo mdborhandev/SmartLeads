@@ -4,9 +4,7 @@
       "Bash(dotnet *)",
       "Bash(journalctl *)",
       "Bash(pkill *)",
-      "Bash(sleep *)",
-      "Bash(psql *)"
+      "Bash(sleep *)"
     ]
-  },
-  "$version": 3
+  }
 }

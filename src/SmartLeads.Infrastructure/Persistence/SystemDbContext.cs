@@ -5,7 +5,7 @@ namespace SmartLeads.Infrastructure.Persistence;
 
 /// <summary>
 /// System database context for managing system-level data.
-/// Contains: Users, Companies, UserCompanies, Employees, EmployeeUsers, Invitations
+/// Contains only: Users, Companies, UserCompanies
 /// </summary>
 public class SystemDbContext : DbContext
 {
@@ -17,9 +17,6 @@ public class SystemDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Company> Companies { get; set; }
     public DbSet<UserCompany> UserCompanies { get; set; }
-    public DbSet<Employee> Employees { get; set; }
-    public DbSet<EmployeeUser> EmployeeUsers { get; set; }
-    public DbSet<Invitation> Invitations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,6 +31,9 @@ public class SystemDbContext : DbContext
         modelBuilder.Ignore<Note>();
         modelBuilder.Ignore<Attachment>();
         modelBuilder.Ignore<ColumnFilter>();
+        modelBuilder.Ignore<Employee>();
+        modelBuilder.Ignore<EmployeeUser>();
+        modelBuilder.Ignore<Invitation>();
 
         // Configure all entities to use Guid keys
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -61,51 +61,11 @@ public class SystemDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Employee - Belongs to Company
-        modelBuilder.Entity<Employee>(entity =>
-        {
-            entity.HasIndex(e => new { e.CompanyId, e.EmployeeId }).IsUnique();
-
-            entity.HasOne(e => e.Company)
-                .WithMany(c => c.Employees)
-                .HasForeignKey(e => e.CompanyId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-
-        // EmployeeUser - Junction table linking Employees to Users
-        modelBuilder.Entity<EmployeeUser>(entity =>
-        {
-            entity.HasIndex(eu => new { eu.EmployeeId, eu.UserId }).IsUnique();
-
-            entity.HasOne(eu => eu.Employee)
-                .WithMany(e => e.EmployeeUsers)
-                .HasForeignKey(eu => eu.EmployeeId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasOne(eu => eu.User)
-                .WithMany(u => u.EmployeeUsers)
-                .HasForeignKey(eu => eu.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-
         // Company self-referencing relationship (hierarchical)
         modelBuilder.Entity<Company>()
             .HasOne(c => c.ParentCompany)
             .WithMany(c => c.ChildCompanies)
             .HasForeignKey(c => c.ParentCompanyId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // Invitation belongs to Company and User (InvitedBy)
-        modelBuilder.Entity<Invitation>()
-            .HasOne(i => i.Company)
-            .WithMany(c => c.Invitations)
-            .HasForeignKey(i => i.CompanyId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<Invitation>()
-            .HasOne(i => i.InvitedByUser)
-            .WithMany(u => u.InvitationsSent)
-            .HasForeignKey(i => i.InvitedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 

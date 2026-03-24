@@ -7,11 +7,11 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
 public class ColumnFilterRepository : BaseRepository<ColumnFilter, Guid>, IColumnFilterRepository
 {
-    private readonly CompanyDbContext _companyDbContext;
+    private readonly DefaultDbContext _defaultDbContext;
 
-    public ColumnFilterRepository(CompanyDbContext dbContext) : base(dbContext)
+    public ColumnFilterRepository(DefaultDbContext dbContext) : base(dbContext)
     {
-        _companyDbContext = dbContext;
+        _defaultDbContext = dbContext;
     }
 
     public async Task<ColumnFilter?> GetColumnFilterByUserAndListNameAsync(Guid userId, Guid? companyId, string listName, CancellationToken token = default)

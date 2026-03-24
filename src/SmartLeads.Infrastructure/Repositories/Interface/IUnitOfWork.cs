@@ -11,6 +11,7 @@ public interface IUnitOfWork : IAsyncDisposable
     IColumnFilterRepository columnFilterRepository { get; }
     
     SystemDbContext systemDbContext { get; }
+    DefaultDbContext defaultDbContext { get; }
 
     Task SaveAsync(CancellationToken token = default);
 }

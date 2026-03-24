@@ -11,7 +11,7 @@ public class SystemDbContextDesignTimeFactory : IDesignTimeDbContextFactory<Syst
         
         // Use environment variable or default connection string
         var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") 
-            ?? "Host=localhost;Port=5432;Database=SmartLeadsSystemDb;Username=borhanuddin;Password=borhan444";
+            ?? "Host=localhost;Port=5432;Database=SystemDbSmartLeads;Username=borhanuddin;Password=borhan444";
         
         optionsBuilder.UseNpgsql(connectionString);
         

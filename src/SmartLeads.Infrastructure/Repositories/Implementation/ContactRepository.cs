@@ -8,16 +8,16 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
 public class ContactRepository : BaseRepository<Contact, Guid>, IContactRepository
 {
-    private readonly CompanyDbContext _companyDbContext;
+    private readonly DefaultDbContext _defaultDbContext;
 
-    public ContactRepository(CompanyDbContext dbContext) : base(dbContext)
+    public ContactRepository(DefaultDbContext dbContext) : base(dbContext)
     {
-        _companyDbContext = dbContext;
+        _defaultDbContext = dbContext;
     }
 
     public async Task<IList<Contact>> GetContactsByUserIdAsync(Guid userId, CancellationToken token = default)
     {
-        return await _companyDbContext.Contacts
+        return await _defaultDbContext.Contacts
             .Where(c => c.UserId == userId && !c.IsDeleted)
             .ToListAsync(token);
     }
@@ -26,20 +26,20 @@ public class ContactRepository : BaseRepository<Contact, Guid>, IContactReposito
     {
         // In company database, all contacts belong to that company
         // companyId is used for validation/filtering if needed
-        return await _companyDbContext.Contacts
+        return await _defaultDbContext.Contacts
             .Where(c => !c.IsDeleted)
             .ToListAsync(token);
     }
 
     public async Task<Contact?> GetContactByIdAndUserIdAsync(Guid id, Guid userId, CancellationToken token = default)
     {
-        return await _companyDbContext.Contacts
+        return await _defaultDbContext.Contacts
             .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId && !c.IsDeleted, token);
     }
 
     public async Task<IList<ContactDto>> GetContactDtosByUserIdAsync(Guid userId, CancellationToken token = default)
     {
-        return await _companyDbContext.Contacts
+        return await _defaultDbContext.Contacts
             .Where(c => c.UserId == userId && !c.IsDeleted)
             .Select(c => new ContactDto(
                 c.Id,
@@ -58,7 +58,7 @@ public class ContactRepository : BaseRepository<Contact, Guid>, IContactReposito
 
     public async Task<IList<ContactDto>> GetContactDtosByCompanyIdAsync(Guid companyId, CancellationToken token = default)
     {
-        return await _companyDbContext.Contacts
+        return await _defaultDbContext.Contacts
             .Where(c => !c.IsDeleted)
             .Select(c => new ContactDto(
                 c.Id,
@@ -77,7 +77,7 @@ public class ContactRepository : BaseRepository<Contact, Guid>, IContactReposito
 
     public async Task<ContactDto?> GetContactDtoByIdAsync(Guid id, CancellationToken token = default)
     {
-        return await _companyDbContext.Contacts
+        return await _defaultDbContext.Contacts
             .Where(c => c.Id == id && !c.IsDeleted)
             .Select(c => new ContactDto(
                 c.Id,
@@ -96,7 +96,7 @@ public class ContactRepository : BaseRepository<Contact, Guid>, IContactReposito
 
     public async Task UpdateContactAsync(Guid id, ContactDto contactDto, CancellationToken token = default)
     {
-        var existingContact = await _companyDbContext.Contacts.FindAsync(new object[] { id }, token);
+        var existingContact = await _defaultDbContext.Contacts.FindAsync(new object[] { id }, token);
         if (existingContact == null)
         {
             throw new ArgumentException("Contact not found.");
@@ -112,6 +112,6 @@ public class ContactRepository : BaseRepository<Contact, Guid>, IContactReposito
         existingContact.IsArchived = contactDto.IsArchived;
         existingContact.UpdatedAt = DateTime.UtcNow;
 
-        await _companyDbContext.SaveChangesAsync(token);
+        await _defaultDbContext.SaveChangesAsync(token);
     }
 }

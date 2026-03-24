@@ -28,13 +28,12 @@ public static class DependencyInjection
         services.AddDbContext<SystemDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("SystemConnection")));
 
-        // Register Company DbContext (for company-specific data)
-        // Note: Connection string will be resolved per-company at runtime
-        services.AddDbContext<CompanyDbContext>(options =>
-            options.UseNpgsql(GetCompanyConnectionString(configuration)));
+        // Register default DbContext (for contact and related application data)
+        services.AddDbContext<DefaultDbContext>(options =>
+            options.UseNpgsql(GetDefaultConnectionString(configuration)));
 
-        // Register Company Context Factory
-        services.AddScoped<ICompanyDbContextFactory, CompanyDbContextFactory>();
+        // Register default DbContext factory
+        services.AddScoped<IDefaultDbContextFactory, DefaultDbContextFactory>();
 
         // Register Company Context (tracks current user's company)
         services.AddScoped<ICompanyContext, CompanyContext>();
@@ -91,10 +90,9 @@ public static class DependencyInjection
         return services;
     }
 
-    private static string GetCompanyConnectionString(IConfiguration configuration)
+    private static string GetDefaultConnectionString(IConfiguration configuration)
     {
-        // Use CompanyConnection string (SmartLeadsDb - contains company-specific data)
-        return configuration.GetConnectionString("CompanyConnection")
-               ?? throw new InvalidOperationException("Company connection string not found");
+        return configuration.GetConnectionString("DefaultConnection")
+               ?? throw new InvalidOperationException("Default connection string not found");
     }
 }

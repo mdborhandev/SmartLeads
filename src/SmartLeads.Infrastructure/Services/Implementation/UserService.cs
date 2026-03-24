@@ -172,8 +172,8 @@ public class UserService : IUserService
                 EmployeeId = $"EMP{user.Id.ToString().Substring(0, 8).ToUpper()}",
                 IsActive = true
             };
-            await _unitOfWork.systemDbContext.Employees.AddAsync(employee);
-            await _unitOfWork.systemDbContext.SaveChangesAsync();
+            await _unitOfWork.defaultDbContext.Employees.AddAsync(employee);
+            await _unitOfWork.SaveAsync();
 
             // Link Employee to User
             var employeeUser = new EmployeeUser
@@ -182,8 +182,8 @@ public class UserService : IUserService
                 UserId = user.Id,
                 IsPrimary = true
             };
-            await _unitOfWork.systemDbContext.EmployeeUsers.AddAsync(employeeUser);
-            await _unitOfWork.systemDbContext.SaveChangesAsync();
+            await _unitOfWork.defaultDbContext.EmployeeUsers.AddAsync(employeeUser);
+            await _unitOfWork.SaveAsync();
         }
 
         var token = _jwtTokenGenerator.GenerateToken(user);

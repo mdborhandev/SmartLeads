@@ -12,8 +12,8 @@ using SmartLeads.Infrastructure.Persistence;
 namespace SmartLeads.Infrastructure.Persistence.Migrations.System
 {
     [DbContext(typeof(SystemDbContext))]
-    [Migration("20260323192435_InitialSystemDb")]
-    partial class InitialSystemDb
+    [Migration("20260324135617_FirstMigrationSystem")]
+    partial class FirstMigrationSystem
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -76,162 +76,6 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations.System
                     b.HasIndex("ParentCompanyId");
 
                     b.ToTable("Companies");
-                });
-
-            modelBuilder.Entity("SmartLeads.Domain.Models.Employee", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Address")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DateOfJoining")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Department")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Designation")
-                        .HasColumnType("text");
-
-                    b.Property<string>("EmployeeId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyId", "EmployeeId")
-                        .IsUnique();
-
-                    b.ToTable("Employees");
-                });
-
-            modelBuilder.Entity("SmartLeads.Domain.Models.EmployeeUser", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsPrimary")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("EmployeeId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("EmployeeUsers");
-                });
-
-            modelBuilder.Entity("SmartLeads.Domain.Models.Invitation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("AcceptedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("InvitedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsAccepted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Metadata")
-                        .HasColumnType("text");
-
-                    b.Property<string>("RejectedReason")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyId");
-
-                    b.HasIndex("InvitedByUserId");
-
-                    b.ToTable("Invitations");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.User", b =>
@@ -349,55 +193,6 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations.System
                     b.Navigation("ParentCompany");
                 });
 
-            modelBuilder.Entity("SmartLeads.Domain.Models.Employee", b =>
-                {
-                    b.HasOne("SmartLeads.Domain.Models.Company", "Company")
-                        .WithMany("Employees")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Company");
-                });
-
-            modelBuilder.Entity("SmartLeads.Domain.Models.EmployeeUser", b =>
-                {
-                    b.HasOne("SmartLeads.Domain.Models.Employee", "Employee")
-                        .WithMany("EmployeeUsers")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SmartLeads.Domain.Models.User", "User")
-                        .WithMany("EmployeeUsers")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SmartLeads.Domain.Models.Invitation", b =>
-                {
-                    b.HasOne("SmartLeads.Domain.Models.Company", "Company")
-                        .WithMany("Invitations")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SmartLeads.Domain.Models.User", "InvitedByUser")
-                        .WithMany("InvitationsSent")
-                        .HasForeignKey("InvitedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Company");
-
-                    b.Navigation("InvitedByUser");
-                });
-
             modelBuilder.Entity("SmartLeads.Domain.Models.UserCompany", b =>
                 {
                     b.HasOne("SmartLeads.Domain.Models.Company", "Company")
@@ -421,24 +216,11 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations.System
                 {
                     b.Navigation("ChildCompanies");
 
-                    b.Navigation("Employees");
-
-                    b.Navigation("Invitations");
-
                     b.Navigation("UserCompanies");
-                });
-
-            modelBuilder.Entity("SmartLeads.Domain.Models.Employee", b =>
-                {
-                    b.Navigation("EmployeeUsers");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.User", b =>
                 {
-                    b.Navigation("EmployeeUsers");
-
-                    b.Navigation("InvitationsSent");
-
                     b.Navigation("UserCompanies");
                 });
 #pragma warning restore 612, 618

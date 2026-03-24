@@ -7,7 +7,7 @@ namespace SmartLeads.Infrastructure.Repositories;
 public class UnitOfWork : IUnitOfWork
 {
     protected readonly SystemDbContext _systemDbContext;
-    protected readonly CompanyDbContext _companyDbContext;
+    protected readonly DefaultDbContext _defaultDbContext;
 
     #region Repositories
     public IContactRepository contactRepository { get; private set; }
@@ -16,33 +16,34 @@ public class UnitOfWork : IUnitOfWork
     public IInvitationRepository invitationRepository { get; private set; }
     public IColumnFilterRepository columnFilterRepository { get; private set; }
     public SystemDbContext systemDbContext => _systemDbContext;
+    public DefaultDbContext defaultDbContext => _defaultDbContext;
     #endregion
 
-    public UnitOfWork(SystemDbContext systemDbContext, CompanyDbContext companyDbContext)
+    public UnitOfWork(SystemDbContext systemDbContext, DefaultDbContext defaultDbContext)
     {
         _systemDbContext = systemDbContext;
-        _companyDbContext = companyDbContext;
+        _defaultDbContext = defaultDbContext;
         
         // System repositories
-        userRepository = new UserRepository(systemDbContext);
+        userRepository = new UserRepository(systemDbContext, defaultDbContext);
         companyRepository = new CompanyRepository(systemDbContext);
-        invitationRepository = new InvitationRepository(systemDbContext);
+        invitationRepository = new InvitationRepository(defaultDbContext);
         
-        // Company repositories
-        contactRepository = new ContactRepository(companyDbContext);
-        columnFilterRepository = new ColumnFilterRepository(companyDbContext);
+        // Default database repositories
+        contactRepository = new ContactRepository(defaultDbContext);
+        columnFilterRepository = new ColumnFilterRepository(defaultDbContext);
     }
 
     public async Task SaveAsync(CancellationToken token = default)
     {
         // Save both contexts (in real scenario, consider distributed transactions)
         await _systemDbContext.SaveChangesAsync(token);
-        await _companyDbContext.SaveChangesAsync(token);
+        await _defaultDbContext.SaveChangesAsync(token);
     }
 
     public async ValueTask DisposeAsync()
     {
         await _systemDbContext.DisposeAsync();
-        await _companyDbContext.DisposeAsync();
+        await _defaultDbContext.DisposeAsync();
     }
 }
