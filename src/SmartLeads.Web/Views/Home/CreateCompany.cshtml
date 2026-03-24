@@ -8,7 +8,7 @@
 <!-- Create Company Form Card -->
 <div class="company-card">
     <!-- Card Header (Inside Card - Top) -->
-    @await Html.PartialAsync("_CardHeader", new ViewDataDictionary(ViewData) { { "LogoSubtitle", "Set up your company and admin account to get started" } })
+    @await Html.PartialAsync("~/Views/Shared/PartialView/_CardHeader.cshtml", new ViewDataDictionary(ViewData) { { "LogoSubtitle", "Set up your company and admin account to get started" } })
 
     <form id="createCompanyForm" method="post">
         @Html.AntiForgeryToken()
@@ -120,7 +120,7 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <partial name="~/Views/Shared/PartialView/_ValidationScriptsPartial.cshtml" />
     <script>
         $(document).ready(function() {
             $('#createCompanyForm').on('submit', function(e) {

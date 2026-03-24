@@ -492,7 +492,7 @@ public class AuthController : Controller
             return RedirectToAction("Login");
         }
 
-        return View("_NoCompanyLayout");
+        return View("NoCompany");
     }
 
     [HttpPost]
