@@ -1,22 +1,24 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using SmartLeads.Domain.DTOs;
-using SmartLeads.Infrastructure.Services.Interface;
-using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Repositories.Interface;
+using SmartLeads.Domain.Models;
 using SmartLeads.Domain.Enums;
+using SmartLeads.Utilities.Interfaces;
 
 namespace SmartLeads.Web.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly IUserService _userService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
-    public HomeController(IUserService userService, IUnitOfWork unitOfWork)
+    public HomeController(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator)
     {
-        _userService = userService;
         _unitOfWork = unitOfWork;
+        _passwordHasher = passwordHasher;
+        _jwtTokenGenerator = jwtTokenGenerator;
     }
 
     public IActionResult Landing()
@@ -83,7 +85,7 @@ public class HomeController : Controller
             }
 
             // Check if admin email already exists
-            var existingUser = await _userService.GetUserByUsernameOrEmailAsync(model.AdminEmail);
+            var existingUser = await _unitOfWork.userRepository.GetByEmailAsync(model.AdminEmail);
             if (existingUser != null)
             {
                 ModelState.AddModelError(string.Empty, "A user with this email already exists.");
@@ -105,40 +107,62 @@ public class HomeController : Controller
             await _unitOfWork.companyRepository.AddAsync(company);
             await _unitOfWork.SaveAsync();
 
-            // Register admin user for the company as SuperAdmin
-            var registerResult = await _userService.RegisterAsync(
-                model.AdminUsername,
-                model.AdminEmail,
-                model.AdminPassword,
-                model.AdminFirstName,
-                model.AdminLastName,
-                company.Id, // Associate user with company
-                UserRole.SuperAdmin // Set as SuperAdmin
-            );
-
-            if (registerResult.Success)
+            // Create admin user for the company as SuperAdmin
+            var adminUser = new Domain.Models.User
             {
-                // Set authentication cookie
-                HttpContext.Response.Cookies.Append("JwtToken", registerResult.Token!, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTimeOffset.UtcNow.AddHours(1)
-                });
+                Username = model.AdminUsername,
+                Email = model.AdminEmail,
+                PasswordHash = _passwordHasher.HashPassword(model.AdminPassword),
+                FirstName = model.AdminFirstName,
+                LastName = model.AdminLastName,
+                Role = UserRole.SuperAdmin
+            };
 
-                TempData["SuccessMessage"] = $"Company '{model.CompanyName}' created successfully! Welcome aboard!";
-                return RedirectToAction("Index", "Contacts");
-            }
-            else
+            await _unitOfWork.userRepository.AddAsync(adminUser);
+            await _unitOfWork.SaveAsync();
+
+            // Create UserCompany association
+            var userCompany = new UserCompany
             {
-                // Rollback company creation if user registration fails
-                _unitOfWork.companyRepository.Remove(company.Id);
-                await _unitOfWork.SaveAsync();
+                UserId = adminUser.Id,
+                CompanyId = company.Id,
+                IsDefault = true
+            };
+            await _unitOfWork.systemDbContext.UserCompanies.AddAsync(userCompany);
 
-                ModelState.AddModelError(string.Empty, registerResult.Error);
-                return View(model);
-            }
+            // Create Employee record
+            var employee = new Employee
+            {
+                CompanyId = company.Id,
+                EmployeeId = $"EMP{adminUser.Id.ToString().Substring(0, 8).ToUpper()}",
+                IsActive = true
+            };
+            await _unitOfWork.defaultDbContext.Employees.AddAsync(employee);
+
+            // Link Employee to User
+            var employeeUser = new EmployeeUser
+            {
+                EmployeeId = employee.Id,
+                UserId = adminUser.Id,
+                IsPrimary = true
+            };
+            await _unitOfWork.defaultDbContext.EmployeeUsers.AddAsync(employeeUser);
+            await _unitOfWork.SaveAsync();
+
+            // Generate JWT token
+            var token = _jwtTokenGenerator.GenerateToken(adminUser);
+
+            // Set authentication cookie
+            HttpContext.Response.Cookies.Append("JwtToken", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddHours(1)
+            });
+
+            TempData["SuccessMessage"] = $"Company '{model.CompanyName}' created successfully! Welcome aboard!";
+            return RedirectToAction("Index", "Contacts");
         }
         catch (Exception ex)
         {

@@ -1,19 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using SmartLeads.Domain.DTOs;
-using SmartLeads.Infrastructure.Services.Interface;
+using SmartLeads.Infrastructure.Repositories.Interface;
+using SmartLeads.Utilities.Interfaces;
 
 namespace SmartLeads.Web.Controllers;
 
 public class AuthController : Controller
 {
-    private readonly IUserService _userService;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguration _configuration;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
-    public AuthController(IUserService userService, IConfiguration configuration)
+    public AuthController(IUnitOfWork unitOfWork, IConfiguration configuration, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator)
     {
-        _userService = userService;
+        _unitOfWork = unitOfWork;
         _configuration = configuration;
+        _passwordHasher = passwordHasher;
+        _jwtTokenGenerator = jwtTokenGenerator;
     }
 
     [HttpGet]
@@ -39,47 +44,59 @@ public class AuthController : Controller
 
         try
         {
-            // Register user (without company - user will join company later or create one)
-            var result = await _userService.RegisterAsync(
-                model.Username,
-                model.Email,
-                model.Password,
-                model.FirstName,
-                model.LastName
-            );
-
-            if (result.Success)
+            // Check if username exists
+            var existingUsername = await _unitOfWork.userRepository.GetByUsernameAsync(model.Username);
+            if (existingUsername != null)
             {
-                // Auto login after registration
-                HttpContext.Response.Cookies.Append("JwtToken", result.Token!, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTimeOffset.UtcNow.AddHours(1)
-                });
-
-                // Store UserId in cookie
-                var user = await _userService.GetUserByUsernameOrEmailAsync(model.Username);
-                if (user != null)
-                {
-                    HttpContext.Response.Cookies.Append("UserId", user.Id.ToString(), new CookieOptions
-                    {
-                        HttpOnly = true,
-                        Secure = true,
-                        SameSite = SameSiteMode.Strict,
-                        Expires = DateTimeOffset.UtcNow.AddHours(1)
-                    });
-                }
-
-                // Redirect to NoCompany page since user doesn't have a company yet
-                return RedirectToAction("NoCompany", "Auth");
-            }
-            else
-            {
-                ModelState.AddModelError(string.Empty, result.Error ?? "Registration failed");
+                ModelState.AddModelError(string.Empty, "Username already exists.");
                 return View(model);
             }
+
+            // Check if email exists
+            var existingEmail = await _unitOfWork.userRepository.GetByEmailAsync(model.Email);
+            if (existingEmail != null)
+            {
+                ModelState.AddModelError(string.Empty, "Email already exists.");
+                return View(model);
+            }
+
+            // Create user
+            var user = new Domain.Models.User
+            {
+                Username = model.Username,
+                Email = model.Email,
+                PasswordHash = _passwordHasher.HashPassword(model.Password),
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Role = Domain.Enums.UserRole.User
+            };
+
+            await _unitOfWork.userRepository.AddAsync(user);
+            await _unitOfWork.SaveAsync();
+
+            // Generate JWT token
+            var token = _jwtTokenGenerator.GenerateToken(user);
+
+            // Auto login after registration
+            HttpContext.Response.Cookies.Append("JwtToken", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddHours(1)
+            });
+
+            // Store UserId in cookie
+            HttpContext.Response.Cookies.Append("UserId", user.Id.ToString(), new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddHours(1)
+            });
+
+            // Redirect to NoCompany page since user doesn't have a company yet
+            return RedirectToAction("NoCompany", "Auth");
         }
         catch (Exception ex)
         {
@@ -105,48 +122,52 @@ public class AuthController : Controller
 
         try
         {
-            var result = await _userService.LoginAsync(model.EmailOrUsername, model.Password);
+            var user = await _unitOfWork.userRepository.GetByUsernameOrEmailAsync(model.EmailOrUsername);
 
-            if (result.Success)
+            if (user == null)
             {
-                HttpContext.Response.Cookies.Append("JwtToken", result.Token!, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTimeOffset.UtcNow.AddHours(1)
-                });
-
-                // Get user details to store UserId in cookie
-                var user = await _userService.GetUserByUsernameOrEmailAsync(model.EmailOrUsername);
-                if (user != null)
-                {
-                    // Store UserId in cookie
-                    HttpContext.Response.Cookies.Append("UserId", user.Id.ToString(), new CookieOptions
-                    {
-                        HttpOnly = true,
-                        Secure = true,
-                        SameSite = SameSiteMode.Strict,
-                        Expires = DateTimeOffset.UtcNow.AddHours(1)
-                    });
-                }
-
-                // Check if user has any company association
-                var hasCompany = await _userService.GetUserCompaniesAsync(user.Id);
-                if (hasCompany == null || !hasCompany.Any())
-                {
-                    // Redirect to NoCompany page
-                    return RedirectToAction("NoCompany");
-                }
-
-                // Redirect to contacts
-                return RedirectToAction("Index", "Contacts");
-            }
-            else
-            {
-                ModelState.AddModelError(string.Empty, result.Error);
+                ModelState.AddModelError(string.Empty, "Invalid username/email or password.");
                 return View(model);
             }
+
+            // Verify password
+            var isValidPassword = await _unitOfWork.userRepository.VerifyPasswordAsync(model.Password, user.PasswordHash);
+            if (!isValidPassword)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid username/email or password.");
+                return View(model);
+            }
+
+            // Generate JWT token
+            var token = _jwtTokenGenerator.GenerateToken(user);
+
+            HttpContext.Response.Cookies.Append("JwtToken", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddHours(1)
+            });
+
+            // Store UserId in cookie
+            HttpContext.Response.Cookies.Append("UserId", user.Id.ToString(), new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddHours(1)
+            });
+
+            // Check if user has any company association
+            var hasCompany = await _unitOfWork.userRepository.GetUserCompaniesAsync(user.Id);
+            if (hasCompany == null || !hasCompany.Any())
+            {
+                // Redirect to NoCompany page
+                return RedirectToAction("NoCompany");
+            }
+
+            // Redirect to contacts
+            return RedirectToAction("Index", "Contacts");
         }
         catch (Exception ex)
         {
@@ -179,7 +200,7 @@ public class AuthController : Controller
             }
 
             // Get user from repository
-            var user = await _userService.GetUserByUsernameOrEmailAsync(usernameOrEmail);
+            var user = await _unitOfWork.userRepository.GetByUsernameOrEmailAsync(usernameOrEmail);
 
             if (user == null)
             {
@@ -217,26 +238,25 @@ public class AuthController : Controller
 
         if (ModelState.IsValid)
         {
-            // Get current username (immutable)
-            var currentUsername = User.Identity?.Name;
-            
-            // Update profile
-            var success = await _userService.UpdateProfileAsync(
-                currentUsername,
-                model.Email,
-                model.FirstName,
-                model.LastName
-            );
+            // Get current user
+            var usernameOrEmail = User.Identity?.Name;
+            var user = await _unitOfWork.userRepository.GetByUsernameOrEmailAsync(usernameOrEmail ?? "");
 
-            if (success)
+            if (user != null)
             {
+                user.Email = model.Email;
+                user.FirstName = model.FirstName;
+                user.LastName = model.LastName;
+                user.UpdatedAt = DateTime.UtcNow;
+
+                await _unitOfWork.userRepository.UpdateProfileAsync(user);
                 TempData["SuccessMessage"] = "Profile updated successfully!";
             }
             else
             {
                 TempData["ErrorMessage"] = "Failed to update profile.";
             }
-            
+
             return RedirectToAction("Profile");
         }
 
@@ -283,7 +303,7 @@ public class AuthController : Controller
 
         try
         {
-            var success = await _userService.ResetPasswordAsync(model.Email, model.Token, model.NewPassword);
+            var success = await _unitOfWork.userRepository.ResetPasswordAsync(model.Email, model.Token, _passwordHasher.HashPassword(model.NewPassword));
 
             if (success)
             {
@@ -316,48 +336,46 @@ public class AuthController : Controller
 
         try
         {
-            var result = await _userService.LoginAsync(model.EmailOrUsername, model.Password);
+            var user = await _unitOfWork.userRepository.GetByUsernameOrEmailAsync(model.EmailOrUsername);
 
-            if (result.Success)
+            if (user == null)
             {
-                HttpContext.Response.Cookies.Append("JwtToken", result.Token!, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTimeOffset.UtcNow.AddHours(1)
-                });
-
-                // Get user details
-                var user = await _userService.GetUserByUsernameOrEmailAsync(model.EmailOrUsername);
-                string? userId = null;
-
-                if (user != null)
-                {
-                    userId = user.Id.ToString();
-
-                    // Store UserId in cookie
-                    HttpContext.Response.Cookies.Append("UserId", userId, new CookieOptions
-                    {
-                        HttpOnly = true,
-                        Secure = true,
-                        SameSite = SameSiteMode.Strict,
-                        Expires = DateTimeOffset.UtcNow.AddHours(1)
-                    });
-                    // Note: CompanyId will be set when user selects a company
-                }
-
-                return Ok(new {
-                    success = true,
-                    message = "Login successful",
-                    redirectUrl = Url.Action("Index", "Contacts"),
-                    userId = userId
-                });
+                return BadRequest(new { success = false, message = "Invalid username/email or password." });
             }
-            else
+
+            // Verify password
+            var isValidPassword = await _unitOfWork.userRepository.VerifyPasswordAsync(model.Password, user.PasswordHash);
+            if (!isValidPassword)
             {
-                return BadRequest(new { success = false, message = result.Error });
+                return BadRequest(new { success = false, message = "Invalid username/email or password." });
             }
+
+            // Generate JWT token
+            var token = _jwtTokenGenerator.GenerateToken(user);
+
+            HttpContext.Response.Cookies.Append("JwtToken", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddHours(1)
+            });
+
+            // Store UserId in cookie
+            HttpContext.Response.Cookies.Append("UserId", user.Id.ToString(), new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddHours(1)
+            });
+
+            return Ok(new {
+                success = true,
+                message = "Login successful",
+                redirectUrl = Url.Action("Index", "Contacts"),
+                userId = user.Id.ToString()
+            });
         }
         catch (Exception ex)
         {
@@ -376,17 +394,22 @@ public class AuthController : Controller
 
         try
         {
-            // The service will generate the token and send the email
-            // Controller passes subject and email body template
+            // Generate reset token
+            var resetToken = Guid.NewGuid().ToString("N");
             var baseUrl = _configuration["BaseUrl"] ?? "http://localhost:5000";
-            var subject = "Password Reset Request - SmartLeads";
             
-            // Email body template (token will be inserted by service)
-            var emailBodyTemplate = GetPasswordResetEmailTemplate();
-            
-            // For now, we'll use a simplified approach - service handles token generation
-            // and email sending with the provided template
-            await _userService.SendPasswordResetEmailAsync(model.Email, subject, emailBodyTemplate, baseUrl);
+            // Set token in database
+            await _unitOfWork.userRepository.SetPasswordResetTokenAsync(model.Email, resetToken, DateTime.UtcNow.AddHours(24));
+
+            // Generate reset link
+            var resetLink = $"{baseUrl}/Auth/ResetPassword?token={resetToken}&email={Uri.EscapeDataString(model.Email)}";
+
+            // Replace placeholder in template with actual reset link
+            var emailBody = GetPasswordResetEmailTemplate().Replace("{RESET_LINK}", resetLink);
+
+            // Send email using email service
+            var emailService = HttpContext.RequestServices.GetRequiredService<IEmailService>();
+            await emailService.SendEmailAsync(model.Email, "Password Reset Request - SmartLeads", emailBody);
 
             // Always return success to prevent email enumeration
             return Ok(new { success = true, message = "If an account exists with that email, we've sent a password reset link." });
@@ -408,7 +431,7 @@ public class AuthController : Controller
 
         try
         {
-            var success = await _userService.ResetPasswordAsync(model.Email, model.Token, model.NewPassword);
+            var success = await _unitOfWork.userRepository.ResetPasswordAsync(model.Email, model.Token, _passwordHasher.HashPassword(model.NewPassword));
 
             if (success)
             {

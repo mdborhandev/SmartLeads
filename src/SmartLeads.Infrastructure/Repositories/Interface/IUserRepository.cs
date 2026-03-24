@@ -12,4 +12,13 @@ public interface IUserRepository : IGenericSystemRepository<User>
     Task<User?> GetUserByIdAndCompanyIdAsync(Guid id, Guid companyId, CancellationToken token = default);
     Task<IEnumerable<User>> GetAllUsersAsync();
     Task<PaginationResponse<UserTableDto>> GetUsersPagedAsync(Guid companyId, PaginationRequest request, CancellationToken token = default);
+    
+    // Authentication and profile methods
+    Task<bool> VerifyPasswordAsync(string password, string passwordHash);
+    Task<bool> UpdateProfileAsync(User user, CancellationToken token = default);
+    Task<IEnumerable<UserCompany>> GetUserCompaniesAsync(Guid userId, CancellationToken token = default);
+    
+    // Password reset methods
+    Task<bool> SetPasswordResetTokenAsync(string email, string token, DateTime expiryTime, CancellationToken cancellationToken = default);
+    Task<bool> ResetPasswordAsync(string email, string token, string newPasswordHash, CancellationToken cancellationToken = default);
 }

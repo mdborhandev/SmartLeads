@@ -1,6 +1,6 @@
 ﻿@using SmartLeads.Domain.Enums
-@using SmartLeads.Infrastructure.Services.Interface
-@inject IUserService _userService
+@using SmartLeads.Infrastructure.Repositories.Interface
+@inject IUnitOfWork _unitOfWork
 
 @{
     string GetRoleDisplayName(UserRole role) => role switch
@@ -32,7 +32,7 @@
     // Get user details for first name and last name
     if (User.Identity?.IsAuthenticated == true && !string.IsNullOrEmpty(userDisplayName))
     {
-        var user = await _userService.GetUserByUsernameOrEmailAsync(userDisplayName);
+        var user = await _unitOfWork.userRepository.GetByUsernameOrEmailAsync(userDisplayName);
         if (user != null)
         {
             firstName = user.FirstName ?? "";

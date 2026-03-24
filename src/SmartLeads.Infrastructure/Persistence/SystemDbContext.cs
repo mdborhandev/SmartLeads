@@ -17,6 +17,7 @@ public class SystemDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Company> Companies { get; set; }
     public DbSet<UserCompany> UserCompanies { get; set; }
+    public DbSet<Invitation> Invitations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,7 +34,6 @@ public class SystemDbContext : DbContext
         modelBuilder.Ignore<ColumnFilter>();
         modelBuilder.Ignore<Employee>();
         modelBuilder.Ignore<EmployeeUser>();
-        modelBuilder.Ignore<Invitation>();
 
         // Configure all entities to use Guid keys
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())

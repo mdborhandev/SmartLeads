@@ -3,6 +3,7 @@ using SmartLeads.Domain.DTOs;
 using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Persistence;
 using SmartLeads.Infrastructure.Repositories.Interface;
+using SmartLeads.Utilities.Interfaces;
 
 namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
@@ -10,11 +11,13 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
 {
     private readonly SystemDbContext _systemDbContext;
     private readonly DefaultDbContext _defaultDbContext;
+    private readonly IPasswordHasher _passwordHasher;
 
-    public UserRepository(SystemDbContext systemDbContext, DefaultDbContext defaultDbContext) : base(systemDbContext)
+    public UserRepository(SystemDbContext systemDbContext, DefaultDbContext defaultDbContext, IPasswordHasher passwordHasher) : base(systemDbContext)
     {
         _systemDbContext = systemDbContext;
         _defaultDbContext = defaultDbContext;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<User?> GetByUsernameOrEmailAsync(string usernameOrEmail)
@@ -158,5 +161,70 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
             PageSize = request.PageSize,
             LastPage = request.PageSize > 0 ? (int)Math.Ceiling(totalCount / (double)request.PageSize) : 1
         };
+    }
+
+    // Authentication and profile methods
+    public Task<bool> VerifyPasswordAsync(string password, string passwordHash)
+    {
+        return Task.FromResult(_passwordHasher.VerifyPassword(password, passwordHash));
+    }
+
+    public async Task<bool> UpdateProfileAsync(User user, CancellationToken token = default)
+    {
+        _systemDbContext.Users.Update(user);
+        await _systemDbContext.SaveChangesAsync(token);
+        return true;
+    }
+
+    public async Task<IEnumerable<UserCompany>> GetUserCompaniesAsync(Guid userId, CancellationToken token = default)
+    {
+        return await _systemDbContext.UserCompanies
+            .Include(uc => uc.Company)
+            .Where(uc => uc.UserId == userId && uc.IsActive && !uc.IsDeleted)
+            .ToListAsync(token);
+    }
+
+    // Password reset methods
+    public async Task<bool> SetPasswordResetTokenAsync(string email, string token, DateTime expiryTime, CancellationToken cancellationToken = default)
+    {
+        var user = await _systemDbContext.Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+        if (user == null)
+        {
+            return true; // Always return true to prevent email enumeration
+        }
+
+        user.ResetPasswordToken = token;
+        user.ResetPasswordTokenExpiryTime = expiryTime;
+        await _systemDbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> ResetPasswordAsync(string email, string token, string newPasswordHash, CancellationToken cancellationToken = default)
+    {
+        var user = await _systemDbContext.Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+        if (user == null)
+        {
+            return false;
+        }
+
+        // Validate token
+        if (user.ResetPasswordToken != token)
+        {
+            return false;
+        }
+
+        // Check token expiry
+        if (user.ResetPasswordTokenExpiryTime < DateTime.UtcNow)
+        {
+            return false;
+        }
+
+        // Update password
+        user.PasswordHash = newPasswordHash;
+        user.ResetPasswordToken = null;
+        user.ResetPasswordTokenExpiryTime = null;
+
+        await _systemDbContext.SaveChangesAsync(cancellationToken);
+        return true;
     }
 }

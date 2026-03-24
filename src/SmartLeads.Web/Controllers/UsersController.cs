@@ -4,20 +4,21 @@ using SmartLeads.Domain.Enums;
 using SmartLeads.Infrastructure.Repositories.Interface;
 using SmartLeads.Domain.Models;
 using SmartLeads.Utilities.Interfaces;
-using SmartLeads.Infrastructure.Services.Interface;
-using SmartLeads.Infrastructure.Services.Implementation;
+using System.Text.Json;
 
 namespace SmartLeads.Web.Controllers;
 
 public class UsersController : Controller
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IInvitationService _invitationService;
+    private readonly IEmailService _emailService;
+    private readonly IConfiguration _configuration;
 
-    public UsersController(IUnitOfWork unitOfWork, IInvitationService invitationService)
+    public UsersController(IUnitOfWork unitOfWork, IEmailService emailService, IConfiguration configuration)
     {
         _unitOfWork = unitOfWork;
-        _invitationService = invitationService;
+        _emailService = emailService;
+        _configuration = configuration;
     }
 
     // GET: Users
@@ -80,31 +81,74 @@ public class UsersController : Controller
             return BadRequest(new { errors = new { __global = new[] { "Invalid user or company context." } } });
         }
 
-        // Send invitation instead of creating user directly
-        var result = await _invitationService.InviteUserAsync(
-            model.Email,
-            model.Role,
-            7, // 7 days expiry
-            companyId,
-            userId,
-            model.FirstName,
-            model.LastName,
-            model.Username,
-            model.EmployeeId,
-            model.Department,
-            model.Designation,
-            model.PhoneNumber,
-            model.Address,
-            model.DateOfJoining
-        );
-
-        if (result.Success)
+        try
         {
+            // Check if user already exists with this email
+            var existingUserWithEmail = await _unitOfWork.userRepository.GetByEmailAsync(model.Email);
+            if (existingUserWithEmail != null)
+            {
+                return BadRequest(new { errors = new { Email = new[] { "Email already exists." } } });
+            }
+
+            // Check if there's already a pending invitation for this email
+            var existingPendingInvite = await _unitOfWork.invitationRepository.GetPendingInvitationByEmailAndCompanyIdAsync(model.Email, companyId);
+            if (existingPendingInvite != null)
+            {
+                return BadRequest(new { errors = new { Email = new[] { "An invitation has already been sent to this email." } } });
+            }
+
+            // Create new invitation with additional user information
+            var invitation = new Invitation
+            {
+                Email = model.Email.ToLower().Trim(),
+                Role = model.Role,
+                CompanyId = companyId,
+                InvitedByUserId = userId,
+                Token = Guid.NewGuid().ToString("N"),
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                Status = InvitationStatus.Pending,
+                Metadata = JsonSerializer.Serialize(new Dictionary<string, string>
+                {
+                    { "FirstName", model.FirstName ?? "" },
+                    { "LastName", model.LastName ?? "" },
+                    { "Username", model.Username ?? "" },
+                    { "EmployeeId", model.EmployeeId ?? "" },
+                    { "Department", model.Department ?? "" },
+                    { "Designation", model.Designation ?? "" },
+                    { "PhoneNumber", model.PhoneNumber ?? "" },
+                    { "Address", model.Address ?? "" },
+                    { "DateOfJoining", model.DateOfJoining?.ToString("yyyy-MM-dd") ?? "" }
+                })
+            };
+
+            await _unitOfWork.invitationRepository.AddAsync(invitation);
+            await _unitOfWork.SaveAsync();
+
+            // Send email with invitation link
+            try
+            {
+                var baseUrl = _configuration["BaseUrl"] ?? "http://localhost:5000";
+                var acceptLink = $"{baseUrl}/Invitations/Accept?token={invitation.Token}&email={Uri.EscapeDataString(invitation.Email)}";
+
+                var emailBody = GetInvitationEmailTemplate(invitation.Email, model.Role.ToString(), acceptLink, invitation.ExpiresAt);
+
+                await _emailService.SendEmailAsync(
+                    invitation.Email,
+                    "You're Invited to Join SmartLeads!",
+                    emailBody
+                );
+            }
+            catch (Exception emailEx)
+            {
+                // Log email error but don't fail the invitation
+                return BadRequest(new { errors = new { __global = new[] { $"Invitation created but email failed to send: {emailEx.Message}" } } });
+            }
+
             return Ok(new { success = true, message = "Invitation sent successfully! User will be created when they accept the invitation." });
         }
-        else
+        catch (Exception ex)
         {
-            return BadRequest(new { errors = new { __global = new[] { result.Message } } });
+            return BadRequest(new { errors = new { __global = new[] { $"Error sending invitation: {ex.Message}" } } });
         }
     }
 
@@ -199,5 +243,64 @@ public class UsersController : Controller
 
         TempData["SuccessMessage"] = "User deleted successfully!";
         return RedirectToAction(nameof(Index));
+    }
+
+    private string GetInvitationEmailTemplate(string email, string role, string acceptLink, DateTime expiresAt)
+    {
+        return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }}
+        .button {{ display: inline-block; background: #667eea; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }}
+        .button:hover {{ background: #5a6fd6; }}
+        .info-box {{ background: #e7f3ff; border-left: 4px solid #2196F3; padding: 15px; margin: 20px 0; border-radius: 4px; }}
+        .footer {{ text-align: center; margin-top: 20px; color: #888; font-size: 12px; }}
+        .expiry {{ background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>🎉 You're Invited!</h1>
+            <p>Join SmartLeads Team</p>
+        </div>
+        <div class='content'>
+            <p>Hello,</p>
+
+            <p>You have been invited to join <strong>SmartLeads</strong> as a <strong>{role}</strong>.</p>
+
+            <div class='info-box'>
+                <strong>Invitation Details:</strong><br>
+                Email: {email}<br>
+                Role: {role}
+            </div>
+
+            <div class='expiry'>
+                <strong>⏰ Important:</strong> This invitation will expire on <strong>{expiresAt:MMMM dd, yyyy}</strong>.
+            </div>
+
+            <p style='text-align: center;'>
+                <a href='{acceptLink}' class='button'>Accept Invitation</a>
+            </p>
+
+            <p>Or copy and paste this link into your browser:</p>
+            <p style='word-break: break-all; color: #667eea; font-size: 12px;'>{acceptLink}</p>
+
+            <p>If you have any questions, please contact the person who sent you this invitation.</p>
+
+            <p>Best regards,<br><strong>The SmartLeads Team</strong></p>
+        </div>
+        <div class='footer'>
+            <p>&copy; {DateTime.Now.Year} SmartLeads. All rights reserved.</p>
+            <p>This is an automated invitation, please do not reply.</p>
+        </div>
+    </div>
+</body>
+</html>";
     }
 }

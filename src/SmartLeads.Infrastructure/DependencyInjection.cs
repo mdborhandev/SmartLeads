@@ -9,8 +9,7 @@ using SmartLeads.Infrastructure.Repositories;
 using SmartLeads.Infrastructure.Repositories.Implementation;
 using SmartLeads.Infrastructure.Repositories.Interface;
 using SmartLeads.Infrastructure.Services;
-using SmartLeads.Infrastructure.Services.Implementation;
-using SmartLeads.Infrastructure.Services.Interface;
+using SmartLeads.Utilities.Interfaces;
 
 namespace SmartLeads.Infrastructure;
 
@@ -20,7 +19,7 @@ public static class DependencyInjection
     {
         // Register Memory Cache
         services.AddMemoryCache();
-        
+
         // Register HTTP Context Accessor (needed for CompanyContext)
         services.AddHttpContextAccessor();
 
@@ -28,7 +27,7 @@ public static class DependencyInjection
         services.AddDbContext<SystemDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("SystemConnection")));
 
-        // Register default DbContext (for contact and related application data)
+        // Register Default DbContext (for contact and related application data)
         services.AddDbContext<DefaultDbContext>(options =>
             options.UseNpgsql(GetDefaultConnectionString(configuration)));
 
@@ -50,10 +49,6 @@ public static class DependencyInjection
         services.AddScoped<IContactRepository, ContactRepository>();
         services.AddScoped<IInvitationRepository, InvitationRepository>();
         services.AddScoped<IColumnFilterRepository, ColumnFilterRepository>();
-
-        // Register Services
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IInvitationService, InvitationService>();
 
         // JWT Authentication
         var jwtSettings = configuration.GetSection("JwtSettings");
