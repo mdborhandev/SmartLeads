@@ -49,7 +49,7 @@
       dir="ltr"
       data-skin="default"
       data-bs-theme="light"
-      data-assets-path="~/gtlib/dependencylib/sneatlayout/assets/"
+      data-assets-path="/gtlib/dependencylib/sneatlayout/assets/"
       data-template="vertical-menu-template">
 
 <head>
@@ -70,7 +70,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet' />
 
     <!-- Core CSS -->
-    <link rel="stylesheet" href="~/gtlib/dependencylib/sneatLayout/assets/vendor/css/core.css" />
+    <link rel="stylesheet" href="~/gtlib/dependencylib/sneatlayout/assets/vendor/css/core.css" />
 
     <!-- Tabulator CSS -->
     <link rel="stylesheet" href="https://unpkg.com/tabulator-tables@5.5.0/dist/css/tabulator.min.css" />
@@ -287,7 +287,7 @@
     <script src="~/gtlib/dependencylib/sneatlayout/assets/vendor/js/menu.js"></script>
 
     <!-- Main JS -->
-    <script src="~/gtlib/dependencylib/sneatlayout/assets/vendor/js/main.js"></script>
+    <script src="~/gtlib/dependencylib/sneatlayout/assets/js/main.js"></script>
 
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
@@ -301,6 +301,71 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable/dist/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Theme Switcher Script -->
+    <script>
+        (function() {
+            const htmlElement = document.documentElement;
+            const themeIconActive = document.querySelector('.theme-icon-active');
+            
+            // Get saved theme or default to 'light'
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+
+            // Theme button click handlers
+            document.querySelectorAll('[data-bs-theme-value]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const themeValue = this.getAttribute('data-bs-theme-value');
+                    setTheme(themeValue);
+                    
+                    // Update active state in dropdowns
+                    document.querySelectorAll('[data-bs-theme-value]').forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.closest('.dropdown-menu')?.querySelectorAll('.dropdown-item').forEach(item => {
+                            item.setAttribute('aria-pressed', 'false');
+                        });
+                    });
+                    this.classList.add('active');
+                    this.closest('.dropdown-item')?.setAttribute('aria-pressed', 'true');
+                });
+            });
+
+            function setTheme(theme) {
+                localStorage.setItem('theme', theme);
+
+                if (theme === 'system') {
+                    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                    htmlElement.setAttribute('data-bs-theme', systemTheme);
+                    if (themeIconActive) {
+                        updateIcon(systemTheme);
+                    }
+                } else {
+                    htmlElement.setAttribute('data-bs-theme', theme);
+                    if (themeIconActive) {
+                        updateIcon(theme);
+                    }
+                }
+            }
+
+            function updateIcon(theme) {
+                if (!themeIconActive) return;
+
+                themeIconActive.classList.remove('bx-sun', 'bx-moon');
+                if (theme === 'dark') {
+                    themeIconActive.classList.add('bx-moon');
+                } else {
+                    themeIconActive.classList.add('bx-sun');
+                }
+            }
+
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+                if (localStorage.getItem('theme') === 'system') {
+                    setTheme('system');
+                }
+            });
+        })();
+    </script>
 
     <!-- Services -->
     <script src="~/js/services/apiservice.js"></script>

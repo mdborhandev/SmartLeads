@@ -11,13 +11,19 @@
             // Auth controller is always accessible (Login, Register, etc.)
             return;
         }
-        
-        if (controller == "home" && (action == "landing" || action == "privacy" || action == "components" || action == "createcompany"))
+
+        if (controller == "home" && (action == "landing" || action == "privacy" || action == "components"))
         {
             // Public Home pages
             return;
         }
-        
+
+        // Allow access to UserCompany controller for creating/joining company
+        if (controller == "usercompany")
+        {
+            return;
+        }
+
         // All other pages require authentication
         Context.Response.Redirect("/Auth/Login");
         return;

@@ -163,7 +163,7 @@ public class AuthController : Controller
             if (hasCompany == null || !hasCompany.Any())
             {
                 // Redirect to NoCompany page
-                return RedirectToAction("NoCompany");
+                return RedirectToAction("NoCompany", "UserCompany");
             }
 
             // Redirect to contacts
@@ -370,6 +370,19 @@ public class AuthController : Controller
                 Expires = DateTimeOffset.UtcNow.AddHours(1)
             });
 
+            // Check if user has any company association
+            var hasCompany = await _unitOfWork.userRepository.GetUserCompaniesAsync(user.Id);
+            if (hasCompany == null || !hasCompany.Any())
+            {
+                // Redirect to NoCompany page
+                return Ok(new {
+                    success = true,
+                    message = "Login successful",
+                    redirectUrl = Url.Action("NoCompany", "UserCompany"),
+                    userId = user.Id.ToString()
+                });
+            }
+
             return Ok(new {
                 success = true,
                 message = "Login successful",
@@ -497,49 +510,6 @@ public class AuthController : Controller
     </div>
 </body>
 </html>";
-    }
-
-    #endregion
-
-    #region No Company Actions
-
-    /// <summary>
-    /// Displayed when user is not associated with any company
-    /// </summary>
-    [HttpGet]
-    public IActionResult NoCompany()
-    {
-        // Check if user is logged in
-        if (!User.Identity?.IsAuthenticated ?? true)
-        {
-            return RedirectToAction("Login");
-        }
-
-        return View("NoCompany");
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> JoinCompany(string companyCode)
-    {
-        if (string.IsNullOrEmpty(companyCode))
-        {
-            TempData["ErrorMessage"] = "Please enter a valid company code";
-            return RedirectToAction("NoCompany");
-        }
-
-        // TODO: Implement company joining logic
-        // For now, just redirect
-        return RedirectToAction("Index", "Contacts");
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateCompany()
-    {
-        // TODO: Implement company creation logic
-        // For now, just redirect
-        return RedirectToAction("Index", "Companies");
     }
 
     #endregion

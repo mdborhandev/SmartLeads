@@ -2,19 +2,19 @@
 
 @{
     ViewData["Title"] = "Create Company - SmartLeads";
-    Layout = "_AuthLayout";
+    Layout = "_UserCompanyLayout";
 }
 
 <!-- Create Company Form Card -->
 <div class="company-card">
     <!-- Card Header (Inside Card - Top) -->
-    @await Html.PartialAsync("~/Views/Shared/PartialView/_CardHeader.cshtml", new ViewDataDictionary(ViewData) { { "LogoSubtitle", "Set up your company and admin account to get started" } })
+    @await Html.PartialAsync("~/Views/Shared/PartialView/_CardHeader.cshtml", new ViewDataDictionary(ViewData) { { "LogoSubtitle", "Set up your company to get started" } })
 
     <form id="createCompanyForm" method="post">
         @Html.AntiForgeryToken()
-        
+
         <div id="error-message" class="alert alert-danger" role="alert" style="display: none;"></div>
-        
+
         @if (TempData["ErrorMessage"] != null)
         {
             <div class="alert alert-danger" role="alert">
@@ -58,48 +58,6 @@
 
         <hr class="my-4" />
 
-        <!-- Admin Account Section -->
-        <h6 class="section-title">Admin Account Information</h6>
-
-        <div class="row g-2 mb-3">
-            <div class="col-md-6">
-                <label asp-for="AdminUsername" class="form-label">Username</label>
-                <input asp-for="AdminUsername" class="form-control" placeholder="Choose a username" />
-                <span asp-validation-for="AdminUsername" class="text-danger"></span>
-            </div>
-            <div class="col-md-6">
-                <label asp-for="AdminEmail" class="form-label">Email</label>
-                <input asp-for="AdminEmail" class="form-control" placeholder="name@example.com" />
-                <span asp-validation-for="AdminEmail" class="text-danger"></span>
-            </div>
-        </div>
-
-        <div class="row g-2 mb-3">
-            <div class="col-md-6">
-                <label asp-for="AdminFirstName" class="form-label">First Name</label>
-                <input asp-for="AdminFirstName" class="form-control" placeholder="Enter first name" />
-                <span asp-validation-for="AdminFirstName" class="text-danger"></span>
-            </div>
-            <div class="col-md-6">
-                <label asp-for="AdminLastName" class="form-label">Last Name</label>
-                <input asp-for="AdminLastName" class="form-control" placeholder="Enter last name" />
-                <span asp-validation-for="AdminLastName" class="text-danger"></span>
-            </div>
-        </div>
-
-        <div class="row g-2 mb-3">
-            <div class="col-md-6">
-                <label asp-for="AdminPassword" class="form-label">Password</label>
-                <input asp-for="AdminPassword" class="form-control" placeholder="Choose a password" type="password" />
-                <span asp-validation-for="AdminPassword" class="text-danger"></span>
-            </div>
-            <div class="col-md-6">
-                <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
-                <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm your password" type="password" />
-                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-            </div>
-        </div>
-
         <div class="form-check mb-4">
             <input class="form-check-input" type="checkbox" id="agreeToTerms" required />
             <label class="form-check-label" for="agreeToTerms">
@@ -109,7 +67,7 @@
 
         <button id="create-company-submit" type="submit" class="btn btn-primary w-100 mb-3 d-flex align-items-center justify-content-center">
             <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-            <span class="button-text">Create Company & Account</span>
+            <span class="button-text">Create Company</span>
         </button>
 
         <div class="text-center">
@@ -123,6 +81,8 @@
     <partial name="~/Views/Shared/PartialView/_ValidationScriptsPartial.cshtml" />
     <script>
         $(document).ready(function() {
+            console.log('CreateCompany form initialized');
+            
             $('#createCompanyForm').on('submit', function(e) {
                 e.preventDefault();
 
@@ -132,8 +92,11 @@
                 var $buttonText = $button.find('.button-text');
                 var $errorMessage = $('#error-message');
 
+                console.log('Form submitted');
+
                 // Validate form
                 if (!$form.valid()) {
+                    console.log('Form validation failed');
                     return false;
                 }
 
@@ -153,28 +116,25 @@
                 // Get anti-forgery token
                 var token = $form.find('input[name="__RequestVerificationToken"]').val();
 
-                // Serialize form data
+                // Serialize form data (only company fields)
                 var formData = {
                     __RequestVerificationToken: token,
                     CompanyName: $('#CompanyName').val(),
                     CompanyCode: $('#CompanyCode').val(),
                     CompanyEmail: $('#CompanyEmail').val(),
                     CompanyPhone: $('#CompanyPhone').val(),
-                    CompanyAddress: $('#CompanyAddress').val(),
-                    AdminUsername: $('#AdminUsername').val(),
-                    AdminEmail: $('#AdminEmail').val(),
-                    AdminFirstName: $('#AdminFirstName').val(),
-                    AdminLastName: $('#AdminLastName').val(),
-                    AdminPassword: $('#AdminPassword').val(),
-                    ConfirmPassword: $('#ConfirmPassword').val()
+                    CompanyAddress: $('#CompanyAddress').val()
                 };
+
+                console.log('Sending AJAX request...', formData);
 
                 // Send AJAX request
                 $.ajax({
-                    url: '@Url.Action("CreateCompany", "Home")',
+                    url: '@Url.Action("CreateCompany", "UserCompany")',
                     type: 'POST',
                     data: formData,
                     success: function(response) {
+                        console.log('Success response:', response);
                         // Form submission successful, redirect
                         toastr.success('Company created successfully! Redirecting...', 'Success');
                         setTimeout(function() {
@@ -182,6 +142,10 @@
                         }, 1000);
                     },
                     error: function(xhr) {
+                        console.log('Error response:', xhr);
+                        console.log('Status:', xhr.status);
+                        console.log('ResponseText:', xhr.responseText);
+                        
                         // Handle validation errors or server errors
                         var response = xhr.responseJSON;
 
@@ -195,7 +159,13 @@
                         } else if (response && response.message) {
                             $errorMessage.text(response.message);
                         } else {
-                            $errorMessage.text(xhr.responseText || 'Failed to create company. Please try again.');
+                            var errorMsg = xhr.responseText || 'Failed to create company. Please try again.';
+                            if (xhr.status === 401) {
+                                errorMsg = 'You must be logged in to create a company. Please log in first.';
+                            } else if (xhr.status === 500) {
+                                errorMsg = 'Server error. Please try again later.';
+                            }
+                            $errorMessage.text(errorMsg);
                         }
 
                         $errorMessage.show();
@@ -203,7 +173,7 @@
                         // Reset button state
                         $button.prop('disabled', false);
                         $spinner.addClass('d-none');
-                        $buttonText.text('Create Company & Account');
+                        $buttonText.text('Create Company');
                     }
                 });
 

@@ -47,7 +47,7 @@ public class RequireCompanyAttribute : TypeFilterAttribute
                 if (!hasCompany)
                 {
                     // Redirect to NoCompany page
-                    context.Result = new RedirectToActionResult("NoCompany", "Auth", null);
+                    context.Result = new RedirectToActionResult("NoCompany", "UserCompany", null);
                     return;
                 }
             }

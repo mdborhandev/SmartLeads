@@ -119,31 +119,48 @@ public class CompanyRegistrationViewModel
     [Display(Name = "Company Address")]
     public string? CompanyAddress { get; set; }
 
-    [Required]
+    // Admin fields are now optional - will be populated from logged-in user
     [Display(Name = "Admin Username")]
-    public string AdminUsername { get; set; } = string.Empty;
+    public string? AdminUsername { get; set; }
 
-    [Required]
     [EmailAddress]
     [Display(Name = "Admin Email")]
-    public string AdminEmail { get; set; } = string.Empty;
+    public string? AdminEmail { get; set; }
 
-    [Required]
     [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
     [DataType(DataType.Password)]
     [Display(Name = "Admin Password")]
-    public string AdminPassword { get; set; } = string.Empty;
+    public string? AdminPassword { get; set; }
 
     [DataType(DataType.Password)]
     [Display(Name = "Confirm Admin Password")]
     [Compare("AdminPassword", ErrorMessage = "The password and confirmation password do not match.")]
-    public string ConfirmPassword { get; set; } = string.Empty;
+    public string? ConfirmPassword { get; set; }
 
     [Display(Name = "First Name")]
     public string? AdminFirstName { get; set; }
 
     [Display(Name = "Last Name")]
     public string? AdminLastName { get; set; }
+
+    // Employee Information (for the admin user's employee record)
+    [Display(Name = "Employee ID")]
+    public string? EmployeeId { get; set; }
+
+    [Display(Name = "Department")]
+    public string? Department { get; set; }
+
+    [Display(Name = "Designation")]
+    public string? Designation { get; set; }
+
+    [Display(Name = "Phone Number")]
+    public string? PhoneNumber { get; set; }
+
+    [Display(Name = "Address")]
+    public string? Address { get; set; }
+
+    [Display(Name = "Date of Joining")]
+    public DateTime? DateOfJoining { get; set; }
 }
 
 public class CreateUserViewModel

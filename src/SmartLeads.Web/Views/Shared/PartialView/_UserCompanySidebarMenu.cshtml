@@ -1,6 +1,6 @@
 <ul class="menu-inner py-1">
     <li class="menu-item">
-        <a href="@Url.Action("NoCompany", "Auth")" class="menu-link">
+        <a href="@Url.Action("NoCompany", "UserCompany")" class="menu-link">
             <i class="menu-icon icon-base bx bx-home-smile"></i>
             <div data-i18n="Overview">Overview</div>
         </a>
@@ -11,34 +11,90 @@
     </li>
 
     <li class="menu-item">
-        <a href="@Url.Action("NoCompany", "Auth")" class="menu-link">
+        <a href="javascript:void(0);" class="menu-link" data-bs-toggle="modal" data-bs-target="#joinCompanyModal">
             <i class="menu-icon icon-base bx bx-log-in-circle"></i>
             <div data-i18n="Join Company">Join Company</div>
         </a>
     </li>
 
     <li class="menu-item">
-        <a href="@Url.Action("NoCompany", "Auth")" class="menu-link">
+        <a href="@Url.Action("CreateCompany", "UserCompany")" class="menu-link">
             <i class="menu-icon icon-base bx bx-plus-circle"></i>
             <div data-i18n="Create Company">Create Company</div>
         </a>
     </li>
 
-    <li class="menu-header small">
-        <span class="menu-header-text" data-i18n="Apps & Pages">Apps &amp; Pages</span>
-    </li>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <li class="menu-header small">
+            <span class="menu-header-text" data-i18n="Account">Account</span>
+        </li>
 
-    <li class="menu-item">
-        <a href="@Url.Action("Profile", "Auth")" class="menu-link">
-            <i class="menu-icon icon-base bx bx-user"></i>
-            <div data-i18n="Profile">Profile</div>
-        </a>
-    </li>
+        <li class="menu-item">
+            <a href="@Url.Action("Profile", "Auth")" class="menu-link">
+                <i class="menu-icon icon-base bx bx-user"></i>
+                <div data-i18n="Profile">Profile</div>
+            </a>
+        </li>
 
-    <li class="menu-item">
-        <a href="@Url.Action("Privacy", "Home")" class="menu-link">
-            <i class="menu-icon icon-base bx bx-shield-quarter"></i>
-            <div data-i18n="Privacy">Privacy</div>
-        </a>
-    </li>
+        <li class="menu-item">
+            <form asp-controller="Auth" asp-action="Logout" method="post" class="menu-link">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-link menu-link p-0" style="width: 100%; text-align: left;">
+                    <i class="menu-icon icon-base bx bx-power-off"></i>
+                    <div data-i18n="Logout">Logout</div>
+                </button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="menu-header small">
+            <span class="menu-header-text" data-i18n="Apps & Pages">Apps &amp; Pages</span>
+        </li>
+
+        <li class="menu-item">
+            <a href="@Url.Action("Login", "Auth")" class="menu-link">
+                <i class="menu-icon icon-base bx bx-log-in"></i>
+                <div data-i18n="Login">Login</div>
+            </a>
+        </li>
+
+        <li class="menu-item">
+            <a href="@Url.Action("Register", "Auth")" class="menu-link">
+                <i class="menu-icon icon-base bx bx-user-plus"></i>
+                <div data-i18n="Register">Register</div>
+            </a>
+        </li>
+    }
 </ul>
+
+<!-- Join Company Modal -->
+<div class="modal fade" id="joinCompanyModal" tabindex="-1" aria-labelledby="joinCompanyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="joinCompanyModalLabel">
+                    <i class="bx bx-log-in-circle me-2"></i>Join Company
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="JoinCompany" asp-controller="UserCompany" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="companyCode" class="form-label">Company Code</label>
+                        <input type="text" class="form-control" id="companyCode" name="companyCode" placeholder="Enter company code" required />
+                        <div class="form-text">Contact your administrator to get the company code.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bx bx-log-in me-1"></i> Join Company
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

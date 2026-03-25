@@ -2,7 +2,7 @@
 
 /* Custom styles for ContactManager application */
 .layout-menu {
-    background-color: #fff;
+    background-color: var(--bs-body-bg);
 }
 
 .app-brand-link {
@@ -35,7 +35,7 @@
 
 /* Footer styles */
 .content-footer {
-    background-color: #f5f5f9;
+    background-color: var(--bs-tertiary-bg);
 }
 
 /* Navbar search styles */
