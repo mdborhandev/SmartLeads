@@ -10,10 +10,11 @@
     <!-- Card Header (Inside Card - Top) -->
     @await Html.PartialAsync("~/Views/Shared/PartialView/_CardHeader.cshtml", new ViewDataDictionary(ViewData) { { "LogoSubtitle", "Set up your company to get started" } })
 
-    <form id="createCompanyForm" method="post">
+    <form id="createCompanyForm" method="post" asp-action="CreateCompany" asp-controller="UserCompany" novalidate>
         @Html.AntiForgeryToken()
 
-        <div id="error-message" class="alert alert-danger" role="alert" style="display: none;"></div>
+        <div id="success-message" class="alert alert-success" role="alert" style="display: none; white-space: pre-line;"></div>
+        <div id="error-message" class="alert alert-danger" role="alert" style="display: none; white-space: pre-line;"></div>
 
         @if (TempData["ErrorMessage"] != null)
         {
@@ -78,106 +79,112 @@
 </div>
 
 @section Scripts {
-    <partial name="~/Views/Shared/PartialView/_ValidationScriptsPartial.cshtml" />
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             console.log('CreateCompany form initialized');
-            
-            $('#createCompanyForm').on('submit', function(e) {
+
+            var form = document.getElementById('createCompanyForm');
+            if (!form) {
+                return;
+            }
+
+            var button = document.getElementById('create-company-submit');
+            var spinner = button.querySelector('.spinner-border');
+            var buttonText = button.querySelector('.button-text');
+            var errorMessage = document.getElementById('error-message');
+            var successMessage = document.getElementById('success-message');
+            var termsCheckbox = document.getElementById('agreeToTerms');
+            var companyNameInput = document.getElementById('CompanyName');
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+            }
+
+            function clearMessages() {
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
+            }
+
+            form.addEventListener('submit', async function(e) {
                 e.preventDefault();
 
-                var $form = $(this);
-                var $button = $('#create-company-submit');
-                var $spinner = $button.find('.spinner-border');
-                var $buttonText = $button.find('.button-text');
-                var $errorMessage = $('#error-message');
+                clearMessages();
 
-                console.log('Form submitted');
-
-                // Validate form
-                if (!$form.valid()) {
-                    console.log('Form validation failed');
-                    return false;
+                if (!companyNameInput.value.trim()) {
+                    companyNameInput.focus();
+                    showError('Company Name is required.');
+                    return;
                 }
 
-                // Check if terms are agreed
-                if (!$('#agreeToTerms').is(':checked')) {
-                    $errorMessage.text('You must agree to the Terms and Conditions.');
-                    $errorMessage.show();
-                    return false;
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
                 }
 
-                // Show loading state
-                $button.prop('disabled', true);
-                $spinner.removeClass('d-none');
-                $buttonText.text('Creating Company...');
-                $errorMessage.hide();
+                if (!termsCheckbox.checked) {
+                    showError('You must agree to the Terms and Conditions.');
+                    return;
+                }
 
-                // Get anti-forgery token
-                var token = $form.find('input[name="__RequestVerificationToken"]').val();
+                button.disabled = true;
+                spinner.classList.remove('d-none');
+                buttonText.textContent = 'Creating Company...';
 
-                // Serialize form data (only company fields)
-                var formData = {
-                    __RequestVerificationToken: token,
-                    CompanyName: $('#CompanyName').val(),
-                    CompanyCode: $('#CompanyCode').val(),
-                    CompanyEmail: $('#CompanyEmail').val(),
-                    CompanyPhone: $('#CompanyPhone').val(),
-                    CompanyAddress: $('#CompanyAddress').val()
-                };
+                var formData = new FormData(form);
 
-                console.log('Sending AJAX request...', formData);
-
-                // Send AJAX request
-                $.ajax({
-                    url: '@Url.Action("CreateCompany", "UserCompany")',
-                    type: 'POST',
-                    data: formData,
-                    success: function(response) {
-                        console.log('Success response:', response);
-                        // Form submission successful, redirect
-                        toastr.success('Company created successfully! Redirecting...', 'Success');
-                        setTimeout(function() {
-                            window.location.href = '@Url.Action("Index", "Contacts")';
-                        }, 1000);
-                    },
-                    error: function(xhr) {
-                        console.log('Error response:', xhr);
-                        console.log('Status:', xhr.status);
-                        console.log('ResponseText:', xhr.responseText);
-                        
-                        // Handle validation errors or server errors
-                        var response = xhr.responseJSON;
-
-                        if (response && response.errors) {
-                            // Display validation errors
-                            var errorMsg = 'Please correct the following errors:\n';
-                            $.each(response.errors, function(key, value) {
-                                errorMsg += '• ' + value + '\n';
-                            });
-                            $errorMessage.text(errorMsg);
-                        } else if (response && response.message) {
-                            $errorMessage.text(response.message);
-                        } else {
-                            var errorMsg = xhr.responseText || 'Failed to create company. Please try again.';
-                            if (xhr.status === 401) {
-                                errorMsg = 'You must be logged in to create a company. Please log in first.';
-                            } else if (xhr.status === 500) {
-                                errorMsg = 'Server error. Please try again later.';
-                            }
-                            $errorMessage.text(errorMsg);
+                try {
+                    var response = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
                         }
+                    });
 
-                        $errorMessage.show();
-
-                        // Reset button state
-                        $button.prop('disabled', false);
-                        $spinner.addClass('d-none');
-                        $buttonText.text('Create Company');
+                    var payload = null;
+                    try {
+                        payload = await response.json();
+                    } catch {
+                        payload = null;
                     }
-                });
 
-                return false;
+                    if (!response.ok) {
+                        if (payload && payload.errors) {
+                            showError('Please correct the following errors:\n' + payload.errors.map(function(error) {
+                                return '• ' + error;
+                            }).join('\n'));
+                        } else if (payload && payload.message) {
+                            showError(payload.details
+                                ? payload.message + '\n' + payload.details
+                                : payload.message);
+                        } else if (response.status === 401) {
+                            showError('You must be logged in to create a company. Please log in first.');
+                        } else {
+                            showError('Failed to create company. Please try again.');
+                        }
+                        return;
+                    }
+
+                    var successText = payload && payload.message
+                        ? payload.message
+                        : 'Company created successfully.';
+                    successMessage.innerHTML = successText + '<br><a href="@Url.Action("Index", "Contacts")" class="alert-link">Go to Contacts</a>';
+                    successMessage.style.display = 'block';
+                    form.reset();
+
+                    if (window.toastr) {
+                        toastr.success('Company created successfully.', 'Success');
+                    }
+                } catch (error) {
+                    console.error('Create company request failed:', error);
+                    showError('Request failed. Please try again.');
+                } finally {
+                    button.disabled = false;
+                    spinner.classList.add('d-none');
+                    buttonText.textContent = 'Create Company';
+                }
             });
         });
     </script>

@@ -39,9 +39,14 @@ public class UnitOfWork : IUnitOfWork
 
     public async Task SaveAsync(CancellationToken token = default)
     {
-        // Save both contexts (in real scenario, consider distributed transactions)
-        await _systemDbContext.SaveChangesAsync(token);
-        await _defaultDbContext.SaveChangesAsync(token);
+        // Save system context first
+        var systemChanges = await _systemDbContext.SaveChangesAsync(token);
+        
+        // If system save succeeded, save default context
+        if (systemChanges > 0)
+        {
+            await _defaultDbContext.SaveChangesAsync(token);
+        }
     }
 
     public async ValueTask DisposeAsync()

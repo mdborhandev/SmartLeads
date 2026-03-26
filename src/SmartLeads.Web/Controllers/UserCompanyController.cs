@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using SmartLeads.Domain.DTOs;
 using SmartLeads.Domain.Enums;
 using SmartLeads.Domain.Models;
@@ -13,12 +14,14 @@ public class UserCompanyController : Controller
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
+    private readonly ILogger<UserCompanyController> _logger;
 
-    public UserCompanyController(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator)
+    public UserCompanyController(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator, ILogger<UserCompanyController> logger)
     {
         _unitOfWork = unitOfWork;
         _passwordHasher = passwordHasher;
         _jwtTokenGenerator = jwtTokenGenerator;
+        _logger = logger;
     }
 
     // GET: UserCompany/NoCompany - Displayed when user is not associated with any company
@@ -58,15 +61,29 @@ public class UserCompanyController : Controller
         return View();
     }
 
+    private bool IsAjaxRequest()
+    {
+        return string.Equals(Request.Headers.XRequestedWith, "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
+    }
+
     // POST: UserCompany/CreateCompany - Create company and admin user
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateCompany(CompanyRegistrationViewModel model)
     {
+        Guid? createdCompanyId = null;
+        Guid? createdEmployeeId = null;
+
         // Require authentication
         if (!User.Identity?.IsAuthenticated ?? true)
         {
-            return Unauthorized(new { message = "You must be logged in to create a company." });
+            if (IsAjaxRequest())
+            {
+                return Unauthorized(new { message = "You must be logged in to create a company." });
+            }
+
+            TempData["ErrorMessage"] = "You must be logged in to create a company.";
+            return RedirectToAction("Login", "Auth");
         }
 
         if (!ModelState.IsValid)
@@ -75,7 +92,13 @@ public class UserCompanyController : Controller
                 .SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
                 .ToList();
-            return BadRequest(new { errors = errors });
+            if (IsAjaxRequest())
+            {
+                return BadRequest(new { errors = errors });
+            }
+
+            TempData["ErrorMessage"] = string.Join(" ", errors);
+            return View(model);
         }
 
         try
@@ -84,20 +107,38 @@ public class UserCompanyController : Controller
             var usernameOrEmail = User.Identity?.Name;
             if (string.IsNullOrEmpty(usernameOrEmail))
             {
-                return BadRequest(new { message = "Unable to identify logged-in user." });
+                if (IsAjaxRequest())
+                {
+                    return BadRequest(new { message = "Unable to identify logged-in user." });
+                }
+
+                TempData["ErrorMessage"] = "Unable to identify logged-in user.";
+                return View(model);
             }
 
             var user = await _unitOfWork.userRepository.GetByUsernameOrEmailAsync(usernameOrEmail);
             if (user == null)
             {
-                return BadRequest(new { message = "Logged-in user not found." });
+                if (IsAjaxRequest())
+                {
+                    return BadRequest(new { message = "Logged-in user not found." });
+                }
+
+                TempData["ErrorMessage"] = "Logged-in user not found.";
+                return View(model);
             }
 
             // Check if company name already exists
             var existingCompany = await _unitOfWork.companyRepository.GetByNameAsync(model.CompanyName);
             if (existingCompany != null)
             {
-                return BadRequest(new { message = "A company with this name already exists." });
+                if (IsAjaxRequest())
+                {
+                    return BadRequest(new { message = "A company with this name already exists." });
+                }
+
+                TempData["ErrorMessage"] = "A company with this name already exists.";
+                return View(model);
             }
 
             // Create company
@@ -113,7 +154,6 @@ public class UserCompanyController : Controller
             };
 
             await _unitOfWork.companyRepository.AddAsync(company);
-            await _unitOfWork.SaveAsync();
 
             // Create Employee record for the logged-in user with default values
             var employee = new Employee
@@ -127,12 +167,13 @@ public class UserCompanyController : Controller
                 DateOfJoining = DateTime.UtcNow,
                 IsActive = true
             };
+
             await _unitOfWork.defaultDbContext.Employees.AddAsync(employee);
 
-            // Link Employee to User
+            // Keep the user mapping in the same default-db save as the employee record.
             var employeeUser = new EmployeeUser
             {
-                EmployeeId = employee.Id,
+                Employee = employee,
                 UserId = user.Id,
                 IsPrimary = true
             };
@@ -146,14 +187,73 @@ public class UserCompanyController : Controller
                 IsDefault = true
             };
             await _unitOfWork.systemDbContext.UserCompanies.AddAsync(userCompany);
+
+            // Save all changes in one go - both contexts
+            _logger.LogInformation("Saving company {CompanyName} for user {UserId}", model.CompanyName, user.Id);
             await _unitOfWork.SaveAsync();
+            createdCompanyId = company.Id;
+            createdEmployeeId = employee.Id;
+            _logger.LogInformation("Company created with ID: {CompanyId}, Employee ID: {EmployeeId}", createdCompanyId, createdEmployeeId);
 
             TempData["SuccessMessage"] = $"Company '{model.CompanyName}' created successfully! Welcome aboard!";
-            return Ok(new { success = true, message = "Company created successfully!" });
+            if (IsAjaxRequest())
+            {
+                return Ok(new { success = true, message = "Company created successfully!" });
+            }
+
+            return RedirectToAction("Index", "Contacts");
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = $"An error occurred: {ex.Message}" });
+            _logger.LogError(ex, "Failed to create company {CompanyName}. Error: {Error}", model.CompanyName, ex.Message);
+            try
+            {
+                if (createdEmployeeId.HasValue)
+                {
+                    var employeeUsers = _unitOfWork.defaultDbContext.EmployeeUsers
+                        .Where(eu => eu.EmployeeId == createdEmployeeId.Value);
+                    _unitOfWork.defaultDbContext.EmployeeUsers.RemoveRange(employeeUsers);
+
+                    var employee = await _unitOfWork.defaultDbContext.Employees.FindAsync(createdEmployeeId.Value);
+                    if (employee != null)
+                    {
+                        _unitOfWork.defaultDbContext.Employees.Remove(employee);
+                    }
+
+                    await _unitOfWork.defaultDbContext.SaveChangesAsync();
+                }
+
+                if (createdCompanyId.HasValue)
+                {
+                    var userCompanies = _unitOfWork.systemDbContext.UserCompanies
+                        .Where(uc => uc.CompanyId == createdCompanyId.Value);
+                    _unitOfWork.systemDbContext.UserCompanies.RemoveRange(userCompanies);
+
+                    var company = await _unitOfWork.systemDbContext.Companies.FindAsync(createdCompanyId.Value);
+                    if (company != null)
+                    {
+                        _unitOfWork.systemDbContext.Companies.Remove(company);
+                    }
+
+                    await _unitOfWork.systemDbContext.SaveChangesAsync();
+                }
+            }
+            catch
+            {
+                // Preserve the original failure response; best-effort cleanup only.
+            }
+
+            if (IsAjaxRequest())
+            {
+                return BadRequest(new
+                {
+                    message = "Failed to create company. Please try again.",
+                    details = ex.Message
+                });
+            }
+
+            TempData["ErrorMessage"] = $"Failed to create company. {ex.Message}";
+            return View(model);
         }
     }
 
