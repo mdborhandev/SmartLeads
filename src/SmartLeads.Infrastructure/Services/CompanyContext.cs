@@ -24,6 +24,11 @@ public interface ICompanyContext
     Guid? CurrentCompanyId { get; }
 
     /// <summary>
+    /// The current employee ID for the current company.
+    /// </summary>
+    Guid? CurrentEmployeeId { get; }
+
+    /// <summary>
     /// The current user's employee information for the current company.
     /// </summary>
     UserCompany? CurrentEmployeeRecord { get; }
@@ -37,6 +42,11 @@ public interface ICompanyContext
     /// Gets all companies the current user belongs to.
     /// </summary>
     Task<IEnumerable<UserCompany>> GetUserCompaniesAsync(CancellationToken token = default);
+    
+    /// <summary>
+    /// Gets the default company ID for the current user.
+    /// </summary>
+    Task<Guid?> GetDefaultCompanyIdAsync(CancellationToken token = default);
 }
 
 public class CompanyContext : ICompanyContext
@@ -68,13 +78,57 @@ public class CompanyContext : ICompanyContext
         }
     }
 
-    public Guid? CurrentCompanyId { get; private set; }
+    public Guid? CurrentCompanyId
+    {
+        get
+        {
+            // First check session
+            var sessionCompanyId = _httpContextAccessor.HttpContext?.Session.GetString("CurrentCompanyId");
+            if (!string.IsNullOrEmpty(sessionCompanyId) && Guid.TryParse(sessionCompanyId, out var sessionId))
+            {
+                return sessionId;
+            }
+
+            // Then check cookie
+            var cookieCompanyId = _httpContextAccessor.HttpContext?.Request.Cookies["CurrentCompanyId"];
+            if (!string.IsNullOrEmpty(cookieCompanyId) && Guid.TryParse(cookieCompanyId, out var cookieId))
+            {
+                return cookieId;
+            }
+
+            // If no session or cookie, try to get default company
+            var userId = CurrentUserId;
+            if (userId.HasValue)
+            {
+                var defaultCompany = _systemDbContext.UserCompanies
+                    .FirstOrDefault(uc => uc.UserId == userId.Value && uc.IsDefault && uc.IsActive && !uc.IsDeleted);
+                return defaultCompany?.CompanyId;
+            }
+
+            return null;
+        }
+    }
+
+    public Guid? CurrentEmployeeId
+    {
+        get
+        {
+            // Check cookie first
+            var cookieEmployeeId = _httpContextAccessor.HttpContext?.Request.Cookies["CurrentEmployeeId"];
+            if (!string.IsNullOrEmpty(cookieEmployeeId) && Guid.TryParse(cookieEmployeeId, out var employeeId))
+            {
+                return employeeId;
+            }
+            
+            return null;
+        }
+    }
 
     public UserCompany? CurrentEmployeeRecord { get; private set; }
 
     public void SetCurrentCompany(Guid companyId)
     {
-        CurrentCompanyId = companyId;
+        _httpContextAccessor.HttpContext?.Session.SetString("CurrentCompanyId", companyId.ToString());
         CurrentEmployeeRecord = null; // Will be loaded on demand
     }
 
@@ -87,7 +141,7 @@ public class CompanyContext : ICompanyContext
         }
 
         var cacheKey = $"usercompanies_{userId.Value}";
-        
+
         if (_cache.TryGetValue(cacheKey, out IEnumerable<UserCompany>? cached))
         {
             return cached ?? Enumerable.Empty<UserCompany>();
@@ -101,6 +155,20 @@ public class CompanyContext : ICompanyContext
         _cache.Set(cacheKey, userCompanies, TimeSpan.FromMinutes(30));
 
         return userCompanies;
+    }
+    
+    public async Task<Guid?> GetDefaultCompanyIdAsync(CancellationToken token = default)
+    {
+        var userId = CurrentUserId;
+        if (!userId.HasValue)
+        {
+            return null;
+        }
+
+        var defaultCompany = await _systemDbContext.UserCompanies
+            .FirstOrDefaultAsync(uc => uc.UserId == userId.Value && uc.IsDefault && uc.IsActive && !uc.IsDeleted, token);
+
+        return defaultCompany?.CompanyId;
     }
 
     public async Task<UserCompany?> GetCurrentEmployeeRecordAsync(CancellationToken token = default)

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SmartLeads.Domain.DTOs;
 using SmartLeads.Infrastructure.Repositories.Interface;
@@ -166,6 +167,35 @@ public class AuthController : Controller
                 return RedirectToAction("NoCompany", "UserCompany");
             }
 
+            // Set default company in session and cookie
+            var defaultCompany = hasCompany.FirstOrDefault(uc => uc.IsDefault) ?? hasCompany.First();
+            HttpContext.Session.SetString("CurrentCompanyId", defaultCompany.CompanyId.ToString());
+            
+            // Store Company ID in cookie
+            HttpContext.Response.Cookies.Append("CurrentCompanyId", defaultCompany.CompanyId.ToString(), new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddHours(1)
+            });
+
+            // Get Employee record for this user in this company and store in cookie
+            var employeeUser = await _unitOfWork.defaultDbContext.EmployeeUsers
+                .Include(eu => eu.Employee)
+                .FirstOrDefaultAsync(eu => eu.UserId == user.Id && eu.Employee.CompanyId == defaultCompany.CompanyId);
+            
+            if (employeeUser != null && employeeUser.Employee != null)
+            {
+                HttpContext.Response.Cookies.Append("CurrentEmployeeId", employeeUser.EmployeeId.ToString(), new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddHours(1)
+                });
+            }
+
             // Redirect to contacts
             return RedirectToAction("Index", "Contacts");
         }
@@ -179,7 +209,26 @@ public class AuthController : Controller
     [HttpPost]
     public IActionResult Logout()
     {
+        // Delete all cookies
         HttpContext.Response.Cookies.Delete("JwtToken");
+        HttpContext.Response.Cookies.Delete("UserId");
+        HttpContext.Response.Cookies.Delete("CurrentCompanyId");
+        HttpContext.Response.Cookies.Delete("CurrentEmployeeId");
+        HttpContext.Response.Cookies.Delete("SmartLeads.Session");
+        
+        // Delete antiforgery cookie (pattern matches .AspNetCore.Antiforgery.*)
+        var responseCookies = HttpContext.Response.Cookies;
+        foreach (var cookie in HttpContext.Request.Cookies.Keys)
+        {
+            if (cookie.StartsWith(".AspNetCore.Antiforgery", StringComparison.OrdinalIgnoreCase))
+            {
+                responseCookies.Delete(cookie);
+            }
+        }
+        
+        // Clear and abandon session
+        HttpContext.Session.Clear();
+        
         return RedirectToAction("Login");
     }
 

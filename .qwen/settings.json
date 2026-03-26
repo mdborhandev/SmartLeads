@@ -5,7 +5,8 @@
       "Bash(journalctl *)",
       "Bash(pkill *)",
       "Bash(sleep *)",
-      "Bash(psql *)"
+      "Bash(psql *)",
+      "Bash(rm *)"
     ]
   },
   "$version": 3

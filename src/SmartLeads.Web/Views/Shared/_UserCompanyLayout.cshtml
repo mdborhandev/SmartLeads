@@ -1,6 +1,8 @@
 @using SmartLeads.Domain.Enums
 @using SmartLeads.Infrastructure.Repositories.Interface
+@using SmartLeads.Infrastructure.Services
 @inject IUnitOfWork _unitOfWork
+@inject ICompanyContext _companyContext
 
 @{
     string GetRoleDisplayName(UserRole role) => role switch
@@ -18,6 +20,15 @@
     string lastName = "";
     string fullName = "";
     string greeting = "Good day";
+
+    // Get current company
+    var currentCompanyId = _companyContext.CurrentCompanyId;
+    var currentCompany = currentCompanyId.HasValue 
+        ? await _unitOfWork.systemDbContext.Companies.FindAsync(currentCompanyId.Value)
+        : null;
+
+    // Get user's companies for the switcher
+    var userCompanies = await _companyContext.GetUserCompaniesAsync();
 
     // Try to get role from claims if available
     var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role);
@@ -132,6 +143,37 @@
                     </div>
 
                     <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
+                        <!-- Company Switcher -->
+                        @if (User.Identity?.IsAuthenticated == true && userCompanies.Any())
+                        {
+                            <li class="nav-item dropdown me-2 me-xl-0">
+                                <a class="nav-link dropdown-toggle hide-arrow"
+                                   id="companySwitcher"
+                                   href="javascript:void(0);"
+                                   data-bs-toggle="dropdown">
+                                    <i class="icon-base bx bx-buildings icon-md"></i>
+                                    <span class="d-none d-md-inline ms-2">@(currentCompany?.Name ?? "Select Company")</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="companySwitcher">
+                                    @foreach (var uc in userCompanies)
+                                    {
+                                        <li>
+                                            <button type="button"
+                                                    class="dropdown-item @(uc.CompanyId == currentCompanyId ? "active" : "")"
+                                                    onclick="switchCompany('@uc.CompanyId', '@uc.Company.Name')">
+                                                <i class="icon-base bx bx-@(uc.CompanyId == currentCompanyId ? "check-circle" : "circle") me-2"></i>
+                                                @uc.Company.Name
+                                                @if (uc.IsDefault)
+                                                {
+                                                    <span class="badge bg-label-primary ms-2">Default</span>
+                                                }
+                                            </button>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+
                         <!-- Greeting -->
                         @if (User.Identity?.IsAuthenticated == true && !string.IsNullOrEmpty(fullName))
                         {
@@ -143,6 +185,26 @@
                         }
 
                         <ul class="navbar-nav flex-row align-items-center ms-md-auto">
+                            <!-- Layout Switcher -->
+                            <li class="nav-item dropdown me-2 me-xl-0">
+                                <a class="nav-link dropdown-toggle hide-arrow"
+                                   id="layoutSwitcher"
+                                   href="javascript:void(0);"
+                                   data-bs-toggle="dropdown">
+                                    <i class="icon-base bx bx-layout icon-md"></i>
+                                    <span class="d-none ms-2">Layout</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="layoutSwitcher">
+                                    <li>
+                                        <button type="button"
+                                                class="dropdown-item"
+                                                onclick="switchToMainLayout()">
+                                            <i class="icon-base bx bx-globe me-2"></i>Main Layout
+                                        </button>
+                                    </li>
+                                </ul>
+                            </li>
+
                             <!-- Style Switcher -->
                             <li class="nav-item dropdown me-2 me-xl-0">
                                 <a class="nav-link dropdown-toggle hide-arrow"
@@ -222,6 +284,7 @@
                                         </li>
                                         <li>
                                             <form asp-controller="Auth" asp-action="Logout" method="post" class="dropdown-item">
+                                                @Html.AntiForgeryToken()
                                                 <button type="submit" class="btn btn-link dropdown-item p-0">
                                                     <i class="icon-base bx bx-power-off icon-md me-3"></i><span>Log Out</span>
                                                 </button>
@@ -274,6 +337,10 @@
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    
+    <!-- Antiforgery Token -->
+    @Html.AntiForgeryToken()
+    
     <script src="~/gtlib/dependencylib/sneatlayout/assets/vendor/libs/popper/popper.js"></script>
     <script src="~/gtlib/dependencylib/sneatlayout/assets/vendor/js/bootstrap.js"></script>
     <script src="~/gtlib/dependencylib/sneatlayout/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
@@ -350,6 +417,74 @@
                 }
             });
         })();
+
+        // Company Switcher Function
+        function switchCompany(companyId, companyName) {
+            var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+            fetch('/UserCompany/SwitchCompany', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
+                body: JSON.stringify({ companyId: companyId })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    toastr.success(`Switched to ${companyName}`, 'Company Switched');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    toastr.error(data.message || 'Failed to switch company', 'Error');
+                }
+            })
+            .catch(error => {
+                console.error('Switch company failed:', error);
+                toastr.error(error.message || 'Failed to switch company', 'Error');
+            });
+        }
+
+        // Switch to Main Layout
+        function switchToMainLayout() {
+            console.log('Switching to Main Layout...');
+            fetch('/UserCompany/SwitchLayout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ useUserCompanyLayout: false })
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    toastr.success('Switched to Main Layout', 'Layout Changed');
+                    setTimeout(() => {
+                        // Redirect to Main Layout's default page
+                        window.location.href = '/Home/Index';
+                    }, 1000);
+                } else {
+                    toastr.error('Failed to switch layout', 'Error');
+                }
+            })
+            .catch(error => {
+                console.error('Switch layout failed:', error);
+                toastr.error(error.message || 'Failed to switch layout', 'Error');
+            });
+        }
     </script>
 
     <!-- Services -->

@@ -1,13 +1,57 @@
+@using SmartLeads.Infrastructure.Services
+@using SmartLeads.Infrastructure.Repositories.Interface
+@inject ICompanyContext _companyContext
+@inject IUnitOfWork _unitOfWork
+
+@{
+    var currentCompanyId = _companyContext.CurrentCompanyId;
+    var currentCompany = currentCompanyId.HasValue 
+        ? await _unitOfWork.systemDbContext.Companies.FindAsync(currentCompanyId.Value)
+        : null;
+    var userCompanies = await _companyContext.GetUserCompaniesAsync();
+}
+
 <ul class="menu-inner py-1">
+    <!-- Dashboard -->
     <li class="menu-item">
         <a href="@Url.Action("NoCompany", "UserCompany")" class="menu-link">
             <i class="menu-icon icon-base bx bx-home-smile"></i>
-            <div data-i18n="Overview">Overview</div>
+            <div data-i18n="Dashboard">Dashboard</div>
         </a>
     </li>
 
+    @if (userCompanies.Any())
+    {
+        <li class="menu-header small">
+            <span class="menu-header-text" data-i18n="My Companies">My Companies</span>
+        </li>
+
+        <!-- Show list of user's companies -->
+        @foreach (var uc in userCompanies)
+        {
+            <li class="menu-item">
+                <a href="javascript:void(0);" 
+                   class="menu-link @(uc.CompanyId == currentCompanyId ? "active" : "")"
+                   onclick="switchCompanySidebar('@uc.CompanyId', '@uc.Company.Name'); return false;">
+                    <i class="menu-icon icon-base bx bx-@(uc.CompanyId == currentCompanyId ? "check-circle" : "circle")"></i>
+                    <span class="text-truncate" style="max-width: 160px;">@uc.Company.Name</span>
+                    @if (uc.IsDefault)
+                    {
+                        <span class="badge bg-label-primary ms-auto">Default</span>
+                    }
+                </a>
+            </li>
+        }
+    }
+    else
+    {
+        <li class="menu-header small">
+            <span class="menu-header-text" data-i18n="Get Started">Get Started</span>
+        </li>
+    }
+
     <li class="menu-header small">
-        <span class="menu-header-text" data-i18n="Company Access">Company Access</span>
+        <span class="menu-header-text" data-i18n="Company Actions">Company Actions</span>
     </li>
 
     <li class="menu-item">
@@ -47,26 +91,6 @@
             </form>
         </li>
     }
-    else
-    {
-        <li class="menu-header small">
-            <span class="menu-header-text" data-i18n="Apps & Pages">Apps &amp; Pages</span>
-        </li>
-
-        <li class="menu-item">
-            <a href="@Url.Action("Login", "Auth")" class="menu-link">
-                <i class="menu-icon icon-base bx bx-log-in"></i>
-                <div data-i18n="Login">Login</div>
-            </a>
-        </li>
-
-        <li class="menu-item">
-            <a href="@Url.Action("Register", "Auth")" class="menu-link">
-                <i class="menu-icon icon-base bx bx-user-plus"></i>
-                <div data-i18n="Register">Register</div>
-            </a>
-        </li>
-    }
 </ul>
 
 <!-- Join Company Modal -->
@@ -98,3 +122,42 @@
         </div>
     </div>
 </div>
+
+<script>
+    function switchCompanySidebar(companyId, companyName) {
+        fetch('/UserCompany/SwitchCompany', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: JSON.stringify({ companyId: companyId })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw err; });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                if (typeof toastr !== 'undefined') {
+                    toastr.success(`Switched to ${companyName}`, 'Company Switched');
+                }
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                if (typeof toastr !== 'undefined') {
+                    toastr.error(data.message || 'Failed to switch company', 'Error');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Switch company failed:', error);
+            if (typeof toastr !== 'undefined') {
+                toastr.error(error.message || 'Failed to switch company', 'Error');
+            }
+        });
+    }
+</script>

@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SmartLeads.Domain.DTOs;
 using SmartLeads.Domain.Enums;
 using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Repositories.Interface;
+using SmartLeads.Infrastructure.Services;
 using SmartLeads.Utilities.Interfaces;
 
 namespace SmartLeads.Web.Controllers;
@@ -14,13 +16,15 @@ public class UserCompanyController : Controller
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
+    private readonly ICompanyContext _companyContext;
     private readonly ILogger<UserCompanyController> _logger;
 
-    public UserCompanyController(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator, ILogger<UserCompanyController> logger)
+    public UserCompanyController(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator, ICompanyContext companyContext, ILogger<UserCompanyController> logger)
     {
         _unitOfWork = unitOfWork;
         _passwordHasher = passwordHasher;
         _jwtTokenGenerator = jwtTokenGenerator;
+        _companyContext = companyContext;
         _logger = logger;
     }
 
@@ -271,5 +275,129 @@ public class UserCompanyController : Controller
         // TODO: Implement company joining logic
         // For now, just redirect
         return RedirectToAction("Index", "Contacts");
+    }
+
+    // POST: UserCompany/SwitchCompany - Switch to a different company
+    [HttpPost]
+    public async Task<IActionResult> SwitchCompany(Guid companyId)
+    {
+        if (!User.Identity?.IsAuthenticated ?? true)
+        {
+            return Unauthorized(new { success = false, message = "Unauthorized" });
+        }
+
+        try
+        {
+            var userId = _companyContext.CurrentUserId;
+            if (!userId.HasValue)
+            {
+                return BadRequest(new { success = false, message = "User not found" });
+            }
+
+            // Verify user belongs to this company
+            var userCompany = await _unitOfWork.systemDbContext.UserCompanies
+                .FirstOrDefaultAsync(uc => uc.UserId == userId.Value && uc.CompanyId == companyId && uc.IsActive && !uc.IsDeleted);
+
+            if (userCompany == null)
+            {
+                return BadRequest(new { success = false, message = "You don't have access to this company" });
+            }
+
+            // Set the new company in session and cookie
+            _companyContext.SetCurrentCompany(companyId);
+            HttpContext.Response.Cookies.Append("CurrentCompanyId", companyId.ToString(), new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddHours(1)
+            });
+
+            // Get and update Employee record for this user in this company
+            var employeeUser = await _unitOfWork.defaultDbContext.EmployeeUsers
+                .Include(eu => eu.Employee)
+                .FirstOrDefaultAsync(eu => eu.UserId == userId.Value && eu.Employee.CompanyId == companyId);
+            
+            if (employeeUser != null && employeeUser.Employee != null)
+            {
+                HttpContext.Response.Cookies.Append("CurrentEmployeeId", employeeUser.EmployeeId.ToString(), new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddHours(1)
+                });
+            }
+            else
+            {
+                // Remove employee cookie if no employee record found
+                HttpContext.Response.Cookies.Delete("CurrentEmployeeId");
+            }
+
+            _logger.LogInformation("User {UserId} switched to company {CompanyId}, EmployeeId: {EmployeeId}", 
+                userId, companyId, employeeUser?.EmployeeId);
+
+            return Ok(new { success = true, message = "Company switched successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to switch company for user {UserId}", _companyContext.CurrentUserId);
+            return BadRequest(new { success = false, message = "Failed to switch company", details = ex.Message });
+        }
+    }
+
+    // GET: UserCompany/GetCompanies - Get user's companies (API)
+    [HttpGet]
+    public async Task<IActionResult> GetCompanies()
+    {
+        if (!User.Identity?.IsAuthenticated ?? true)
+        {
+            return Unauthorized(new { success = false, message = "Unauthorized" });
+        }
+
+        try
+        {
+            var userCompanies = await _companyContext.GetUserCompaniesAsync();
+            var currentCompanyId = _companyContext.CurrentCompanyId;
+
+            var companies = userCompanies.Select(uc => new
+            {
+                uc.Company.Id,
+                uc.Company.Name,
+                uc.Company.Code,
+                IsCurrent = uc.CompanyId == currentCompanyId,
+                IsDefault = uc.IsDefault
+            }).ToList();
+
+            return Ok(new { success = true, companies, currentCompanyId });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get companies for user {UserId}", _companyContext.CurrentUserId);
+            return BadRequest(new { success = false, message = "Failed to get companies", details = ex.Message });
+        }
+    }
+
+    // POST: UserCompany/SwitchLayout - Switch between Main and UserCompany layout
+    [HttpPost]
+    public IActionResult SwitchLayout(bool useUserCompanyLayout)
+    {
+        if (useUserCompanyLayout)
+        {
+            HttpContext.Session.SetString("UseUserCompanyLayout", "true");
+        }
+        else
+        {
+            HttpContext.Session.Remove("UseUserCompanyLayout");
+        }
+        return Ok(new { success = true, useUserCompanyLayout });
+    }
+
+    // GET: UserCompany/GetLayout - Get current layout preference
+    [HttpGet]
+    public IActionResult GetLayout()
+    {
+        var useUserCompanyLayout = HttpContext.Session.GetString("UseUserCompanyLayout") == "true";
+        return Ok(new { success = true, useUserCompanyLayout });
     }
 }

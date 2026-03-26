@@ -15,6 +15,15 @@ builder.Services.AddControllersWithViews()
 builder.Services.AddApplication();
 builder.Services.AddUtilities(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(8);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.Name = "SmartLeads.Session";
+});
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
@@ -33,6 +42,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
