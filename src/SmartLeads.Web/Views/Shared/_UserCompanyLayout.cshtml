@@ -424,30 +424,41 @@
 
         // Company Switcher Function
         function switchCompany(companyId, companyName) {
-            console.log('Switching to company:', companyId, companyName);
-            var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
-            console.log('Token found:', token ? 'Yes' : 'No');
+            console.log('=== Company Switch Started ===');
+            console.log('Company ID:', companyId);
+            console.log('Company Name:', companyName);
             
+            var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+            console.log('CSRF Token found:', token ? 'Yes (' + token.substring(0, 20) + '...)' : 'No');
+
             fetch('/UserCompany/SwitchCompany', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'RequestVerificationToken': token
                 },
-                body: JSON.stringify({ companyId: companyId })
+                body: JSON.stringify({ CompanyId: companyId })
             })
             .then(response => {
                 console.log('Response status:', response.status);
+                console.log('Response OK:', response.ok);
                 if (!response.ok) {
-                    return response.json().then(err => { throw err; });
+                    return response.json().then(err => {
+                        console.error('=== Server Error ===');
+                        console.error('Error details:', err);
+                        throw err;
+                    });
                 }
                 return response.json();
             })
             .then(data => {
-                console.log('Response data:', data);
+                console.log('=== Response Data ===');
+                console.log('Success:', data.success);
+                console.log('Message:', data.message);
                 if (data.success) {
                     toastr.success(`Switched to ${companyName}`, 'Company Switched');
                     setTimeout(() => {
+                        console.log('Reloading page...');
                         window.location.reload();
                     }, 1000);
                 } else {
@@ -455,7 +466,8 @@
                 }
             })
             .catch(error => {
-                console.error('Switch company failed:', error);
+                console.error('=== Switch Company Failed ===');
+                console.error('Error:', error);
                 toastr.error(error.message || 'Failed to switch company', 'Error');
             });
         }

@@ -214,10 +214,13 @@ public class UserCompanyController : Controller
             await _unitOfWork.SaveAsync();
             createdCompanyId = company.Id;
             createdEmployeeId = employee.Id;
-            
+
             // Clear the user companies cache so the new company appears immediately
             _companyContext.ClearUserCompaniesCache(user.Id);
             
+            // Force reload of user companies to include the new company
+            await _companyContext.GetUserCompaniesAsync();
+
             _logger.LogInformation("Company created with ID: {CompanyId}, Employee ID: {EmployeeId}", createdCompanyId, createdEmployeeId);
 
             TempData["SuccessMessage"] = $"Company '{model.CompanyName}' created successfully! Welcome aboard!";
@@ -300,12 +303,19 @@ public class UserCompanyController : Controller
 
     // POST: UserCompany/SwitchCompany - Switch to a different company
     [HttpPost]
-    public async Task<IActionResult> SwitchCompany(Guid companyId)
+    public async Task<IActionResult> SwitchCompany([FromBody] SwitchCompanyRequest request)
     {
         if (!User.Identity?.IsAuthenticated ?? true)
         {
             return Unauthorized(new { success = false, message = "Unauthorized" });
         }
+
+        if (request?.CompanyId == null)
+        {
+            return BadRequest(new { success = false, message = "Company ID is required" });
+        }
+
+        var companyId = request.CompanyId.Value;
 
         try
         {
@@ -315,14 +325,32 @@ public class UserCompanyController : Controller
                 return BadRequest(new { success = false, message = "User not found" });
             }
 
+            _logger.LogInformation("User {UserId} attempting to switch to company {CompanyId}", userId.Value, companyId);
+
             // Verify user belongs to this company
             var userCompany = await _unitOfWork.systemDbContext.UserCompanies
                 .FirstOrDefaultAsync(uc => uc.UserId == userId.Value && uc.CompanyId == companyId && uc.IsActive && !uc.IsDeleted);
 
             if (userCompany == null)
             {
+                // Log detailed information for debugging
+                var allUserCompanies = await _unitOfWork.systemDbContext.UserCompanies
+                    .Where(uc => uc.UserId == userId.Value)
+                    .ToListAsync();
+
+                _logger.LogWarning(
+                    "User {UserId} doesn't have access to company {CompanyId}. User has {Count} companies: {CompanyIds}",
+                    userId.Value,
+                    companyId,
+                    allUserCompanies.Count,
+                    string.Join(", ", allUserCompanies.Select(uc => $"{uc.CompanyId}(Active={uc.IsActive},Deleted={uc.IsDeleted})"))
+                );
+
                 return BadRequest(new { success = false, message = "You don't have access to this company" });
             }
+
+            _logger.LogInformation("User {UserId} verified for company {CompanyId} with role {Role}",
+                userId.Value, companyId, userCompany.Role);
 
             // Set the new company in session and cookie
             _companyContext.SetCurrentCompany(companyId);
@@ -338,7 +366,7 @@ public class UserCompanyController : Controller
             var employeeUser = await _unitOfWork.defaultDbContext.EmployeeUsers
                 .Include(eu => eu.Employee)
                 .FirstOrDefaultAsync(eu => eu.UserId == userId.Value && eu.Employee.CompanyId == companyId);
-            
+
             if (employeeUser != null && employeeUser.Employee != null)
             {
                 HttpContext.Response.Cookies.Append("CurrentEmployeeId", employeeUser.EmployeeId.ToString(), new CookieOptions
@@ -355,7 +383,7 @@ public class UserCompanyController : Controller
                 HttpContext.Response.Cookies.Delete("CurrentEmployeeId");
             }
 
-            _logger.LogInformation("User {UserId} switched to company {CompanyId}, EmployeeId: {EmployeeId}", 
+            _logger.LogInformation("User {UserId} switched to company {CompanyId}, EmployeeId: {EmployeeId}",
                 userId, companyId, employeeUser?.EmployeeId);
 
             return Ok(new { success = true, message = "Company switched successfully" });
@@ -365,6 +393,12 @@ public class UserCompanyController : Controller
             _logger.LogError(ex, "Failed to switch company for user {UserId}", _companyContext.CurrentUserId);
             return BadRequest(new { success = false, message = "Failed to switch company", details = ex.Message });
         }
+    }
+
+    // DTO for SwitchCompany request
+    public class SwitchCompanyRequest
+    {
+        public Guid? CompanyId { get; set; }
     }
 
     // GET: UserCompany/GetCompanies - Get user's companies (API)
