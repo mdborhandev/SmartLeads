@@ -1,0 +1,294 @@
+@using SmartLeads.Infrastructure.Services
+@using SmartLeads.Infrastructure.Repositories.Interface
+@using Microsoft.EntityFrameworkCore
+@inject ICompanyContext _companyContext
+@inject IUnitOfWork _unitOfWork
+
+@{
+    ViewData["Title"] = "Company Dashboard";
+    Layout = "_UserCompanyLayout";
+
+    // Get current company
+    var currentCompanyId = _companyContext.CurrentCompanyId;
+    var currentCompany = currentCompanyId.HasValue
+        ? await _unitOfWork.systemDbContext.Companies.FindAsync(currentCompanyId.Value)
+        : null;
+
+    // Get user's companies
+    var userCompanies = await _companyContext.GetUserCompaniesAsync();
+
+    // Get employee count if company exists
+    int employeeCount = 0;
+    int userCount = 0;
+    if (currentCompanyId.HasValue)
+    {
+        employeeCount = await _unitOfWork.defaultDbContext.Employees
+            .Where(e => e.CompanyId == currentCompanyId.Value && e.IsActive)
+            .CountAsync();
+        
+        userCount = await _unitOfWork.systemDbContext.UserCompanies
+            .Where(uc => uc.CompanyId == currentCompanyId.Value && uc.IsActive && !uc.IsDeleted)
+            .CountAsync();
+    }
+}
+
+<div class="container-xxl py-4">
+    @if (currentCompany == null)
+    {
+        // No company selected - show company selection
+        <div class="row justify-content-center">
+            <div class="col-xxl-8">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bx bx-buildings display-1 text-primary mb-3"></i>
+                        <h3 class="card-title mb-3">Select a Company</h3>
+                        <p class="text-muted mb-4">Choose a company from the sidebar or create a new one to get started.</p>
+                        
+                        @if (userCompanies.Any())
+                        {
+                            <div class="row g-3 justify-content-center">
+                                @foreach (var uc in userCompanies)
+                                {
+                                    <div class="col-md-4">
+                                        <div class="card h-100">
+                                            <div class="card-body text-center">
+                                                <i class="bx bx-building-house display-4 text-primary mb-3"></i>
+                                                <h5 class="card-title">@uc.Company.Name</h5>
+                                                <p class="card-text text-muted">@uc.Company.Code</p>
+                                                <button class="btn btn-primary" onclick="switchCompanySidebar('@uc.Company.Id', '@uc.Company.Name')">
+                                                    <i class="bx bx-select-multiple me-1"></i> Select
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="row g-3 justify-content-center">
+                                <div class="col-md-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="bx bx-plus-circle display-4 text-primary mb-3"></i>
+                                            <h5 class="card-title">Create Company</h5>
+                                            <p class="card-text text-muted">Start a new company</p>
+                                            <a asp-action="CreateCompany" class="btn btn-primary">
+                                                <i class="bx bx-plus me-1"></i> Create
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="bx bx-log-in-circle display-4 text-success mb-3"></i>
+                                            <h5 class="card-title">Join Company</h5>
+                                            <p class="card-text text-muted">Join existing company</p>
+                                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#joinCompanyModal">
+                                                <i class="bx bx-log-in me-1"></i> Join
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        // Company selected - show company dashboard
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 class="card-title mb-1">@currentCompany.Name</h4>
+                                <p class="text-muted mb-0">@currentCompany.Code</p>
+                            </div>
+                            <span class="badge bg-label-primary @(userCompanies.FirstOrDefault(uc => uc.CompanyId == currentCompanyId)?.IsDefault == true ? "" : "d-none")">
+                                <i class="bx bx-star me-1"></i> Default
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Statistics Cards -->
+            <div class="col-sm-6 col-xl-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar avatar-md-3 me-3">
+                                <div class="avatar-initial bg-primary rounded-circle shadow">
+                                    <i class="bx bx-group"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="mb-0">@employeeCount</h5>
+                                <small class="text-muted">Employees</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-sm-6 col-xl-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar avatar-md-3 me-3">
+                                <div class="avatar-initial bg-success rounded-circle shadow">
+                                    <i class="bx bx-user"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="mb-0">@userCount</h5>
+                                <small class="text-muted">Users</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar avatar-md-3 me-3">
+                                <div class="avatar-initial bg-info rounded-circle shadow">
+                                    <i class="bx bx-buildings"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="mb-0">@userCompanies.Count()</h5>
+                                <small class="text-muted">Your Companies</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar avatar-md-3 me-3">
+                                <div class="avatar-initial bg-warning rounded-circle shadow">
+                                    <i class="bx bx-cog"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="mb-0">Active</h5>
+                                <small class="text-muted">Status</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row g-4 mt-2">
+            <div class="col-12">
+                <h5 class="mb-3">Quick Actions</h5>
+            </div>
+            
+            <div class="col-sm-6 col-lg-3">
+                <a asp-controller="Contacts" asp-action="Index" class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bx bx-book-contacts display-4 text-primary mb-3"></i>
+                        <h6 class="card-title">Manage Contacts</h6>
+                        <p class="card-text text-muted small">View and manage your contacts</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <a asp-controller="Users" asp-action="Index" class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bx bx-user display-4 text-success mb-3"></i>
+                        <h6 class="card-title">Manage Users</h6>
+                        <p class="card-text text-muted small">Add or remove users</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <a asp-controller="Invitations" asp-action="Index" class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bx bx-envelope display-4 text-info mb-3"></i>
+                        <h6 class="card-title">Invitations</h6>
+                        <p class="card-text text-muted small">Send and manage invitations</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <a asp-action="CreateCompany" class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bx bx-plus-circle display-4 text-warning mb-3"></i>
+                        <h6 class="card-title">Create Company</h6>
+                        <p class="card-text text-muted small">Start a new company</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Join Company Modal -->
+<div class="modal fade" id="joinCompanyModal" tabindex="-1" aria-labelledby="joinCompanyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="joinCompanyModalLabel">
+                    <i class="bx bx-log-in-circle me-2"></i>Join Company
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="JoinCompany" asp-controller="UserCompany" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="companyCode" class="form-label">Company Code</label>
+                        <input type="text" class="form-control" id="companyCode" name="companyCode" placeholder="Enter company code" required />
+                        <div class="form-text">Contact your administrator to get the company code.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bx bx-log-in me-1"></i> Join Company
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                toastr.success('@TempData["SuccessMessage"]', 'Success');
+                </text>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <text>
+                toastr.error('@TempData["ErrorMessage"]', 'Error');
+                </text>
+            }
+        });
+    </script>
+}

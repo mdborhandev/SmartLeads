@@ -170,7 +170,7 @@ public class AuthController : Controller
             // Set default company in session and cookie
             var defaultCompany = hasCompany.FirstOrDefault(uc => uc.IsDefault) ?? hasCompany.First();
             HttpContext.Session.SetString("CurrentCompanyId", defaultCompany.CompanyId.ToString());
-            
+
             // Store Company ID in cookie
             HttpContext.Response.Cookies.Append("CurrentCompanyId", defaultCompany.CompanyId.ToString(), new CookieOptions
             {
@@ -184,7 +184,7 @@ public class AuthController : Controller
             var employeeUser = await _unitOfWork.defaultDbContext.EmployeeUsers
                 .Include(eu => eu.Employee)
                 .FirstOrDefaultAsync(eu => eu.UserId == user.Id && eu.Employee.CompanyId == defaultCompany.CompanyId);
-            
+
             if (employeeUser != null && employeeUser.Employee != null)
             {
                 HttpContext.Response.Cookies.Append("CurrentEmployeeId", employeeUser.EmployeeId.ToString(), new CookieOptions
@@ -196,7 +196,15 @@ public class AuthController : Controller
                 });
             }
 
-            // Redirect to contacts
+            // Check layout preference and redirect accordingly
+            var useUserCompanyLayout = HttpContext.Session.GetString("UseUserCompanyLayout") == "true";
+            if (useUserCompanyLayout)
+            {
+                // User prefers UserCompany layout, redirect to Dashboard
+                return RedirectToAction("Dashboard", "UserCompany");
+            }
+
+            // Redirect to contacts (Main layout)
             return RedirectToAction("Index", "Contacts");
         }
         catch (Exception ex)

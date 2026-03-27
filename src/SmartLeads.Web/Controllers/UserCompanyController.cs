@@ -49,12 +49,19 @@ public class UserCompanyController : Controller
                 var companies = await _unitOfWork.userRepository.GetUserCompaniesAsync(user.Id);
                 if (companies != null && companies.Any())
                 {
-                    // User has companies, redirect to contacts
-                    return RedirectToAction("Index", "Contacts");
+                    // User has companies - redirect to Dashboard
+                    return RedirectToAction("Dashboard");
                 }
             }
         }
 
+        return View();
+    }
+
+    // GET: UserCompany/Dashboard - Default page for UserCompany Layout
+    [HttpGet]
+    public async Task<IActionResult> Dashboard()
+    {
         return View();
     }
 

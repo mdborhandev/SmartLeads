@@ -33,6 +33,6 @@
     // UseUserCompanyLayout = true → _UserCompanyLayout
     // UseUserCompanyLayout = false or not set → _Layout (Main)
     var useUserCompanyLayout = Context.Session.GetString("UseUserCompanyLayout") == "true";
-    
+
     Layout = useUserCompanyLayout ? "_UserCompanyLayout" : "_Layout";
 }

@@ -125,21 +125,32 @@
 
 <script>
     function switchCompanySidebar(companyId, companyName) {
+        console.log('Switching to company:', companyId, companyName);
+        // Get token from meta tag or hidden input
+        var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || 
+                    document.querySelector('meta[name="__RequestVerificationToken"]')?.content || '';
+        console.log('Token found:', token ? 'Yes' : 'No');
+        
         fetch('/UserCompany/SwitchCompany', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                'RequestVerificationToken': token
             },
             body: JSON.stringify({ companyId: companyId })
         })
         .then(response => {
+            console.log('Response status:', response.status);
             if (!response.ok) {
-                return response.json().then(err => { throw err; });
+                return response.json().then(err => { 
+                    console.error('Server error:', err);
+                    throw err; 
+                });
             }
             return response.json();
         })
         .then(data => {
+            console.log('Response data:', data);
             if (data.success) {
                 if (typeof toastr !== 'undefined') {
                     toastr.success(`Switched to ${companyName}`, 'Company Switched');

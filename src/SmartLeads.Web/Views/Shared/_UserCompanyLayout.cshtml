@@ -98,6 +98,9 @@
     <script type="importmap"></script>
 </head>
 <body>
+    <!-- Antiforgery Token Hidden Input -->
+    @Html.AntiForgeryToken()
+    
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
             <!-- Menu -->
@@ -337,10 +340,7 @@
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    
-    <!-- Antiforgery Token -->
-    @Html.AntiForgeryToken()
-    
+
     <script src="~/gtlib/dependencylib/sneatlayout/assets/vendor/libs/popper/popper.js"></script>
     <script src="~/gtlib/dependencylib/sneatlayout/assets/vendor/js/bootstrap.js"></script>
     <script src="~/gtlib/dependencylib/sneatlayout/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
@@ -420,7 +420,10 @@
 
         // Company Switcher Function
         function switchCompany(companyId, companyName) {
+            console.log('Switching to company:', companyId, companyName);
             var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+            console.log('Token found:', token ? 'Yes' : 'No');
+            
             fetch('/UserCompany/SwitchCompany', {
                 method: 'POST',
                 headers: {
@@ -430,12 +433,14 @@
                 body: JSON.stringify({ companyId: companyId })
             })
             .then(response => {
+                console.log('Response status:', response.status);
                 if (!response.ok) {
                     return response.json().then(err => { throw err; });
                 }
                 return response.json();
             })
             .then(data => {
+                console.log('Response data:', data);
                 if (data.success) {
                     toastr.success(`Switched to ${companyName}`, 'Company Switched');
                     setTimeout(() => {
@@ -464,7 +469,10 @@
             .then(response => {
                 console.log('Response status:', response.status);
                 if (!response.ok) {
-                    return response.json().then(err => { throw err; });
+                    return response.json().then(err => { 
+                        console.error('Server error:', err);
+                        throw err; 
+                    });
                 }
                 return response.json();
             })
@@ -473,7 +481,7 @@
                 if (data.success) {
                     toastr.success('Switched to Main Layout', 'Layout Changed');
                     setTimeout(() => {
-                        // Redirect to Main Layout's default page
+                        // Redirect to Home page which will use Main Layout
                         window.location.href = '/Home/Index';
                     }, 1000);
                 } else {
