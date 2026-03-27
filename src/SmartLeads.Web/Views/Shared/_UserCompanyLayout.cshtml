@@ -30,13 +30,13 @@
     // Get user's companies for the switcher
     var userCompanies = await _companyContext.GetUserCompaniesAsync();
 
-    // Try to get role from claims if available
-    var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role);
-    if (roleClaim != null)
+    // Get role from current UserCompany (not from User)
+    if (currentCompanyId.HasValue)
     {
-        if (Enum.TryParse<UserRole>(roleClaim.Value, out var role))
+        var currentUserCompany = userCompanies.FirstOrDefault(uc => uc.CompanyId == currentCompanyId);
+        if (currentUserCompany != null)
         {
-            roleDisplay = GetRoleDisplayName(role);
+            roleDisplay = GetRoleDisplayName(currentUserCompany.Role);
         }
     }
 
@@ -169,6 +169,10 @@
                                                 @if (uc.IsDefault)
                                                 {
                                                     <span class="badge bg-label-primary ms-2">Default</span>
+                                                }
+                                                @if (uc.Role != UserRole.User)
+                                                {
+                                                    <span class="badge bg-label-secondary ms-2">@GetRoleDisplayName(uc.Role)</span>
                                                 }
                                             </button>
                                         </li>

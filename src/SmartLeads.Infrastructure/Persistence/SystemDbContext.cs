@@ -59,6 +59,11 @@ public class SystemDbContext : DbContext
                 .WithMany(c => c.UserCompanies)
                 .HasForeignKey(uc => uc.CompanyId)
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            // Configure Role property as string (convert from enum)
+            entity.Property(uc => uc.Role)
+                .HasConversion<string>()
+                .HasMaxLength(50);
         });
 
         // Company self-referencing relationship (hierarchical)

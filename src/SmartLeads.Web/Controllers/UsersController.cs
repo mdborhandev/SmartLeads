@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SmartLeads.Domain.DTOs;
 using SmartLeads.Domain.Enums;
 using SmartLeads.Infrastructure.Repositories.Interface;
 using SmartLeads.Domain.Models;
+using SmartLeads.Infrastructure.Persistence;
+using SmartLeads.Infrastructure.Services;
 using SmartLeads.Utilities.Interfaces;
 using System.Text.Json;
 
@@ -13,12 +16,16 @@ public class UsersController : Controller
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
     private readonly IConfiguration _configuration;
+    private readonly ICompanyContext _companyContext;
+    private readonly SystemDbContext _systemDbContext;
 
-    public UsersController(IUnitOfWork unitOfWork, IEmailService emailService, IConfiguration configuration)
+    public UsersController(IUnitOfWork unitOfWork, IEmailService emailService, IConfiguration configuration, ICompanyContext companyContext, SystemDbContext systemDbContext)
     {
         _unitOfWork = unitOfWork;
         _emailService = emailService;
         _configuration = configuration;
+        _companyContext = companyContext;
+        _systemDbContext = systemDbContext;
     }
 
     // GET: Users
@@ -161,6 +168,21 @@ public class UsersController : Controller
             return NotFound();
         }
 
+        // Get current company ID
+        var companyId = _companyContext.CurrentCompanyId;
+        
+        // Get role from UserCompany for this company
+        var userRole = UserRole.User;
+        if (companyId.HasValue)
+        {
+            var userCompany = await _systemDbContext.UserCompanies
+                .FirstOrDefaultAsync(uc => uc.UserId == id && uc.CompanyId == companyId.Value);
+            if (userCompany != null)
+            {
+                userRole = userCompany.Role;
+            }
+        }
+
         var model = new EditUserViewModel
         {
             Id = user.Id,
@@ -168,7 +190,7 @@ public class UsersController : Controller
             Email = user.Email,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Role = user.Role,
+            Role = userRole,
             // Employee info will be loaded from Employee table based on company context
             // For now, leave these empty - they should be loaded from Employee + EmployeeUser
             EmployeeId = null,
@@ -210,13 +232,39 @@ public class UsersController : Controller
             return NotFound();
         }
 
+        // Get current company ID
+        var companyId = _companyContext.CurrentCompanyId;
+        
         // Update user information (except password - only user can reset their own password)
         user.Email = model.Email;
         user.FirstName = model.FirstName;
         user.LastName = model.LastName;
-        user.Role = model.Role;
         user.IsActive = model.IsActive;
         user.UpdatedAt = DateTime.UtcNow;
+
+        // Update role in UserCompany for the current company
+        if (companyId.HasValue)
+        {
+            var userCompany = await _systemDbContext.UserCompanies
+                .FirstOrDefaultAsync(uc => uc.UserId == id && uc.CompanyId == companyId.Value);
+            
+            if (userCompany != null)
+            {
+                userCompany.Role = model.Role;
+            }
+            else
+            {
+                // If no UserCompany exists, create one (this shouldn't normally happen)
+                userCompany = new UserCompany
+                {
+                    UserId = id,
+                    CompanyId = companyId.Value,
+                    Role = model.Role,
+                    IsActive = true
+                };
+                await _systemDbContext.UserCompanies.AddAsync(userCompany);
+            }
+        }
 
         // Note: Employee information (Department, Designation, etc.) should be updated
         // through the Employee table based on the current company context

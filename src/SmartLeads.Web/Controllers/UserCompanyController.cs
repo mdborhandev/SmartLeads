@@ -190,12 +190,22 @@ public class UserCompanyController : Controller
             };
             await _unitOfWork.defaultDbContext.EmployeeUsers.AddAsync(employeeUser);
 
-            // Create UserCompany association
+            // Check if user has any other companies with IsDefault = true
+            var existingUserCompanies = await _unitOfWork.systemDbContext.UserCompanies
+                .Where(uc => uc.UserId == user.Id && uc.IsDefault)
+                .ToListAsync();
+
+            // If user has other default companies, this new one should NOT be default
+            // If this is the first company or no other defaults, set as default
+            var shouldBeDefault = !existingUserCompanies.Any();
+
+            // Create UserCompany association with SuperAdmin role
             var userCompany = new UserCompany
             {
                 UserId = user.Id,
                 CompanyId = company.Id,
-                IsDefault = true
+                Role = UserRole.SuperAdmin,  // Creator is always SuperAdmin of their company
+                IsDefault = shouldBeDefault
             };
             await _unitOfWork.systemDbContext.UserCompanies.AddAsync(userCompany);
 
@@ -204,6 +214,10 @@ public class UserCompanyController : Controller
             await _unitOfWork.SaveAsync();
             createdCompanyId = company.Id;
             createdEmployeeId = employee.Id;
+            
+            // Clear the user companies cache so the new company appears immediately
+            _companyContext.ClearUserCompaniesCache(user.Id);
+            
             _logger.LogInformation("Company created with ID: {CompanyId}, Employee ID: {EmployeeId}", createdCompanyId, createdEmployeeId);
 
             TempData["SuccessMessage"] = $"Company '{model.CompanyName}' created successfully! Welcome aboard!";
@@ -372,6 +386,7 @@ public class UserCompanyController : Controller
                 uc.Company.Id,
                 uc.Company.Name,
                 uc.Company.Code,
+                Role = uc.Role.ToString(),
                 IsCurrent = uc.CompanyId == currentCompanyId,
                 IsDefault = uc.IsDefault
             }).ToList();

@@ -1,10 +1,9 @@
-using SmartLeads.Domain.Enums;
-
 namespace SmartLeads.Domain.Models;
 
 /// <summary>
 /// User account for authentication and basic profile information.
-/// Users can be associated with multiple companies through EmployeeUser.
+/// Users can be associated with multiple companies through UserCompany.
+/// Role is now stored per-company in UserCompany, not at user level.
 /// </summary>
 public class User : BaseSystemEntity
 {
@@ -14,7 +13,6 @@ public class User : BaseSystemEntity
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public string? ProfilePicture { get; set; }
-    public UserRole Role { get; set; } = UserRole.User;
 
     // Invitation tracking
     public bool IsPasswordSetByUser { get; set; } = false;

@@ -52,15 +52,15 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, A
             Email = request.Email,
             PasswordHash = _passwordHasher.HashPassword(request.Password),
             FirstName = request.FirstName,
-            LastName = request.LastName,
-            Role = Domain.Enums.UserRole.User
+            LastName = request.LastName
+            // Role is now stored in UserCompany, not in User
         };
 
         await _unitOfWork.userRepository.AddAsync(user);
         await _unitOfWork.SaveAsync();
 
-        // Generate JWT token
-        var token = _jwtTokenGenerator.GenerateToken(user);
+        // Generate JWT token (role will be User by default for new registrations)
+        var token = _jwtTokenGenerator.GenerateToken(user, Domain.Enums.UserRole.User);
 
         return new AuthResponse(token, request.Username, request.Email);
     }

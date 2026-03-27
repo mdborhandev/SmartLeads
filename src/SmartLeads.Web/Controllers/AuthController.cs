@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SmartLeads.Domain.DTOs;
+using SmartLeads.Domain.Enums;
 using SmartLeads.Infrastructure.Repositories.Interface;
+using SmartLeads.Infrastructure.Services;
 using SmartLeads.Utilities.Interfaces;
 
 namespace SmartLeads.Web.Controllers;
@@ -13,13 +15,15 @@ public class AuthController : Controller
     private readonly IConfiguration _configuration;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
+    private readonly ICompanyContext _companyContext;
 
-    public AuthController(IUnitOfWork unitOfWork, IConfiguration configuration, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator)
+    public AuthController(IUnitOfWork unitOfWork, IConfiguration configuration, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator, ICompanyContext companyContext)
     {
         _unitOfWork = unitOfWork;
         _configuration = configuration;
         _passwordHasher = passwordHasher;
         _jwtTokenGenerator = jwtTokenGenerator;
+        _companyContext = companyContext;
     }
 
     [HttpGet]
@@ -68,15 +72,15 @@ public class AuthController : Controller
                 Email = model.Email,
                 PasswordHash = _passwordHasher.HashPassword(model.Password),
                 FirstName = model.FirstName,
-                LastName = model.LastName,
-                Role = Domain.Enums.UserRole.User
+                LastName = model.LastName
+                // Role is now stored in UserCompany, not in User
             };
 
             await _unitOfWork.userRepository.AddAsync(user);
             await _unitOfWork.SaveAsync();
 
-            // Generate JWT token
-            var token = _jwtTokenGenerator.GenerateToken(user);
+            // Generate JWT token (default role for new registration without company)
+            var token = _jwtTokenGenerator.GenerateToken(user, Domain.Enums.UserRole.User);
 
             // Auto login after registration
             HttpContext.Response.Cookies.Append("JwtToken", token, new CookieOptions
@@ -139,8 +143,29 @@ public class AuthController : Controller
                 return View(model);
             }
 
-            // Generate JWT token
-            var token = _jwtTokenGenerator.GenerateToken(user);
+            // Check if user has any company association
+            var hasCompany = await _unitOfWork.userRepository.GetUserCompaniesAsync(user.Id);
+            if (hasCompany == null || !hasCompany.Any())
+            {
+                // Redirect to NoCompany page
+                return RedirectToAction("NoCompany", "UserCompany");
+            }
+
+            // Get default company
+            var defaultCompany = hasCompany.FirstOrDefault(uc => uc.IsDefault && uc.IsActive && !uc.IsDeleted)
+                ?? hasCompany.FirstOrDefault(uc => uc.IsActive && !uc.IsDeleted);
+
+            if (defaultCompany == null)
+            {
+                ModelState.AddModelError(string.Empty, "No active company association found.");
+                return View(model);
+            }
+
+            // Get role from UserCompany for the default company
+            var userRole = defaultCompany.Role;
+
+            // Generate JWT token with the role from UserCompany
+            var token = _jwtTokenGenerator.GenerateToken(user, userRole);
 
             HttpContext.Response.Cookies.Append("JwtToken", token, new CookieOptions
             {
@@ -159,16 +184,7 @@ public class AuthController : Controller
                 Expires = DateTimeOffset.UtcNow.AddHours(1)
             });
 
-            // Check if user has any company association
-            var hasCompany = await _unitOfWork.userRepository.GetUserCompaniesAsync(user.Id);
-            if (hasCompany == null || !hasCompany.Any())
-            {
-                // Redirect to NoCompany page
-                return RedirectToAction("NoCompany", "UserCompany");
-            }
-
             // Set default company in session and cookie
-            var defaultCompany = hasCompany.FirstOrDefault(uc => uc.IsDefault) ?? hasCompany.First();
             HttpContext.Session.SetString("CurrentCompanyId", defaultCompany.CompanyId.ToString());
 
             // Store Company ID in cookie
@@ -198,6 +214,7 @@ public class AuthController : Controller
 
             // Check layout preference and redirect accordingly
             var useUserCompanyLayout = HttpContext.Session.GetString("UseUserCompanyLayout") == "true";
+            
             if (useUserCompanyLayout)
             {
                 // User prefers UserCompany layout, redirect to Dashboard
@@ -270,7 +287,8 @@ public class AuthController : Controller
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Role = user.Role,
+                // Get role from current company's UserCompany
+                Role = await _companyContext.GetCurrentCompanyRoleAsync() ?? UserRole.User,
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt
             };

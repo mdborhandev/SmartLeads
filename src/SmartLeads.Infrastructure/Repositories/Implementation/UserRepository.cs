@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SmartLeads.Domain.DTOs;
+using SmartLeads.Domain.Enums;
 using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Persistence;
 using SmartLeads.Infrastructure.Repositories.Interface;
@@ -80,7 +81,13 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
             .Where(u => userIds.Contains(u.Id) && !u.IsDeleted && u.IsActive)
             .ToListAsync(token);
 
+        // Get UserCompany records to fetch roles for this company
+        var userCompanies = await _systemDbContext.UserCompanies
+            .Where(uc => uc.CompanyId == companyId && userIds.Contains(uc.UserId))
+            .ToListAsync(token);
+
         var usersById = users.ToDictionary(u => u.Id);
+        var userCompaniesByUserId = userCompanies.ToDictionary(uc => uc.UserId);
 
         var rows = employees
             .Select(e =>
@@ -93,6 +100,13 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
                     return null;
                 }
 
+                // Get role from UserCompany instead of User
+                var role = UserRole.User;
+                if (userCompaniesByUserId.TryGetValue(user.Id, out var userCompany))
+                {
+                    role = userCompany.Role;
+                }
+
                 return new UserTableDto
                 {
                     Id = user.Id,
@@ -103,7 +117,7 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
                     EmployeeId = e.EmployeeId,
                     Department = e.Department,
                     Designation = e.Designation,
-                    Role = user.Role,
+                    Role = role,
                     IsActive = e.IsActive,
                     CreatedAt = user.CreatedAt
                 };

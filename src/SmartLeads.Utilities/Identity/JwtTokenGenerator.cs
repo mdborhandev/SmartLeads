@@ -17,7 +17,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         _configuration = configuration;
     }
 
-    public string GenerateToken(User user)
+    public string GenerateToken(User user, Domain.Enums.UserRole? role = null)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secret = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret not found");
@@ -45,8 +45,9 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             claims.Add(new Claim("LastName", user.LastName));
         }
 
-        // Add Role claim
-        claims.Add(new Claim(ClaimTypes.Role, user.Role.ToString()));
+        // Add Role claim - use provided role or default to User
+        var userRole = role ?? Domain.Enums.UserRole.User;
+        claims.Add(new Claim(ClaimTypes.Role, userRole.ToString()));
 
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],

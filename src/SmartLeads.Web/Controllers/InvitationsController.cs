@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using SmartLeads.Domain.DTOs;
 using SmartLeads.Domain.Enums;
 using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Repositories.Interface;
+using SmartLeads.Infrastructure.Services;
 using SmartLeads.Utilities.Interfaces;
 using System.Text.Json;
 
@@ -14,12 +17,14 @@ public class InvitationsController : Controller
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
     private readonly IConfiguration _configuration;
+    private readonly ICompanyContext _companyContext;
 
-    public InvitationsController(IUnitOfWork unitOfWork, IEmailService emailService, IConfiguration configuration)
+    public InvitationsController(IUnitOfWork unitOfWork, IEmailService emailService, IConfiguration configuration, ICompanyContext companyContext)
     {
         _unitOfWork = unitOfWork;
         _emailService = emailService;
         _configuration = configuration;
+        _companyContext = companyContext;
     }
 
     // GET: Invitations
@@ -286,18 +291,27 @@ public class InvitationsController : Controller
                 Email = model.Email,
                 PasswordHash = passwordHasher.HashPassword(model.Password),
                 FirstName = model.FirstName,
-                LastName = model.LastName,
-                Role = invitation.Role
+                LastName = model.LastName
+                // Role is now stored in UserCompany, not in User
             };
 
             await _unitOfWork.userRepository.AddAsync(user);
 
-            // Create UserCompany association
+            // Check if user has any other companies with IsDefault = true
+            var existingUserCompanies = await _unitOfWork.systemDbContext.UserCompanies
+                .Where(uc => uc.UserId == user.Id && uc.IsDefault)
+                .ToListAsync();
+
+            // If user has other default companies, this new one should NOT be default
+            var shouldBeDefault = !existingUserCompanies.Any();
+
+            // Create UserCompany association with role from invitation
             var userCompany = new UserCompany
             {
                 UserId = user.Id,
                 CompanyId = invitation.CompanyId,
-                IsDefault = true
+                Role = invitation.Role,  // Use role from invitation
+                IsDefault = shouldBeDefault
             };
             await _unitOfWork.systemDbContext.UserCompanies.AddAsync(userCompany);
 
@@ -319,6 +333,9 @@ public class InvitationsController : Controller
             };
             await _unitOfWork.defaultDbContext.EmployeeUsers.AddAsync(employeeUser);
             await _unitOfWork.SaveAsync();
+            
+            // Clear the user companies cache so the new company appears immediately
+            _companyContext.ClearUserCompaniesCache(user.Id);
 
             // Update invitation status
             invitation.IsAccepted = true;
