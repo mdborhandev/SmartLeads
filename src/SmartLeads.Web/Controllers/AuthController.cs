@@ -100,8 +100,8 @@ public class AuthController : Controller
                 Expires = DateTimeOffset.UtcNow.AddHours(1)
             });
 
-            // Redirect to NoCompany page since user doesn't have a company yet
-            return RedirectToAction("NoCompany", "Auth");
+            // Redirect to UserCompany/NoCompany page since user doesn't have a company yet
+            return RedirectToAction("NoCompany", "UserCompany");
         }
         catch (Exception ex)
         {
@@ -164,8 +164,8 @@ public class AuthController : Controller
             // Get role from UserCompany for the default company
             var userRole = defaultCompany.Role;
 
-            // Generate JWT token with the role from UserCompany
-            var token = _jwtTokenGenerator.GenerateToken(user, userRole);
+            // Generate JWT token with the role from UserCompany and CompanyId claim
+            var token = _jwtTokenGenerator.GenerateToken(user, userRole, defaultCompany.CompanyId);
 
             HttpContext.Response.Cookies.Append("JwtToken", token, new CookieOptions
             {

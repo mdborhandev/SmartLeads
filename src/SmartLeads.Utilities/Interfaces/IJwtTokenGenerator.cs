@@ -5,5 +5,5 @@ namespace SmartLeads.Utilities.Interfaces;
 
 public interface IJwtTokenGenerator
 {
-    string GenerateToken(User user, UserRole? role = null);
+    string GenerateToken(User user, UserRole? role = null, Guid? companyId = null);
 }

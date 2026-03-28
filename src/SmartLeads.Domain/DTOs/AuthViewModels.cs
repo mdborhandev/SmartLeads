@@ -182,23 +182,26 @@ public class CreateUserViewModel
 
     [Display(Name = "Role")]
     public UserRole Role { get; set; } = UserRole.User;
-    
+
+    [Display(Name = "Password")]
+    public string? Password { get; set; }
+
     // Employee Information
     [Display(Name = "Employee ID")]
     public string? EmployeeId { get; set; }
-    
+
     [Display(Name = "Department")]
     public string? Department { get; set; }
-    
+
     [Display(Name = "Designation")]
     public string? Designation { get; set; }
-    
+
     [Display(Name = "Phone Number")]
     public string? PhoneNumber { get; set; }
-    
+
     [Display(Name = "Address")]
     public string? Address { get; set; }
-    
+
     [Display(Name = "Date of Joining")]
     public DateTime? DateOfJoining { get; set; }
 }

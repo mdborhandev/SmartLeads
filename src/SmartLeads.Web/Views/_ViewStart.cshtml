@@ -29,10 +29,17 @@
         return;
     }
 
-    // Determine which layout to use based on session preference
-    // UseUserCompanyLayout = true → _UserCompanyLayout
-    // UseUserCompanyLayout = false or not set → _Layout (Main)
-    var useUserCompanyLayout = Context.Session.GetString("UseUserCompanyLayout") == "true";
-
-    Layout = useUserCompanyLayout ? "_UserCompanyLayout" : "_Layout";
+    // Determine which layout to use based on action and session preference
+    if (controller == "home" && action == "landing")
+    {
+        // Landing page uses special landing layout
+        Layout = "_LandingLayout";
+    }
+    else
+    {
+        // UseUserCompanyLayout = true → _UserCompanyLayout
+        // UseUserCompanyLayout = false or not set → _Layout (Main)
+        var useUserCompanyLayout = Context.Session.GetString("UseUserCompanyLayout") == "true";
+        Layout = useUserCompanyLayout ? "_UserCompanyLayout" : "_Layout";
+    }
 }

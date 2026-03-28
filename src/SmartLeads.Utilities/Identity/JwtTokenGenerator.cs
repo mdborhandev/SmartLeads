@@ -17,7 +17,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         _configuration = configuration;
     }
 
-    public string GenerateToken(User user, Domain.Enums.UserRole? role = null)
+    public string GenerateToken(User user, Domain.Enums.UserRole? role = null, Guid? companyId = null)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secret = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret not found");
@@ -32,8 +32,11 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-        // Note: CompanyId claim is now added at login time based on the selected company
-        // Users can belong to multiple companies, so the company context is selected per-session
+        // Add CompanyId claim if provided (for company context)
+        if (companyId.HasValue && companyId != Guid.Empty)
+        {
+            claims.Add(new Claim("CompanyId", companyId.Value.ToString()));
+        }
 
         // Add FirstName and LastName claims
         if (!string.IsNullOrEmpty(user.FirstName))

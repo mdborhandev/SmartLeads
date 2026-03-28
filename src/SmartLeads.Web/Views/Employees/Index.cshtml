@@ -1,0 +1,784 @@
+@{
+    ViewData["Title"] = "Employee List";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">All Employees</h5>
+        <button type="button" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#employeeOffcanvas" onclick="openCreateModal()">
+            <i class="bx bx-plus me-1"></i> Add Employee
+        </button>
+    </div>
+    <div class="card-body">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bx bx-check-circle me-2"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="row g-3 align-items-center mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bx bx-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by employee ID, department, designation, or phone..." />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-grid d-md-flex justify-content-md-end gap-2">
+                    <!-- Column Filter Dropdown -->
+                    <div class="dropdown d-inline-block">
+                        <button class="btn btn-outline-primary" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bx bx-cog"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end gear-dropdown-employees" aria-labelledby="dropdownMenuButton1">
+                            <div class="row p-4 main-dropdown-size overflow-hidden">
+                                <div class="col">
+                                    <span class="fw-bold ms-3">Columns</span>
+                                    <hr class="m-0 w-75 ms-3 w-sm-50" />
+                                    <ul class="list-unstyled" id="EmployeesColumnList">
+                                        <!-- Column checkboxes will be populated here -->
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="d-flex">
+                                <div class="p-4">
+                                    <button id="saveEmployeesFilter" class="btn btn-outline-primary">Save Filter</button>
+                                </div>
+                                <div class="p-4">
+                                    <button id="deleteEmployeesFilter" class="btn btn-outline-danger" onclick="DeleteFilter_Employees('Employees')">Remove Filter</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Export Dropdown -->
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bx bx-export me-1"></i> Export
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><button type="button" class="dropdown-item" id="exportCsvBtn">CSV</button></li>
+                            <li><button type="button" class="dropdown-item" id="exportExcelBtn">Excel</button></li>
+                            <li><button type="button" class="dropdown-item" id="exportPdfBtn">PDF</button></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="employeeTable"></div>
+    </div>
+</div>
+
+<!-- Employee Offcanvas -->
+<div class="offcanvas offcanvas-end w-100" tabindex="-1" id="employeeOffcanvas" aria-labelledby="employeeOffcanvasLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="employeeOffcanvasLabel">Add Employee</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="employeeForm" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="employeeId" name="Id" />
+            <input type="hidden" id="formAction" value="create" />
+
+            <h6 class="mb-3">Employee Information</h6>
+            
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label for="empEmployeeId" class="form-label">Employee ID <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="empEmployeeId" name="EmployeeId" placeholder="e.g., EMP001" required />
+                    <span class="text-danger" id="employeeIdError"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="empDepartment" class="form-label">Department</label>
+                    <input type="text" class="form-control" id="empDepartment" name="Department" placeholder="e.g., IT, HR, Sales" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="empDesignation" class="form-label">Designation</label>
+                    <input type="text" class="form-control" id="empDesignation" name="Designation" placeholder="e.g., Software Engineer" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="empPhoneNumber" class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" id="empPhoneNumber" name="PhoneNumber" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="empDateOfJoining" class="form-label">Date of Joining</label>
+                    <input type="date" class="form-control" id="empDateOfJoining" name="DateOfJoining" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <label for="empAddress" class="form-label">Address</label>
+                    <textarea class="form-control" id="empAddress" name="Address" rows="2"></textarea>
+                </div>
+            </div>
+
+            <div class="row" id="isActiveRow" style="display: none;">
+                <div class="col-12 mb-3">
+                    <label for="empIsActive" class="form-label">Status</label>
+                    <select class="form-select" id="empIsActive" name="IsActive">
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Create Employee</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let employeeOffcanvas = null;
+        let employeeTable = null;
+        let searchTimeout = null;
+        let currentSearch = '';
+
+        // Define table columns with visibility settings
+        var TableFields = [
+            {
+                title: "#",
+                field: "rownum",
+                formatter: "rownum",
+                hozAlign: "center",
+                headerSort: false,
+                width: 50,
+                visible: true
+            },
+            {
+                title: "Employee ID",
+                field: "employeeId",
+                hozAlign: "center",
+                visible: true,
+                formatter: function(cell) {
+                    const value = cell.getValue();
+                    return value ? `<span class="badge bg-info">${value}</span>` : '<span class="badge bg-secondary">N/A</span>';
+                }
+            },
+            {
+                title: "Full Name",
+                field: "fullName",
+                hozAlign: "left",
+                visible: true
+            },
+            {
+                title: "Email",
+                field: "email",
+                hozAlign: "left",
+                visible: true
+            },
+            {
+                title: "Department",
+                field: "department",
+                hozAlign: "left",
+                visible: true,
+                formatter: function(cell) {
+                    const value = cell.getValue();
+                    return value || '-';
+                }
+            },
+            {
+                title: "Designation",
+                field: "designation",
+                hozAlign: "left",
+                visible: true,
+                formatter: function(cell) {
+                    const value = cell.getValue();
+                    return value || '-';
+                }
+            },
+            {
+                title: "Phone Number",
+                field: "phoneNumber",
+                hozAlign: "left",
+                visible: true,
+                formatter: function(cell) {
+                    const value = cell.getValue();
+                    return value || '-';
+                }
+            },
+            {
+                title: "Status",
+                field: "isActive",
+                hozAlign: "center",
+                visible: true,
+                formatter: function(cell) {
+                    const value = cell.getValue();
+                    return value
+                        ? '<span class="badge bg-success">Active</span>'
+                        : '<span class="badge bg-secondary">Inactive</span>';
+                }
+            },
+            {
+                title: "Actions",
+                field: "id",
+                hozAlign: "center",
+                headerSort: false,
+                download: false,
+                print: false,
+                frozen: true,
+                visible: true,
+                formatter: function(cell) {
+                    const row = cell.getRow().getData();
+                    const id = row.id || '';
+                    const employeeId = (row.employeeId || '').toString().replace(/'/g, "\\'");
+                    const department = (row.department || '').toString().replace(/'/g, "\\'");
+                    const designation = (row.designation || '').toString().replace(/'/g, "\\'");
+                    const phoneNumber = (row.phoneNumber || '').toString().replace(/'/g, "\\'");
+                    const address = (row.address || '').toString().replace(/'/g, "\\'");
+                    const dateOfJoining = (row.dateOfJoining || '').toString().replace(/'/g, "\\'");
+                    const isActive = row.isActive || false;
+
+                    return `
+                        <button class="btn btn-sm btn-primary me-2"
+                            onclick="openEditModalFromTable(
+                                '${id}',
+                                '${employeeId}',
+                                '${department}',
+                                '${designation}',
+                                '${phoneNumber}',
+                                '${address}',
+                                '${dateOfJoining}',
+                                ${isActive}
+                            )">
+                            <i class="bx bx-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteEmployee('${id}', '${employeeId}')">
+                            <i class="bx bx-trash"></i> Delete
+                        </button>
+                    `;
+                }
+            }
+        ];
+
+        // Initialize offcanvas and table on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            employeeOffcanvas = new bootstrap.Offcanvas(document.getElementById('employeeOffcanvas'));
+
+            // Load column filter settings and initialize table
+            EmployeesGear();
+        });
+
+        // Load column filter settings and initialize table
+        function EmployeesGear() {
+            $.ajax({
+                url: '@Url.Action("GetFilteredColumn", "ColumnFilter")',
+                type: 'GET',
+                data: { type: 'Employees' },
+                success: function (response) {
+                    console.log("GetFilteredColumn response:", response);
+
+                    if ((response.Success == 1 || response.success == 1) && response.data && response.data.keyValue) {
+                        try {
+                            const savedData = JSON.parse(response.data.keyValue);
+                            console.log("Parsed saved data:", savedData);
+
+                            if (savedData.colDefs && Array.isArray(savedData.colDefs)) {
+                                // Reorder TableFields based on saved order
+                                const newTableFields = [];
+
+                                // First add columns in saved order
+                                savedData.colDefs.forEach(savedCol => {
+                                    const tableCol = TableFields.find(col => col.field === savedCol.field);
+                                    if (tableCol) {
+                                        tableCol.visible = savedCol.visible !== undefined ? savedCol.visible : true;
+                                        newTableFields.push(tableCol);
+                                    }
+                                });
+
+                                // Then add any new columns that weren't in saved config (like Actions)
+                                TableFields.forEach(col => {
+                                    if (!newTableFields.find(c => c.field === col.field)) {
+                                        newTableFields.push(col);
+                                    }
+                                });
+
+                                // Replace TableFields with reordered array
+                                TableFields.length = 0;
+                                TableFields.push(...newTableFields);
+
+                                console.log("Updated TableFields:", TableFields);
+                            }
+                        } catch (e) {
+                            console.error("Error parsing saved columns:", e);
+                        }
+                    }
+                    populateCheckbox();
+                    initializeEmployeeTable();
+                    setupSearchFilter();
+                    setupExportButtons();
+                    setupColumnFilterSave();
+                },
+                error: function (error) {
+                    console.error("Error fetching column settings:", error);
+                    populateCheckbox();
+                    initializeEmployeeTable();
+                    setupSearchFilter();
+                    setupExportButtons();
+                    setupColumnFilterSave();
+                }
+            });
+        }
+
+        // Populate column filter checkboxes
+        function populateCheckbox() {
+            let items = TableFields
+                .filter(x => x.field !== 'id') // Exclude actions column
+                .map(x => {
+                    return `
+                        <li class="d-flex justify-content-between align-items-center px-3 py-1 draggable-item" data-field="${x.field}">
+                            <span class="d-flex align-items-center">
+                                <i class="bx bx-menu me-2 handle" style="cursor: move;"></i> ${x.title}
+                            </span>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input toggle-column employees-column" type="checkbox" role="switch"
+                                       id="${x.field}" value="${x.field}" ${x.visible ? 'checked' : ''}
+                                       onclick="showHideColumn('${x.field}')">
+                            </div>
+                        </li>`;
+                });
+
+            const columnList = document.getElementById('EmployeesColumnList');
+            columnList.innerHTML = items.join('');
+            enableDragAndDrop();
+        }
+
+        // Enable drag and drop for column ordering
+        function enableDragAndDrop() {
+            new Sortable(document.getElementById('EmployeesColumnList'), {
+                animation: 200,
+                handle: '.handle',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                forceFallback: true,
+                fallbackTolerance: 5,
+                scroll: true,
+                scrollSensitivity: 30,
+                scrollSpeed: 10,
+                onEnd: function (evt) {
+                    updateColumnOrder();
+                }
+            });
+        }
+
+        // Update column order based on drag and drop
+        function updateColumnOrder() {
+            let newOrder = [];
+            document.querySelectorAll('#EmployeesColumnList .draggable-item').forEach(item => {
+                const field = item.getAttribute('data-field');
+                const title = item.querySelector('span').innerText.trim();
+                const visible = item.querySelector('input').checked;
+                newOrder.push({ field: field, title: title, visible: visible });
+            });
+
+            let allColumns = employeeTable.getColumns().map(col => col.getDefinition());
+            let fixedColumns = allColumns.filter(col => col.field === 'id');
+            let newColumns = newOrder.map(col => {
+                let existingColumn = employeeTable.getColumn(col.field);
+                return existingColumn ? existingColumn.getDefinition() : { title: col.title, field: col.field, visible: col.visible };
+            });
+
+            newColumns = [...newColumns, ...fixedColumns];
+            employeeTable.setColumns(newColumns);
+
+            // Update TableFields array to match new order (for saving)
+            const actionColumn = TableFields.find(col => col.field === 'id');
+            TableFields = newColumns;
+            if (actionColumn && !TableFields.find(col => col.field === 'id')) {
+                TableFields.push(actionColumn);
+            }
+
+            // Re-populate checkboxes
+            populateCheckbox();
+        }
+
+        // Show/hide individual column
+        function showHideColumn(colName) {
+            employeeTable.toggleColumn(colName);
+        }
+
+        // Save column filter settings
+        function setupColumnFilterSave() {
+            $("#saveEmployeesFilter").on("click", function () {
+                var colDefs = employeeTable.getColumnDefinitions();
+
+                $(".employees-column").each(function () {
+                    var field = $(this).val();
+                    var isVisible = $(this).is(":checked");
+
+                    colDefs.forEach(function (colDef) {
+                        if (colDef.field === field) {
+                            colDef.visible = isVisible;
+                        }
+                    });
+                });
+
+                var filteredColDefs = colDefs.filter(colDef => colDef.field !== 'id');
+                var finaldata = { colDefs: filteredColDefs };
+                var jsonData = JSON.stringify(finaldata);
+
+                console.log("Saving column filter:", jsonData);
+
+                $.ajax({
+                    url: '@Url.Action("ColumnFilterCreation", "ColumnFilter")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ keyValue: jsonData, type: 'Employees' }),
+                    success: function (response) {
+                        console.log("Save response:", response);
+                        if (response.Success === 1 || response.success === 1 || response.Success === true || response.success === true) {
+                            toastr.success(response.Message || response.message || "Filter saved successfully", "Success", { "toastClass": "toast-green" });
+                            $('#dropdownMenuButton1').dropdown('hide');
+                        } else {
+                            toastr.error(response.Message || response.message || "Unknown error", "Error");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Save error:", xhr.responseText, status, error);
+                        try {
+                            var errResponse = JSON.parse(xhr.responseText);
+                            toastr.error(errResponse.Message || errResponse.message || "Error saving filter settings.", "Error");
+                        } catch (e) {
+                            toastr.error("Error saving filter settings.", "Error");
+                        }
+                    }
+                });
+            });
+        }
+
+        // Delete column filter settings
+        function DeleteFilter_Employees(data) {
+            $.ajax({
+                url: '@Url.Action("DeleteColumnFilter", "ColumnFilter")',
+                type: "GET",
+                data: { type: data },
+                success: function (response) {
+                    console.log("Delete response:", response);
+                    if (response.Success == 1 || response.success == 1) {
+                        toastr.success(response.Message || response.message || "Deleted successfully", "Success", { "toastClass": "toast-green" });
+                        EmployeesGear();
+                    } else {
+                        toastr.error(response.Message || response.message || "Error deleting filter", "Error", { "toastClass": "toast-red" });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Delete error:", xhr.responseText);
+                    toastr.error("Error during delete.", "Error", { "toastClass": "toast-red" });
+                }
+            });
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function (event) {
+            let dropdown = document.querySelector(".gear-dropdown-employees");
+            let button = document.getElementById("dropdownMenuButton1");
+            if (dropdown && button && !dropdown.contains(event.target) && !button.contains(event.target)) {
+                dropdown.classList.remove("show");
+            }
+        });
+
+        document.querySelector(".gear-dropdown-employees").addEventListener("click", function (event) {
+            event.stopPropagation();
+        });
+
+        // Initialize Tabulator with server-side pagination
+        function initializeEmployeeTable() {
+            employeeTable = new Tabulator("#employeeTable", {
+                ajaxURL: '@Url.Action("GetEmployeesData", "Employees")',
+                ajaxParams: function() {
+                    return {
+                        search: currentSearch
+                    };
+                },
+                ajaxConfig: "GET",
+                ajaxFiltering: true,
+                ajaxSorting: true,
+                pagination: "remote",
+                paginationSize: 10,
+                paginationSizeSelector: [10, 25, 50, 100],
+                paginationButtonCount: 5,
+                movableColumns: true,
+                resizableRows: false,
+                layout: "fitColumns",
+                initialSort: [
+                    { column: "createdAt", dir: "desc" }
+                ],
+                ajaxResponse: function(url, params, response) {
+                    console.log("Response type:", typeof response);
+                    console.log("Response received:", response);
+
+                    // Check if response is a string (not parsed)
+                    if (typeof response === 'string') {
+                        try {
+                            response = JSON.parse(response);
+                        } catch(e) {
+                            console.error("Failed to parse JSON:", e);
+                            return [];
+                        }
+                    }
+
+                    // Set pagination total for Tabulator 5.x
+                    var table = this;
+                    if (response.total && table.modules && table.modules.pagination) {
+                        table.modules.pagination._setTotal(response.total);
+                    }
+
+                    // For Tabulator 5.x remote pagination, return only the data array
+                    return response.data || [];
+                },
+                columns: TableFields,
+                locale: "en",
+                langs: {
+                    "en": {
+                        "pagination": {
+                            "first": "First",
+                            "prev": "Previous",
+                            "next": "Next",
+                            "last": "Last",
+                            "all": "All",
+                            "counter": "Showing {from} to {to} of {count} entries"
+                        }
+                    }
+                }
+            });
+        }
+
+        // Setup search filter
+        function setupSearchFilter() {
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentSearch = e.target.value;
+                    if (employeeTable) {
+                        employeeTable.setPage(1);
+                        employeeTable.replaceData();
+                    }
+                }, 500); // 500ms debounce
+            });
+        }
+
+        // Setup export buttons
+        function setupExportButtons() {
+            document.getElementById('exportCsvBtn').addEventListener('click', function() {
+                if (!employeeTable) {
+                    return;
+                }
+
+                employeeTable.download("csv", "employees.csv");
+            });
+
+            document.getElementById('exportExcelBtn').addEventListener('click', function() {
+                if (!employeeTable) {
+                    return;
+                }
+
+                employeeTable.download("xlsx", "employees.xlsx", { sheetName: "Employees" });
+            });
+
+            document.getElementById('exportPdfBtn').addEventListener('click', function() {
+                if (!employeeTable) {
+                    return;
+                }
+
+                employeeTable.download("pdf", "employees.pdf", {
+                    orientation: "landscape",
+                    autoTable: {
+                        theme: "grid"
+                    }
+                });
+            });
+        }
+
+        // Open Edit Modal from Tabulator
+        function openEditModalFromTable(id, employeeId, department, designation, phoneNumber, address, dateOfJoining, isActive) {
+            openEditModal(
+                id,
+                employeeId,
+                department,
+                designation,
+                phoneNumber,
+                address,
+                dateOfJoining,
+                isActive.toString().toLowerCase()
+            );
+        }
+
+        // Open Create Modal
+        function openCreateModal() {
+            document.getElementById('employeeOffcanvasLabel').textContent = 'Add Employee';
+            document.getElementById('formAction').value = 'create';
+            document.getElementById('employeeForm').reset();
+            document.getElementById('employeeId').value = '';
+            document.getElementById('empEmployeeId').readOnly = false;
+            document.getElementById('isActiveRow').style.display = 'none';
+            document.getElementById('submitBtn').textContent = 'Create Employee';
+            clearErrors();
+        }
+
+        // Open Edit Modal
+        function openEditModal(id, employeeId, department, designation, phoneNumber, address, dateOfJoining, isActive) {
+            document.getElementById('employeeOffcanvasLabel').textContent = 'Edit Employee';
+            document.getElementById('formAction').value = 'edit';
+            document.getElementById('employeeId').value = id;
+            document.getElementById('empEmployeeId').value = employeeId;
+            document.getElementById('empEmployeeId').readOnly = true;
+            document.getElementById('empDepartment').value = department || '';
+            document.getElementById('empDesignation').value = designation || '';
+            document.getElementById('empPhoneNumber').value = phoneNumber || '';
+            document.getElementById('empAddress').value = address || '';
+            document.getElementById('empDateOfJoining').value = dateOfJoining || '';
+            document.getElementById('empIsActive').value = isActive;
+            document.getElementById('isActiveRow').style.display = 'block';
+            document.getElementById('submitBtn').textContent = 'Update Employee';
+            clearErrors();
+
+            // Show the offcanvas
+            if (employeeOffcanvas) {
+                employeeOffcanvas.show();
+            } else {
+                employeeOffcanvas = new bootstrap.Offcanvas(document.getElementById('employeeOffcanvas'));
+                employeeOffcanvas.show();
+            }
+        }
+
+        // Clear validation errors
+        function clearErrors() {
+            document.querySelectorAll('.text-danger').forEach(el => {
+                el.textContent = '';
+            });
+        }
+
+        // Form Submit Handler
+        document.getElementById('employeeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            clearErrors();
+
+            const formData = new FormData(this);
+            const action = document.getElementById('formAction').value;
+            const url = action === 'create' ? '@Url.Action("Create", "Employees")' : '@Url.Action("Edit", "Employees")';
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Close offcanvas
+                    if (employeeOffcanvas) {
+                        employeeOffcanvas.hide();
+                    }
+
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: result.message || 'Employee saved successfully!',
+                        timer: 2000
+                    });
+
+                    // Reload page
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    // Handle validation errors
+                    const errors = result.errors;
+                    if (errors) {
+                        for (const [key, value] of Object.entries(errors)) {
+                            if (key === '__global') {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error!',
+                                    text: value.join(' ')
+                                });
+                            } else {
+                                const errorEl = document.getElementById(key.toLowerCase() + 'Error');
+                                if (errorEl) {
+                                    errorEl.textContent = value.join(' ');
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred while saving the employee.'
+                });
+            }
+        });
+
+        // Delete Employee
+        function deleteEmployee(id, employeeId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                html: `Do you want to delete employee <strong>${employeeId}</strong>?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const formData = new FormData();
+                        formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+                        const response = await fetch('@Url.Action("Delete", "Employees")/' + id, {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: 'Employee has been deleted.',
+                                timer: 2000
+                            });
+                            setTimeout(() => location.reload(), 2000);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'Failed to delete employee.'
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while deleting the employee.'
+                        });
+                    }
+                }
+            });
+        }
+    </script>
+}
