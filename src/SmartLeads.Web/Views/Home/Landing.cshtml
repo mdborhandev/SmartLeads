@@ -7,81 +7,115 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-12 col-xxl-10">
-                <section class="card border-0 shadow-sm overflow-hidden mb-4 mb-lg-5">
-                    <div class="card-body p-4 p-md-5">
-                        <div class="row align-items-center g-4 g-lg-5">
+                <section class="card border-0 shadow-lg overflow-hidden mb-4 mb-lg-5">
+                    <div class="card-body p-0">
+                        <div class="row g-0 align-items-stretch">
                             <div class="col-lg-7">
-                                <span class="badge bg-primary-subtle text-primary-emphasis rounded-pill px-3 py-2 mb-3">
-                                    Lead management for growing teams
-                                </span>
-                                <h1 class="display-4 fw-bold text-dark mb-3">
-                                    Organize contacts, track leads, and keep every follow-up moving.
-                                </h1>
-                                <p class="fs-5 text-muted mb-4">
-                                    SmartLeads gives your team one place to manage contacts, segment audiences, and turn pipeline activity into measurable growth.
-                                </p>
-                                <div class="d-flex flex-column flex-sm-row gap-3 mb-4">
-                                    <a asp-action="Register" asp-controller="Auth" class="btn btn-primary btn-lg px-4">
-                                        Create free account
-                                    </a>
-                                    <a asp-action="Login" asp-controller="Auth" class="btn btn-outline-primary btn-lg px-4">
-                                        Sign in
-                                    </a>
-                                </div>
-                                <div class="row row-cols-1 row-cols-sm-3 g-3">
-                                    <div class="col">
-                                        <div class="border rounded-3 p-3 h-100 bg-body-tertiary">
-                                            <div class="small text-muted text-uppercase fw-semibold mb-1">Contacts</div>
-                                            <div class="h4 mb-0 fw-bold">Centralized</div>
-                                        </div>
+                                <div class="p-4 p-md-5 p-xl-6 h-100 d-flex flex-column justify-content-center">
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                                        <span class="badge bg-primary rounded-pill px-3 py-2">SmartLeads</span>
+                                        <span class="badge bg-primary-subtle text-primary-emphasis rounded-pill px-3 py-2">Modern CRM workflow</span>
                                     </div>
-                                    <div class="col">
-                                        <div class="border rounded-3 p-3 h-100 bg-body-tertiary">
-                                            <div class="small text-muted text-uppercase fw-semibold mb-1">Pipeline</div>
-                                            <div class="h4 mb-0 fw-bold">Visible</div>
-                                        </div>
+                                    <h1 class="display-3 fw-bold text-dark mb-3">
+                                        A cleaner way to manage contacts and close more leads.
+                                    </h1>
+                                    <p class="fs-5 text-muted mb-4">
+                                        Bring contacts, companies, follow-ups, and pipeline activity into one Bootstrap-powered workspace built for daily sales execution.
+                                    </p>
+                                    <div class="d-flex flex-column flex-sm-row gap-3 mb-4">
+                                        <a asp-action="Register" asp-controller="Auth" class="btn btn-primary btn-lg px-4">
+                                            Start free now
+                                        </a>
+                                        <a asp-action="Login" asp-controller="Auth" class="btn btn-outline-secondary btn-lg px-4">
+                                            Sign in to workspace
+                                        </a>
                                     </div>
-                                    <div class="col">
-                                        <div class="border rounded-3 p-3 h-100 bg-body-tertiary">
-                                            <div class="small text-muted text-uppercase fw-semibold mb-1">Teams</div>
-                                            <div class="h4 mb-0 fw-bold">Aligned</div>
+                                    <div class="row g-3">
+                                        <div class="col-sm-4">
+                                            <div class="border rounded-4 p-3 h-100 bg-body-tertiary">
+                                                <div class="small text-uppercase text-muted fw-semibold mb-1">Conversion focus</div>
+                                                <div class="h3 fw-bold mb-1">3x</div>
+                                                <div class="small text-muted">faster follow-up visibility</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="border rounded-4 p-3 h-100 bg-body-tertiary">
+                                                <div class="small text-uppercase text-muted fw-semibold mb-1">Team clarity</div>
+                                                <div class="h3 fw-bold mb-1">1 view</div>
+                                                <div class="small text-muted">for leads, contacts, and tasks</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="border rounded-4 p-3 h-100 bg-body-tertiary">
+                                                <div class="small text-uppercase text-muted fw-semibold mb-1">Multi company</div>
+                                                <div class="h3 fw-bold mb-1">Ready</div>
+                                                <div class="small text-muted">for agencies and group teams</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg-5">
-                                <div class="card border-primary border-2 shadow-sm">
-                                    <div class="card-header bg-primary text-white py-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="fw-semibold">Sales snapshot</span>
-                                            <span class="badge bg-light text-primary">Live workflow</span>
+                            <div class="col-lg-5 bg-primary">
+                                <div class="p-4 p-md-5 h-100 text-white d-flex flex-column justify-content-center">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <h2 class="h4 fw-bold mb-0">Pipeline overview</h2>
+                                        <span class="badge bg-light text-primary rounded-pill">Live board</span>
+                                    </div>
+                                    <div class="card border-0 shadow-sm mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                <div>
+                                                    <div class="text-muted small text-uppercase fw-semibold">This week</div>
+                                                    <div class="h5 fw-bold mb-0 text-dark">Lead activity</div>
+                                                </div>
+                                                <span class="badge bg-success rounded-pill">Healthy</span>
+                                            </div>
+                                            <div class="progress mb-3" role="progressbar" aria-label="Qualified leads progress" aria-valuenow="74" aria-valuemin="0" aria-valuemax="100" style="height: 10px;">
+                                                <div class="progress-bar bg-primary w-75"></div>
+                                            </div>
+                                            <div class="row g-3 text-dark">
+                                                <div class="col-6">
+                                                    <div class="border rounded-3 p-3 h-100">
+                                                        <div class="small text-muted">New leads</div>
+                                                        <div class="h4 fw-bold mb-0">128</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="border rounded-3 p-3 h-100">
+                                                        <div class="small text-muted">Qualified</div>
+                                                        <div class="h4 fw-bold mb-0">42</div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="card-body p-4">
-                                        <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 mb-3">
-                                            <div>
-                                                <div class="fw-semibold">New leads</div>
-                                                <div class="text-muted small">Collected this week</div>
+                                    <div class="list-group shadow-sm">
+                                        <div class="list-group-item border-0 py-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <div class="fw-semibold text-dark">Capture and organize</div>
+                                                    <div class="small text-muted">Every contact stored with context</div>
+                                                </div>
+                                                <span class="badge bg-primary rounded-pill">01</span>
                                             </div>
-                                            <span class="badge bg-primary rounded-pill fs-6">128</span>
                                         </div>
-                                        <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 mb-3">
-                                            <div>
-                                                <div class="fw-semibold">Qualified</div>
-                                                <div class="text-muted small">Ready for follow-up</div>
+                                        <div class="list-group-item border-0 py-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <div class="fw-semibold text-dark">Assign and follow up</div>
+                                                    <div class="small text-muted">Keep tasks visible across the team</div>
+                                                </div>
+                                                <span class="badge bg-primary rounded-pill">02</span>
                                             </div>
-                                            <span class="badge bg-success rounded-pill fs-6">42</span>
                                         </div>
-                                        <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 mb-4">
-                                            <div>
-                                                <div class="fw-semibold">Pending tasks</div>
-                                                <div class="text-muted small">Scheduled reminders</div>
+                                        <div class="list-group-item border-0 py-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <div class="fw-semibold text-dark">Convert with confidence</div>
+                                                    <div class="small text-muted">Track movement by pipeline stage</div>
+                                                </div>
+                                                <span class="badge bg-primary rounded-pill">03</span>
                                             </div>
-                                            <span class="badge bg-warning text-dark rounded-pill fs-6">16</span>
-                                        </div>
-                                        <div class="alert alert-light border mb-0">
-                                            <div class="fw-semibold mb-1">One workspace for your process</div>
-                                            <div class="text-muted small mb-0">Move from lead capture to conversion without juggling spreadsheets or disconnected tools.</div>
                                         </div>
                                     </div>
                                 </div>
@@ -91,40 +125,56 @@
                 </section>
 
                 <section class="mb-4 mb-lg-5">
-                    <div class="row g-4">
-                        <div class="col-md-6 col-xl-3">
+                    <div class="row g-4 align-items-stretch">
+                        <div class="col-lg-4">
                             <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <span class="badge bg-primary-subtle text-primary-emphasis mb-3">01</span>
-                                    <h3 class="h5 fw-bold">Contact management</h3>
-                                    <p class="text-muted mb-0">Store people, companies, notes, and communication history in one searchable view.</p>
+                                <div class="card-body p-4 p-lg-5">
+                                    <span class="badge bg-dark rounded-pill px-3 py-2 mb-3">Why teams use it</span>
+                                    <h2 class="display-6 fw-bold mb-3">Built for lead flow, not spreadsheet cleanup.</h2>
+                                    <p class="text-muted mb-4">SmartLeads gives sales and operations teams a shared structure for contact data, segmentation, and conversion tracking.</p>
+                                    <a asp-action="Register" asp-controller="Auth" class="btn btn-outline-primary">
+                                        Create your workspace
+                                    </a>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <span class="badge bg-success-subtle text-success-emphasis mb-3">02</span>
-                                    <h3 class="h5 fw-bold">Groups and tagging</h3>
-                                    <p class="text-muted mb-0">Segment records by campaign, team, source, or any workflow that matters to your business.</p>
+                        <div class="col-lg-8">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body p-4">
+                                            <span class="badge bg-primary-subtle text-primary-emphasis mb-3">Contacts</span>
+                                            <h3 class="h4 fw-bold">Centralized contact management</h3>
+                                            <p class="text-muted mb-0">Store people, companies, notes, and conversation context in one clean searchable view.</p>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <span class="badge bg-info-subtle text-info-emphasis mb-3">03</span>
-                                    <h3 class="h5 fw-bold">Lead tracking</h3>
-                                    <p class="text-muted mb-0">Monitor status changes and keep sales activity focused on the next high-value step.</p>
+                                <div class="col-md-6">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body p-4">
+                                            <span class="badge bg-success-subtle text-success-emphasis mb-3">Segmentation</span>
+                                            <h3 class="h4 fw-bold">Groups and tags that scale</h3>
+                                            <p class="text-muted mb-0">Create meaningful segments for campaigns, ownership, source channels, or internal workflows.</p>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <span class="badge bg-warning-subtle text-warning-emphasis mb-3">04</span>
-                                    <h3 class="h5 fw-bold">Multi-company support</h3>
-                                    <p class="text-muted mb-0">Switch between organizations and keep each workspace structured and isolated.</p>
+                                <div class="col-md-6">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body p-4">
+                                            <span class="badge bg-info-subtle text-info-emphasis mb-3">Tracking</span>
+                                            <h3 class="h4 fw-bold">Pipeline visibility</h3>
+                                            <p class="text-muted mb-0">See where each lead stands, what changed, and which follow-up should happen next.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body p-4">
+                                            <span class="badge bg-warning-subtle text-warning-emphasis mb-3">Structure</span>
+                                            <h3 class="h4 fw-bold">Multi-company ready</h3>
+                                            <p class="text-muted mb-0">Support separate company workspaces while keeping admin and team access easier to manage.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -133,40 +183,60 @@
 
                 <section class="card border-0 bg-body-tertiary shadow-sm mb-4 mb-lg-5">
                     <div class="card-body p-4 p-md-5">
-                        <div class="row g-4 align-items-center">
-                            <div class="col-lg-5">
-                                <span class="badge bg-dark rounded-pill px-3 py-2 mb-3">How it works</span>
-                                <h2 class="display-6 fw-bold mb-3">Start with a simple setup, then scale the workflow.</h2>
-                                <p class="text-muted mb-0">The onboarding flow is built for teams that need to move quickly without sacrificing structure.</p>
+                        <div class="row align-items-center g-4 mb-4">
+                            <div class="col-lg-6">
+                                <span class="badge bg-light text-dark rounded-pill px-3 py-2 mb-3">Simple onboarding</span>
+                                <h2 class="display-6 fw-bold mb-3">From signup to active lead tracking in three steps.</h2>
+                                <p class="text-muted mb-0">The path is straightforward for solo users and clean enough for teams joining an existing company.</p>
                             </div>
-                            <div class="col-lg-7">
+                            <div class="col-lg-6">
                                 <div class="row g-3">
-                                    <div class="col-md-4">
-                                        <div class="card h-100 border-0 shadow-sm">
-                                            <div class="card-body p-4">
-                                                <div class="badge bg-primary rounded-pill mb-3">Step 1</div>
-                                                <h3 class="h5 fw-bold">Create your account</h3>
-                                                <p class="text-muted mb-0">Register in minutes and access your workspace immediately.</p>
-                                            </div>
+                                    <div class="col-6 col-md-4">
+                                        <div class="bg-white border rounded-4 p-3 text-center h-100 shadow-sm">
+                                            <div class="small text-muted text-uppercase fw-semibold">Step</div>
+                                            <div class="display-6 fw-bold text-primary">1</div>
+                                            <div class="fw-semibold">Register</div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <div class="card h-100 border-0 shadow-sm">
-                                            <div class="card-body p-4">
-                                                <div class="badge bg-primary rounded-pill mb-3">Step 2</div>
-                                                <h3 class="h5 fw-bold">Join or create a company</h3>
-                                                <p class="text-muted mb-0">Connect your team under a single company environment.</p>
-                                            </div>
+                                    <div class="col-6 col-md-4">
+                                        <div class="bg-white border rounded-4 p-3 text-center h-100 shadow-sm">
+                                            <div class="small text-muted text-uppercase fw-semibold">Step</div>
+                                            <div class="display-6 fw-bold text-primary">2</div>
+                                            <div class="fw-semibold">Join company</div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <div class="card h-100 border-0 shadow-sm">
-                                            <div class="card-body p-4">
-                                                <div class="badge bg-primary rounded-pill mb-3">Step 3</div>
-                                                <h3 class="h5 fw-bold">Track leads daily</h3>
-                                                <p class="text-muted mb-0">Add contacts, update stages, and keep follow-ups accountable.</p>
-                                            </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="bg-white border rounded-4 p-3 text-center h-100 shadow-sm">
+                                            <div class="small text-muted text-uppercase fw-semibold">Step</div>
+                                            <div class="display-6 fw-bold text-primary">3</div>
+                                            <div class="fw-semibold">Track leads</div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-body p-4">
+                                        <h3 class="h5 fw-bold mb-3">Create account</h3>
+                                        <p class="text-muted mb-0">Set up your profile and access the platform in minutes with a standard registration flow.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-body p-4">
+                                        <h3 class="h5 fw-bold mb-3">Connect to your organization</h3>
+                                        <p class="text-muted mb-0">Use an invite or create a company workspace so the right people share the same operating view.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-body p-4">
+                                        <h3 class="h5 fw-bold mb-3">Run daily workflow</h3>
+                                        <p class="text-muted mb-0">Start adding contacts, organizing tags, and moving deals through a clearer pipeline.</p>
                                     </div>
                                 </div>
                             </div>
@@ -174,17 +244,24 @@
                     </div>
                 </section>
 
-                <section class="card border-0 bg-primary text-white shadow-sm">
-                    <div class="card-body p-4 p-md-5 text-center">
-                        <h2 class="display-6 fw-bold mb-3">Build a cleaner lead workflow from day one.</h2>
-                        <p class="fs-5 text-white-50 mb-4">Use SmartLeads to replace scattered tracking with a focused, team-ready system.</p>
-                        <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
-                            <a asp-action="Register" asp-controller="Auth" class="btn btn-light btn-lg px-4">
-                                Get started free
-                            </a>
-                            <a asp-action="Login" asp-controller="Auth" class="btn btn-outline-light btn-lg px-4">
-                                I already have an account
-                            </a>
+                <section class="card border-0 bg-primary text-white shadow-lg">
+                    <div class="card-body p-4 p-md-5 p-xl-6">
+                        <div class="row align-items-center g-4">
+                            <div class="col-lg-8">
+                                <span class="badge bg-light text-primary rounded-pill px-3 py-2 mb-3">Ready to start</span>
+                                <h2 class="display-5 fw-bold mb-3">Turn lead chaos into a system your team can actually use.</h2>
+                                <p class="fs-5 text-white-50 mb-0">Launch a shared workspace, keep contact data clean, and make follow-up progress visible from day one.</p>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="d-grid gap-3">
+                                    <a asp-action="Register" asp-controller="Auth" class="btn btn-light btn-lg">
+                                        Create free account
+                                    </a>
+                                    <a asp-action="Login" asp-controller="Auth" class="btn btn-outline-light btn-lg">
+                                        Already have an account
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
