@@ -5,77 +5,83 @@
     Layout = "_UserCompanyLayout";
 }
 
-<!-- Create Company Form Card -->
-<div class="company-card">
-    <!-- Card Header (Inside Card - Top) -->
-    @await Html.PartialAsync("~/Views/Shared/PartialView/_CardHeader.cshtml", new ViewDataDictionary(ViewData) { { "LogoSubtitle", "Set up your company to get started" } })
+<div class="container-xxl py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10 col-xl-8 col-xxl-7">
+            <!-- Create Company Form Card -->
+            <div class="company-card">
+                <!-- Card Header (Inside Card - Top) -->
+                @await Html.PartialAsync("~/Views/Shared/PartialView/_CardHeader.cshtml", new ViewDataDictionary(ViewData) { { "LogoSubtitle", "Set up your company to get started" } })
 
-    <form id="createCompanyForm" method="post" asp-action="CreateCompany" asp-controller="UserCompany" novalidate>
-        @Html.AntiForgeryToken()
+                <form id="createCompanyForm" method="post" asp-action="CreateCompany" asp-controller="UserCompany" novalidate>
+                    @Html.AntiForgeryToken()
 
-        <div id="success-message" class="alert alert-success" role="alert" style="display: none; white-space: pre-line;"></div>
-        <div id="error-message" class="alert alert-danger" role="alert" style="display: none; white-space: pre-line;"></div>
+                    <div id="success-message" class="alert alert-success" role="alert" style="display: none; white-space: pre-line;"></div>
+                    <div id="error-message" class="alert alert-danger" role="alert" style="display: none; white-space: pre-line;"></div>
 
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="alert alert-danger" role="alert">
-                @TempData["ErrorMessage"]
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @TempData["ErrorMessage"]
+                        </div>
+                    }
+
+                    <!-- Company Information Section -->
+                    <h6 class="section-title">Company Information</h6>
+
+                    <div class="mb-3">
+                        <label asp-for="CompanyName" class="form-label">Company Name</label>
+                        <input asp-for="CompanyName" class="form-control" placeholder="Enter company name" />
+                        <span asp-validation-for="CompanyName" class="text-danger"></span>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="CompanyCode" class="form-label">Company Code</label>
+                            <input asp-for="CompanyCode" class="form-control" placeholder="Enter company code" />
+                            <span asp-validation-for="CompanyCode" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="CompanyPhone" class="form-label">Company Phone</label>
+                            <input asp-for="CompanyPhone" class="form-control" placeholder="Enter phone number" />
+                            <span asp-validation-for="CompanyPhone" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="CompanyEmail" class="form-label">Company Email</label>
+                        <input asp-for="CompanyEmail" class="form-control" placeholder="name@company.com" />
+                        <span asp-validation-for="CompanyEmail" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="CompanyAddress" class="form-label">Company Address</label>
+                        <input asp-for="CompanyAddress" class="form-control" placeholder="Enter company address" />
+                        <span asp-validation-for="CompanyAddress" class="text-danger"></span>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="agreeToTerms" required />
+                        <label class="form-check-label" for="agreeToTerms">
+                            I agree to the <a href="@Url.Action("Privacy", "Home")" target="_blank" class="text-decoration-none">Terms and Conditions</a>
+                        </label>
+                    </div>
+
+                    <button id="create-company-submit" type="submit" class="btn btn-primary w-100 mb-3 d-flex align-items-center justify-content-center">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="button-text">Create Company</span>
+                    </button>
+
+                    <div class="text-center">
+                        <span class="text-muted">Already have an account?</span>
+                        <a asp-action="Login" asp-controller="Auth" class="text-decoration-none ms-2">Sign in</a>
+                    </div>
+                </form>
             </div>
-        }
-
-        <!-- Company Information Section -->
-        <h6 class="section-title">Company Information</h6>
-
-        <div class="mb-3">
-            <label asp-for="CompanyName" class="form-label">Company Name</label>
-            <input asp-for="CompanyName" class="form-control" placeholder="Enter company name" />
-            <span asp-validation-for="CompanyName" class="text-danger"></span>
         </div>
-
-        <div class="row g-2 mb-3">
-            <div class="col-md-6">
-                <label asp-for="CompanyCode" class="form-label">Company Code</label>
-                <input asp-for="CompanyCode" class="form-control" placeholder="Enter company code" />
-                <span asp-validation-for="CompanyCode" class="text-danger"></span>
-            </div>
-            <div class="col-md-6">
-                <label asp-for="CompanyPhone" class="form-label">Company Phone</label>
-                <input asp-for="CompanyPhone" class="form-control" placeholder="Enter phone number" />
-                <span asp-validation-for="CompanyPhone" class="text-danger"></span>
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <label asp-for="CompanyEmail" class="form-label">Company Email</label>
-            <input asp-for="CompanyEmail" class="form-control" placeholder="name@company.com" />
-            <span asp-validation-for="CompanyEmail" class="text-danger"></span>
-        </div>
-
-        <div class="mb-4">
-            <label asp-for="CompanyAddress" class="form-label">Company Address</label>
-            <input asp-for="CompanyAddress" class="form-control" placeholder="Enter company address" />
-            <span asp-validation-for="CompanyAddress" class="text-danger"></span>
-        </div>
-
-        <hr class="my-4" />
-
-        <div class="form-check mb-4">
-            <input class="form-check-input" type="checkbox" id="agreeToTerms" required />
-            <label class="form-check-label" for="agreeToTerms">
-                I agree to the <a href="@Url.Action("Privacy", "Home")" target="_blank" class="text-decoration-none">Terms and Conditions</a>
-            </label>
-        </div>
-
-        <button id="create-company-submit" type="submit" class="btn btn-primary w-100 mb-3 d-flex align-items-center justify-content-center">
-            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-            <span class="button-text">Create Company</span>
-        </button>
-
-        <div class="text-center">
-            <span class="text-muted">Already have an account?</span>
-            <a asp-action="Login" asp-controller="Auth" class="text-decoration-none ms-2">Sign in</a>
-        </div>
-    </form>
+    </div>
 </div>
 
 @section Scripts {

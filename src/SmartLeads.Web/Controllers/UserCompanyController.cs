@@ -285,22 +285,6 @@ public class UserCompanyController : Controller
         }
     }
 
-    // POST: UserCompany/JoinCompany - Join existing company with code
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> JoinCompany(string companyCode)
-    {
-        if (string.IsNullOrEmpty(companyCode))
-        {
-            TempData["ErrorMessage"] = "Please enter a valid company code";
-            return RedirectToAction("NoCompany");
-        }
-
-        // TODO: Implement company joining logic
-        // For now, just redirect
-        return RedirectToAction("Index", "Contacts");
-    }
-
     // POST: UserCompany/SwitchCompany - Switch to a different company
     [HttpPost]
     public async Task<IActionResult> SwitchCompany([FromBody] SwitchCompanyRequest request)

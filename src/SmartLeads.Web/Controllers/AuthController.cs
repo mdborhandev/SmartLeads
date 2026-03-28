@@ -147,6 +147,27 @@ public class AuthController : Controller
             var hasCompany = await _unitOfWork.userRepository.GetUserCompaniesAsync(user.Id);
             if (hasCompany == null || !hasCompany.Any())
             {
+                // User has no company - set authentication cookies and redirect to NoCompany page
+                // Generate JWT token with default User role (no company context)
+                var loginToken = _jwtTokenGenerator.GenerateToken(user, Domain.Enums.UserRole.User);
+
+                HttpContext.Response.Cookies.Append("JwtToken", loginToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddHours(1)
+                });
+
+                // Store UserId in cookie
+                HttpContext.Response.Cookies.Append("UserId", user.Id.ToString(), new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddHours(1)
+                });
+
                 // Redirect to NoCompany page
                 return RedirectToAction("NoCompany", "UserCompany");
             }

@@ -3,162 +3,112 @@
     Layout = "_UserCompanyLayout";
 }
 
-<div class="company-card">
-    @await Html.PartialAsync("~/Views/Shared/PartialView/_CardHeader.cshtml", new ViewDataDictionary(ViewData) { { "LogoSubtitle", "Manage your companies" } })
+<div class="container-xxl py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10 col-xxl-8">
+            <div class="company-card">
+                @await Html.PartialAsync("~/Views/Shared/PartialView/_CardHeader.cshtml", new ViewDataDictionary(ViewData) { { "LogoSubtitle", "Manage your companies" } })
 
-    <div class="card-body">
-        @if (User.Identity?.IsAuthenticated == true)
-        {
-            @if (ViewBag.HasCompanies == true)
-            {
-                // User has companies - show company list
-                <div class="text-center mb-4">
-                    <i class="bx bx-buildings display-1 text-primary"></i>
-                    <h3 class="mt-3">Your Companies</h3>
-                    <p class="text-muted">Select a company to continue</p>
-                </div>
-
-                <div class="row g-3">
-                    @foreach (var company in ViewBag.Companies)
+                <div class="card-body">
+                    @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <div class="col-md-6">
-                            <div class="card h-100">
-                                <div class="card-body text-center">
-                                    <i class="bx bx-building-house display-4 text-primary mb-3"></i>
-                                    <h5 class="card-title">@company.Name</h5>
-                                    <p class="card-text text-muted">@company.Code</p>
-                                    <button class="btn btn-primary" onclick="switchCompanySidebar('@company.Id', '@company.Name')">
-                                        <i class="bx bx-select-multiple me-1"></i> Select Company
-                                    </button>
+                        @if (ViewBag.HasCompanies == true)
+                        {
+                            // User has companies - show company list
+                            <div class="text-center mb-4">
+                                <i class="bx bx-buildings display-1 text-primary"></i>
+                                <h3 class="mt-3">Your Companies</h3>
+                                <p class="text-muted">Select a company to continue</p>
+                            </div>
+
+                            <div class="row g-3">
+                                @foreach (var company in ViewBag.Companies)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="card h-100">
+                                            <div class="card-body text-center">
+                                                <i class="bx bx-building-house display-4 text-primary mb-3"></i>
+                                                <h5 class="card-title">@company.Name</h5>
+                                                <p class="card-text text-muted">@company.Code</p>
+                                                <button class="btn btn-primary" onclick="switchCompanySidebar('@company.Id', '@company.Name')">
+                                                    <i class="bx bx-select-multiple me-1"></i> Select Company
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            // User has no companies
+                            <div class="text-center mb-4">
+                                <i class="bx bx-building-house display-1 text-primary"></i>
+                                <h3 class="mt-3">No Company Access</h3>
+                                <p class="text-muted">You are not currently associated with any company.</p>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-8 col-lg-6 mx-auto">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="bx bx-plus-circle display-4 text-primary mb-3"></i>
+                                            <h5 class="card-title">Create New Company</h5>
+                                            <p class="card-text text-muted">Start a new company and become the administrator.</p>
+                                            <a asp-action="CreateCompany" asp-controller="UserCompany" class="btn btn-primary">
+                                                <i class="bx bx-plus me-1"></i> Create Company
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="mt-4 p-3 bg-light rounded">
+                            <h6><i class="bx bx-info-circle me-1"></i> What's Next?</h6>
+                            <ul class="mb-0">
+                                <li>Create a new company to manage your business and invite team members.</li>
+                                <li>Set up your company workspace so you can access the rest of the platform.</li>
+                                <li>Contact support if you expected to already have company access.</li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center mb-4">
+                            <i class="bx bx-building-house display-1 text-primary"></i>
+                            <h3 class="mt-3">Welcome to SmartLeads</h3>
+                            <p class="text-muted">Create a new company to get started.</p>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-8 col-lg-6 mx-auto">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="bx bx-plus-circle display-4 text-primary mb-3"></i>
+                                        <h5 class="card-title">Create New Company</h5>
+                                        <p class="card-text text-muted">Start a new company and become the administrator.</p>
+                                        <a asp-action="CreateCompany" asp-controller="UserCompany" class="btn btn-primary">
+                                            <i class="bx bx-plus me-1"></i> Create Company
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    }
-                </div>
-            }
-            else
-            {
-                // User has no companies
-                <div class="text-center mb-4">
-                    <i class="bx bx-building-house display-1 text-primary"></i>
-                    <h3 class="mt-3">No Company Access</h3>
-                    <p class="text-muted">You are not currently associated with any company.</p>
-                </div>
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="card h-100">
-                            <div class="card-body text-center">
-                                <i class="bx bx-plus-circle display-4 text-primary mb-3"></i>
-                                <h5 class="card-title">Create New Company</h5>
-                                <p class="card-text text-muted">Start a new company and become the administrator.</p>
-                                <a asp-action="CreateCompany" asp-controller="UserCompany" class="btn btn-primary">
-                                    <i class="bx bx-plus me-1"></i> Create Company
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="card h-100">
-                            <div class="card-body text-center">
-                                <i class="bx bx-log-in-circle display-4 text-success mb-3"></i>
-                                <h5 class="card-title">Join Existing Company</h5>
-                                <p class="card-text text-muted">Join a company using an invitation or company code.</p>
-                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#joinCompanyModal">
-                                    <i class="bx bx-log-in me-1"></i> Join Company
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-
-            <div class="mt-4 p-3 bg-light rounded">
-                <h6><i class="bx bx-info-circle me-1"></i> What's Next?</h6>
-                <ul class="mb-0">
-                    <li>Create a new company to manage your business and invite team members.</li>
-                    <li>Join an existing company if you've received an invitation.</li>
-                    <li>Contact your company administrator if you believe this is an error.</li>
-                </ul>
-            </div>
-        }
-        else
-        {
-            <div class="text-center mb-4">
-                <i class="bx bx-building-house display-1 text-primary"></i>
-                <h3 class="mt-3">Welcome to SmartLeads</h3>
-                <p class="text-muted">Create a new company or join an existing one to get started.</p>
-            </div>
-
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <i class="bx bx-plus-circle display-4 text-primary mb-3"></i>
-                            <h5 class="card-title">Create New Company</h5>
-                            <p class="card-text text-muted">Start a new company and become the administrator.</p>
-                            <a asp-action="CreateCompany" asp-controller="UserCompany" class="btn btn-primary">
-                                <i class="bx bx-plus me-1"></i> Create Company
+                        <div class="mt-4 text-center">
+                            <p class="text-muted mb-2">Already have an account?</p>
+                            <a asp-action="Login" asp-controller="Auth" class="btn btn-outline-primary">
+                                <i class="bx bx-log-in me-1"></i> Sign In
+                            </a>
+                            <span class="mx-2">or</span>
+                            <a asp-action="Register" asp-controller="Auth" class="btn btn-outline-success">
+                                <i class="bx bx-user-plus me-1"></i> Register
                             </a>
                         </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <i class="bx bx-log-in-circle display-4 text-success mb-3"></i>
-                            <h5 class="card-title">Join Existing Company</h5>
-                            <p class="card-text text-muted">Join a company using an invitation or company code.</p>
-                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#joinCompanyModal">
-                                <i class="bx bx-log-in me-1"></i> Join Company
-                            </button>
-                        </div>
-                    </div>
+                    }
                 </div>
             </div>
-
-            <div class="mt-4 text-center">
-                <p class="text-muted mb-2">Already have an account?</p>
-                <a asp-action="Login" asp-controller="Auth" class="btn btn-outline-primary">
-                    <i class="bx bx-log-in me-1"></i> Sign In
-                </a>
-                <span class="mx-2">or</span>
-                <a asp-action="Register" asp-controller="Auth" class="btn btn-outline-success">
-                    <i class="bx bx-user-plus me-1"></i> Register
-                </a>
-            </div>
-        }
-    </div>
-</div>
-
-<!-- Join Company Modal -->
-<div class="modal fade" id="joinCompanyModal" tabindex="-1" aria-labelledby="joinCompanyModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="joinCompanyModalLabel">
-                    <i class="bx bx-log-in-circle me-2"></i>Join Company
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form asp-action="JoinCompany" asp-controller="UserCompany" method="post">
-                @Html.AntiForgeryToken()
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="companyCode" class="form-label">Company Code</label>
-                        <input type="text" class="form-control" id="companyCode" name="companyCode" placeholder="Enter company code" required />
-                        <div class="form-text">Contact your administrator to get the company code.</div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="bx bx-log-in me-1"></i> Join Company
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
