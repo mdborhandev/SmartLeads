@@ -145,28 +145,28 @@
 .landing-kicker {
     display: inline-block;
     margin-bottom: 1rem;
-    padding: 0.45rem 0.9rem;
+    padding: 0.35rem 0.75rem;
     border-radius: 999px;
     background: rgba(39, 110, 241, 0.1);
     color: #1f5ed8;
-    font-size: 0.82rem;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
 .landing-hero-title {
-    font-size: clamp(2.5rem, 5vw, 4.8rem);
-    line-height: 1.02;
+    font-size: clamp(1.75rem, 4vw, 3rem);
+    line-height: 1.15;
     font-weight: 800;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.02em;
     margin-bottom: 1rem;
 }
 
 .landing-hero-copy {
     max-width: 42rem;
     margin-bottom: 1.75rem;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     color: var(--bs-secondary-color);
 }
 
@@ -347,14 +347,14 @@
 }
 
 .pricing-amount {
-    font-size: 3rem;
+    font-size: 2.25rem;
     line-height: 1;
     font-weight: 800;
     margin-bottom: 0.75rem;
 }
 
 .pricing-amount span {
-    font-size: 1rem;
+    font-size: 0.875rem;
     color: var(--bs-secondary-color);
 }
 
