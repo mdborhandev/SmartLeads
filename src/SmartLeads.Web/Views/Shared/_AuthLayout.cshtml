@@ -25,6 +25,7 @@
 
     <!-- SmartLeads Custom CSS -->
     <link rel="stylesheet" href="~/css/smartleads.css" />
+    @await RenderSectionAsync("Styles", required: false)
 
     <!-- Pickr Color Picker -->
     <link rel="stylesheet" href="~/gtlib/dependencylib/sneatlayout/assets/vendor/libs/pickr/pickr-themes.css" />
@@ -37,7 +38,7 @@
 
     <script type="importmap"></script>
 </head>
-<body>
+<body class="@(ViewData["BodyClass"] as string)">
     <!-- Theme Switcher -->
     <div class="theme-switcher">
         <div class="dropdown">
