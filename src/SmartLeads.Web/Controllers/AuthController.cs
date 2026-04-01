@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,14 +17,16 @@ public class AuthController : Controller
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
     private readonly ICompanyContext _companyContext;
+    private readonly IWebHostEnvironment _webHostEnvironment;
 
-    public AuthController(IUnitOfWork unitOfWork, IConfiguration configuration, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator, ICompanyContext companyContext)
+    public AuthController(IUnitOfWork unitOfWork, IConfiguration configuration, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator, ICompanyContext companyContext, IWebHostEnvironment webHostEnvironment)
     {
         _unitOfWork = unitOfWork;
         _configuration = configuration;
         _passwordHasher = passwordHasher;
         _jwtTokenGenerator = jwtTokenGenerator;
         _companyContext = companyContext;
+        _webHostEnvironment = webHostEnvironment;
     }
 
     [HttpGet]
@@ -308,6 +311,7 @@ public class AuthController : Controller
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                ProfilePicture = user.ProfilePicture,
                 // Get role from current company's UserCompany
                 Role = await _companyContext.GetCurrentCompanyRoleAsync() ?? UserRole.User,
                 CreatedAt = user.CreatedAt,
@@ -332,31 +336,164 @@ public class AuthController : Controller
             return RedirectToAction("Login");
         }
 
-        if (ModelState.IsValid)
+        // Get current user
+        var usernameOrEmail = User.Identity?.Name;
+        var user = await _unitOfWork.userRepository.GetByUsernameOrEmailAsync(usernameOrEmail ?? "");
+
+        if (user == null)
         {
-            // Get current user
-            var usernameOrEmail = User.Identity?.Name;
-            var user = await _unitOfWork.userRepository.GetByUsernameOrEmailAsync(usernameOrEmail ?? "");
+            TempData["ErrorMessage"] = "User not found.";
+            return RedirectToAction("Login");
+        }
 
-            if (user != null)
+        // Validate username uniqueness (globally, not company-specific)
+        if (!string.Equals(user.Username, model.Username, StringComparison.OrdinalIgnoreCase))
+        {
+            var isUsernameTaken = await _unitOfWork.userRepository.IsUsernameTakenAsync(model.Username, user.Id);
+            if (isUsernameTaken)
             {
-                user.Email = model.Email;
-                user.FirstName = model.FirstName;
-                user.LastName = model.LastName;
-                user.UpdatedAt = DateTime.UtcNow;
+                ModelState.AddModelError(nameof(model.Username), "This username is already taken by another user.");
+            }
+        }
 
-                await _unitOfWork.userRepository.UpdateProfileAsync(user);
-                TempData["SuccessMessage"] = "Profile updated successfully!";
+        // Validate email uniqueness (globally, not company-specific)
+        if (!string.Equals(user.Email, model.Email, StringComparison.OrdinalIgnoreCase))
+        {
+            var isEmailTaken = await _unitOfWork.userRepository.IsEmailTakenAsync(model.Email, user.Id);
+            if (isEmailTaken)
+            {
+                ModelState.AddModelError(nameof(model.Email), "This email address is already registered by another user.");
+            }
+        }
+
+        // Handle profile picture upload
+        var profilePictureFile = Request.Form.Files.GetFile("ProfilePictureFile");
+        if (profilePictureFile != null && profilePictureFile.Length > 0)
+        {
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var fileExtension = Path.GetExtension(profilePictureFile.FileName).ToLowerInvariant();
+
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                ModelState.AddModelError("ProfilePictureFile", "Only image files (jpg, jpeg, png, gif, webp) are allowed.");
+            }
+            else if (profilePictureFile.Length > 5 * 1024 * 1024) // 5MB limit
+            {
+                ModelState.AddModelError("ProfilePictureFile", "Profile picture must be less than 5MB.");
             }
             else
             {
-                TempData["ErrorMessage"] = "Failed to update profile.";
-            }
+                try
+                {
+                    // Use existing storage/uploads folder (at solution root: /SmartLeads/storage/uploads)
+                    var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "storage", "uploads");
+                    Directory.CreateDirectory(uploadsPath);
 
-            return RedirectToAction("Profile");
+                    // Generate unique filename
+                    var fileName = $"{user.Id}_{Guid.NewGuid():N}{fileExtension}";
+                    var filePath = Path.Combine(uploadsPath, fileName);
+
+                    // Save file
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await profilePictureFile.CopyToAsync(stream);
+                    }
+
+                    // Delete old profile picture if exists
+                    if (!string.IsNullOrEmpty(user.ProfilePicture) && user.ProfilePicture.StartsWith("/storage/uploads/"))
+                    {
+                        var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "storage", "uploads", Path.GetFileName(user.ProfilePicture));
+                        if (System.IO.File.Exists(oldFilePath))
+                        {
+                            System.IO.File.Delete(oldFilePath);
+                        }
+                    }
+
+                    // Update profile picture path (relative to wwwroot for serving)
+                    user.ProfilePicture = $"/storage/uploads/{fileName}";
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("ProfilePictureFile", $"Error uploading image: {ex.Message}");
+                }
+            }
         }
 
-        return View(model);
+        // Handle password change (only if password fields are provided)
+        bool passwordChanged = false;
+        if (!string.IsNullOrEmpty(model.CurrentPassword) || !string.IsNullOrEmpty(model.NewPassword) || !string.IsNullOrEmpty(model.ConfirmNewPassword))
+        {
+            // If any password field is filled, validate all
+            if (string.IsNullOrEmpty(model.CurrentPassword))
+            {
+                ModelState.AddModelError(nameof(model.CurrentPassword), "Current password is required to change password.");
+            }
+            else if (string.IsNullOrEmpty(model.NewPassword))
+            {
+                ModelState.AddModelError(nameof(model.NewPassword), "New password is required.");
+            }
+            else if (string.IsNullOrEmpty(model.ConfirmNewPassword))
+            {
+                ModelState.AddModelError(nameof(model.ConfirmNewPassword), "Please confirm your new password.");
+            }
+            else
+            {
+                // Verify current password
+                var isCurrentPasswordValid = await _unitOfWork.userRepository.VerifyPasswordAsync(model.CurrentPassword, user.PasswordHash);
+                if (!isCurrentPasswordValid)
+                {
+                    ModelState.AddModelError(nameof(model.CurrentPassword), "Current password is incorrect.");
+                }
+                else
+                {
+                    // Hash new password and update
+                    var newPasswordHash = _passwordHasher.HashPassword(model.NewPassword);
+                    passwordChanged = await _unitOfWork.userRepository.ChangePasswordAsync(user.Id, user.PasswordHash, newPasswordHash);
+
+                    if (!passwordChanged)
+                    {
+                        ModelState.AddModelError(string.Empty, "Failed to change password. Please try again.");
+                    }
+                }
+            }
+        }
+
+        if (!ModelState.IsValid)
+        {
+            // Reload readonly fields for the view
+            model.Role = await _companyContext.GetCurrentCompanyRoleAsync() ?? UserRole.User;
+            model.CreatedAt = user.CreatedAt;
+            model.UpdatedAt = user.UpdatedAt;
+            model.ProfilePicture = user.ProfilePicture;
+            return View(model);
+        }
+
+        try
+        {
+            // Update user profile
+            user.Username = model.Username;
+            user.Email = model.Email;
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.userRepository.UpdateProfileAsync(user);
+            
+            if (passwordChanged)
+            {
+                TempData["SuccessMessage"] = "Profile and password updated successfully!";
+            }
+            else
+            {
+                TempData["SuccessMessage"] = "Profile updated successfully!";
+            }
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+        }
+
+        return RedirectToAction("Profile");
     }
 
     [HttpGet]

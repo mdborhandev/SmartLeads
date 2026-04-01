@@ -39,6 +39,18 @@ else
 }
 
 app.UseHttpsRedirection();
+
+// Add storage folder as static file provider (at solution root: /SmartLeads/storage/uploads)
+var storageUploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "storage", "uploads");
+Directory.CreateDirectory(storageUploadsPath); // Ensure directory exists
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        storageUploadsPath),
+    RequestPath = "/storage/uploads"
+});
+
 app.UseStaticFiles();
 
 app.UseRouting();

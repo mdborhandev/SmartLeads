@@ -241,4 +241,53 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
         await _systemDbContext.SaveChangesAsync(cancellationToken);
         return true;
     }
+
+    // Uniqueness checks (global, not company-specific)
+    public async Task<bool> IsUsernameTakenAsync(string username, Guid? excludeUserId = null, CancellationToken token = default)
+    {
+        var query = _systemDbContext.Users.AsQueryable();
+        
+        if (excludeUserId.HasValue)
+        {
+            return await query.AnyAsync(u => u.Username.ToLower() == username.ToLower() && u.Id != excludeUserId.Value, token);
+        }
+        
+        return await query.AnyAsync(u => u.Username.ToLower() == username.ToLower(), token);
+    }
+
+    public async Task<bool> IsEmailTakenAsync(string email, Guid? excludeUserId = null, CancellationToken token = default)
+    {
+        var query = _systemDbContext.Users.AsQueryable();
+        
+        if (excludeUserId.HasValue)
+        {
+            return await query.AnyAsync(u => u.Email.ToLower() == email.ToLower() && u.Id != excludeUserId.Value, token);
+        }
+        
+        return await query.AnyAsync(u => u.Email.ToLower() == email.ToLower(), token);
+    }
+
+    // Password change
+    public async Task<bool> ChangePasswordAsync(Guid userId, string currentPasswordHash, string newPasswordHash, CancellationToken token = default)
+    {
+        var user = await _systemDbContext.Users.FindAsync(new object[] { userId }, token);
+        if (user == null)
+        {
+            return false;
+        }
+
+        // Verify current password
+        if (user.PasswordHash != currentPasswordHash)
+        {
+            return false;
+        }
+
+        // Update password
+        user.PasswordHash = newPasswordHash;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        _systemDbContext.Users.Update(user);
+        await _systemDbContext.SaveChangesAsync(token);
+        return true;
+    }
 }

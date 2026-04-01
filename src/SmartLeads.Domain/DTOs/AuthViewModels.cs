@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using SmartLeads.Domain.Enums;
 
 namespace SmartLeads.Domain.DTOs;
@@ -60,6 +61,9 @@ public class UserProfileViewModel
     [Display(Name = "Last Name")]
     public string? LastName { get; set; }
 
+    [Display(Name = "Profile Picture URL")]
+    public string? ProfilePicture { get; set; }
+
     [Display(Name = "Role")]
     public UserRole Role { get; set; } = UserRole.User;
 
@@ -68,6 +72,21 @@ public class UserProfileViewModel
 
     [Display(Name = "Last Updated")]
     public DateTime? UpdatedAt { get; set; }
+
+    // Password Change Fields
+    [Display(Name = "Current Password")]
+    [DataType(DataType.Password)]
+    public string? CurrentPassword { get; set; }
+
+    [Display(Name = "New Password")]
+    [DataType(DataType.Password)]
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "New password must be at least 6 characters long")]
+    public string? NewPassword { get; set; }
+
+    [Display(Name = "Confirm New Password")]
+    [DataType(DataType.Password)]
+    [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match")]
+    public string? ConfirmNewPassword { get; set; }
 }
 
 public class ForgotPasswordViewModel
