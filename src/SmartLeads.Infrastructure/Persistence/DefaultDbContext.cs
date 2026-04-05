@@ -138,6 +138,12 @@ public class DefaultDbContext : DbContext
         modelBuilder.Entity<Designation>(entity =>
         {
             entity.HasIndex(d => new { d.CompanyId, d.Name }).IsUnique();
+            
+            // Configure relationship with Department
+            entity.HasOne(d => d.Department)
+                .WithMany()
+                .HasForeignKey(d => d.DepartmentId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<EmployeeUser>(entity =>

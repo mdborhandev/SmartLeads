@@ -23,6 +23,7 @@ public abstract class BaseEntity
     public Guid Id { get; set; }
     public Guid CompanyId { get; set; }
     public Guid UserId { get; set; }
+    public Company Company { get; set; } = null!;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
     public bool IsDeleted { get; set; } = false;

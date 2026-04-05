@@ -6,8 +6,6 @@ namespace SmartLeads.Domain.Models;
 /// </summary>
 public class Employee : BaseEntity
 {
-    public Company Company { get; set; } = null!;
-
     // Employee Information (specific to this company)
     public string EmployeeId { get; set; } = string.Empty;  // Unique employee code per company (e.g., EMP001)
     

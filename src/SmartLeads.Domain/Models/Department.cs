@@ -5,8 +5,6 @@ namespace SmartLeads.Domain.Models;
 /// </summary>
 public class Department : BaseEntity
 {
-    public Company Company { get; set; } = null!;
-
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;

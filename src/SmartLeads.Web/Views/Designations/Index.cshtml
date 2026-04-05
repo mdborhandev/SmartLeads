@@ -97,6 +97,16 @@
 
             <div class="row">
                 <div class="col-12 mb-3">
+                    <label for="desigDepartmentId" class="form-label">Department <span class="text-danger">*</span></label>
+                    <select class="form-select" id="desigDepartmentId" name="DepartmentId" required>
+                        <option value="">Select Department</option>
+                    </select>
+                    <span class="text-danger" id="departmentError"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 mb-3">
                     <label for="desigDescription" class="form-label">Description</label>
                     <textarea class="form-control" id="desigDescription" name="Description" rows="3"></textarea>
                 </div>
@@ -179,6 +189,7 @@
                     const row = cell.getRow().getData();
                     const id = row.id || '';
                     const name = (row.name || '').toString().replace(/'/g, "\\'");
+                    const departmentId = row.departmentId || '';
                     const description = (row.description || '').toString().replace(/'/g, "\\'");
                     const isActive = row.isActive || false;
 
@@ -187,6 +198,7 @@
                             onclick="openEditModal(
                                 '${id}',
                                 '${name}',
+                                '${departmentId}',
                                 '${description}',
                                 ${isActive}
                             )">
@@ -506,6 +518,29 @@
             });
         }
 
+        // Load departments dropdown
+        async function loadDepartments() {
+            try {
+                const response = await fetch('@Url.Action("GetAll", "Departments")');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const select = document.getElementById('desigDepartmentId');
+                    select.innerHTML = '<option value="">Select Department</option>';
+                    result.data.forEach(dept => {
+                        select.innerHTML += `<option value="${dept.id}">${dept.name}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading departments:', error);
+            }
+        }
+
+        // Load dropdowns on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDepartments();
+        });
+
         // Open Create Modal
         function openCreateModal() {
             document.getElementById('designationOffcanvasLabel').textContent = 'Add Designation';
@@ -522,11 +557,12 @@
         }
 
         // Open Edit Modal
-        function openEditModal(id, name, description, isActive) {
+        function openEditModal(id, name, departmentId, description, isActive) {
             document.getElementById('designationOffcanvasLabel').textContent = 'Edit Designation';
             document.getElementById('formAction').value = 'edit';
             document.getElementById('designationId').value = id;
             document.getElementById('desigName').value = name;
+            document.getElementById('desigDepartmentId').value = departmentId || '';
             document.getElementById('desigDescription').value = description || '';
             document.getElementById('isActiveRow').style.display = 'block';
             document.getElementById('desigIsActive').value = isActive.toString();
@@ -552,7 +588,11 @@
 
             const formData = new FormData(this);
             const action = document.getElementById('formAction').value;
-            const url = action === 'create' ? '@Url.Action("Create", "Designations")' : '@Url.Action("Edit", "Designations")';
+            const id = document.getElementById('designationId').value;
+            
+            const url = action === 'create' 
+                ? '@Url.Action("Create", "Designations")'
+                : '@Url.Action("Edit", "Designations")/' + id;
 
             try {
                 const response = await fetch(url, {
@@ -565,7 +605,7 @@
 
                 const result = await response.json();
 
-                if (response.ok) {
+                if (response.ok && result.success) {
                     // Close offcanvas
                     if (designationOffcanvas) {
                         designationOffcanvas.hide();
@@ -576,11 +616,16 @@
                         icon: 'success',
                         title: 'Success!',
                         text: result.message || 'Designation saved successfully!',
-                        timer: 2000
+                        timer: 1500,
+                        showConfirmButton: false
                     });
 
-                    // Reload page
-                    setTimeout(() => location.reload(), 2000);
+                    // Reset form
+                    document.getElementById('designationForm').reset();
+                    document.getElementById('designationId').value = '';
+                    
+                    // Reload table data without refreshing the page
+                    designationTable.setData();
                 } else {
                     // Handle validation errors
                     const errors = result.errors;
@@ -593,7 +638,7 @@
                                     text: value.join(' ')
                                 });
                             } else {
-                                const errorEl = document.getElementById(key.toLowerCase() + 'Error');
+                                const errorEl = document.getElementById(key.charAt(0).toLowerCase() + key.slice(1) + 'Error');
                                 if (errorEl) {
                                     errorEl.textContent = value.join(' ');
                                 }
@@ -632,14 +677,16 @@
                     })
                     .then(response => response.json())
                     .then(result => {
-                        if (result.success || response.ok) {
+                        if (result.success) {
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Deleted!',
                                 text: 'Designation deleted successfully!',
-                                timer: 2000
+                                timer: 1500,
+                                showConfirmButton: false
                             });
-                            setTimeout(() => location.reload(), 2000);
+                            // Reload table data without refreshing the page
+                            designationTable.setData();
                         } else {
                             Swal.fire({
                                 icon: 'error',

@@ -80,6 +80,7 @@ public class DesignationsController : Controller
                 {
                     d.Id,
                     d.Name,
+                    d.DepartmentId,
                     d.Description,
                     d.IsActive,
                     d.CreatedAt
@@ -169,6 +170,7 @@ public class DesignationsController : Controller
                 CompanyId = companyId,
                 UserId = userId,
                 Name = model.Name,
+                DepartmentId = model.DepartmentId,
                 Description = model.Description,
                 IsActive = true
             };
@@ -197,6 +199,7 @@ public class DesignationsController : Controller
         {
             Id = designation.Id,
             Name = designation.Name,
+            DepartmentId = designation.DepartmentId,
             Description = designation.Description,
             IsActive = designation.IsActive
         };
@@ -232,6 +235,7 @@ public class DesignationsController : Controller
         }
 
         designation.Name = model.Name;
+        designation.DepartmentId = model.DepartmentId;
         designation.Description = model.Description;
         designation.IsActive = model.IsActive;
         designation.UpdatedAt = DateTime.UtcNow;
@@ -268,6 +272,10 @@ public class DesignationCreateViewModel
     [Display(Name = "Designation Name")]
     public string Name { get; set; } = string.Empty;
 
+    [Required]
+    [Display(Name = "Department")]
+    public Guid DepartmentId { get; set; }
+
     [Display(Name = "Description")]
     public string? Description { get; set; }
 }
@@ -279,6 +287,10 @@ public class DesignationEditViewModel
     [Required]
     [Display(Name = "Designation Name")]
     public string Name { get; set; } = string.Empty;
+
+    [Required]
+    [Display(Name = "Department")]
+    public Guid DepartmentId { get; set; }
 
     [Display(Name = "Description")]
     public string? Description { get; set; }
