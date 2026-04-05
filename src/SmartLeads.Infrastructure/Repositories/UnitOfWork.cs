@@ -17,6 +17,8 @@ public class UnitOfWork : IUnitOfWork
     public ICompanyRepository companyRepository { get; private set; }
     public IInvitationRepository invitationRepository { get; private set; }
     public IColumnFilterRepository columnFilterRepository { get; private set; }
+    public IDepartmentRepository departmentRepository { get; private set; }
+    public IDesignationRepository designationRepository { get; private set; }
     public SystemDbContext systemDbContext => _systemDbContext;
     public DefaultDbContext defaultDbContext => _defaultDbContext;
     #endregion
@@ -35,6 +37,8 @@ public class UnitOfWork : IUnitOfWork
         // Default database repositories
         contactRepository = new ContactRepository(defaultDbContext);
         columnFilterRepository = new ColumnFilterRepository(defaultDbContext);
+        departmentRepository = new DepartmentRepository(defaultDbContext);
+        designationRepository = new DesignationRepository(defaultDbContext);
     }
 
     public async Task SaveAsync(CancellationToken token = default)

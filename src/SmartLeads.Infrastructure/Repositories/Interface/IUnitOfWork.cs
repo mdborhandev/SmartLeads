@@ -9,7 +9,9 @@ public interface IUnitOfWork : IAsyncDisposable
     ICompanyRepository companyRepository { get; }
     IInvitationRepository invitationRepository { get; }
     IColumnFilterRepository columnFilterRepository { get; }
-    
+    IDepartmentRepository departmentRepository { get; }
+    IDesignationRepository designationRepository { get; }
+
     SystemDbContext systemDbContext { get; }
     DefaultDbContext defaultDbContext { get; }
 

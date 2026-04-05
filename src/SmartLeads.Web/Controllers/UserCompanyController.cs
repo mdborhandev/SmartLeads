@@ -171,8 +171,8 @@ public class UserCompanyController : Controller
             {
                 CompanyId = company.Id,
                 EmployeeId = $"EMP{user.Id.ToString().Substring(0, 8).ToUpper()}",
-                Department = "N/A",
-                Designation = "N/A",
+                DepartmentId = null,
+                DesignationId = null,
                 PhoneNumber = null,
                 Address = "N/A",
                 DateOfJoining = DateTime.UtcNow,

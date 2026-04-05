@@ -1,14 +1,14 @@
 @{
-    ViewData["Title"] = "Employee List";
+    ViewData["Title"] = "Designation List";
 }
 
 @Html.AntiForgeryToken()
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">All Employees</h5>
-        <button type="button" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#employeeOffcanvas" onclick="openCreateModal()">
-            <i class="bx bx-plus me-1"></i> Add Employee
+        <h5 class="mb-0">All Designations</h5>
+        <button type="button" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#designationOffcanvas" onclick="openCreateModal()">
+            <i class="bx bx-plus me-1"></i> Add Designation
         </button>
     </div>
     <div class="card-body">
@@ -24,7 +24,7 @@
             <div class="col-md-6">
                 <div class="input-group">
                     <span class="input-group-text"><i class="bx bx-search"></i></span>
-                    <input type="text" id="searchInput" class="form-control" placeholder="Search by employee ID, department, designation, or phone..." />
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by name or description..." />
                 </div>
             </div>
             <div class="col-md-6">
@@ -34,22 +34,22 @@
                         <button class="btn btn-outline-primary" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bx bx-cog"></i>
                         </button>
-                        <div class="dropdown-menu dropdown-menu-end gear-dropdown-employees" aria-labelledby="dropdownMenuButton1">
+                        <div class="dropdown-menu dropdown-menu-end gear-dropdown-designations" aria-labelledby="dropdownMenuButton1">
                             <div class="row p-4 main-dropdown-size overflow-hidden">
                                 <div class="col">
                                     <span class="fw-bold ms-3">Columns</span>
                                     <hr class="m-0 w-75 ms-3 w-sm-50" />
-                                    <ul class="list-unstyled" id="EmployeesColumnList">
+                                    <ul class="list-unstyled" id="DesignationsColumnList">
                                         <!-- Column checkboxes will be populated here -->
                                     </ul>
                                 </div>
                             </div>
                             <div class="d-flex">
                                 <div class="p-4">
-                                    <button id="saveEmployeesFilter" class="btn btn-outline-primary">Save Filter</button>
+                                    <button id="saveDesignationsFilter" class="btn btn-outline-primary">Save Filter</button>
                                 </div>
                                 <div class="p-4">
-                                    <button id="deleteEmployeesFilter" class="btn btn-outline-danger" onclick="DeleteFilter_Employees('Employees')">Remove Filter</button>
+                                    <button id="deleteDesignationsFilter" class="btn btn-outline-danger" onclick="DeleteFilter_Designations('Designations')">Remove Filter</button>
                                 </div>
                             </div>
                         </div>
@@ -69,71 +69,43 @@
             </div>
         </div>
 
-        <div id="employeeTable"></div>
+        <div id="designationTable"></div>
     </div>
 </div>
 
-<!-- Employee Offcanvas -->
-<div class="offcanvas offcanvas-end w-100" tabindex="-1" id="employeeOffcanvas" aria-labelledby="employeeOffcanvasLabel">
+<!-- Designation Offcanvas -->
+<div class="offcanvas offcanvas-end w-100" tabindex="-1" id="designationOffcanvas" aria-labelledby="designationOffcanvasLabel">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="employeeOffcanvasLabel">Add Employee</h5>
+        <h5 class="offcanvas-title" id="designationOffcanvasLabel">Add Designation</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        <form id="employeeForm" method="post">
+        <form id="designationForm" method="post">
             @Html.AntiForgeryToken()
-            <input type="hidden" id="employeeId" name="Id" />
+            <input type="hidden" id="designationId" name="Id" />
             <input type="hidden" id="formAction" value="create" />
 
-            <h6 class="mb-3">Employee Information</h6>
-            
-            <div class="row">
-                <div class="col-md-12 mb-3">
-                    <label for="empEmployeeId" class="form-label">Employee ID <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="empEmployeeId" name="EmployeeId" placeholder="e.g., EMP001" required />
-                    <span class="text-danger" id="employeeIdError"></span>
-                </div>
-            </div>
+            <h6 class="mb-3">Designation Information</h6>
 
             <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="empDepartmentId" class="form-label">Department</label>
-                    <select class="form-select" id="empDepartmentId" name="DepartmentId">
-                        <option value="">Select Department</option>
-                    </select>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label for="empDesignationId" class="form-label">Designation</label>
-                    <select class="form-select" id="empDesignationId" name="DesignationId" disabled>
-                        <option value="">Select Designation</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="empPhoneNumber" class="form-label">Phone Number</label>
-                    <input type="tel" class="form-control" id="empPhoneNumber" name="PhoneNumber" />
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label for="empDateOfJoining" class="form-label">Date of Joining</label>
-                    <input type="date" class="form-control" id="empDateOfJoining" name="DateOfJoining" />
+                <div class="col-12 mb-3">
+                    <label for="desigName" class="form-label">Designation Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="desigName" name="Name" required />
+                    <span class="text-danger" id="nameError"></span>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-12 mb-3">
-                    <label for="empAddress" class="form-label">Address</label>
-                    <textarea class="form-control" id="empAddress" name="Address" rows="2"></textarea>
+                    <label for="desigDescription" class="form-label">Description</label>
+                    <textarea class="form-control" id="desigDescription" name="Description" rows="3"></textarea>
                 </div>
             </div>
 
             <div class="row" id="isActiveRow" style="display: none;">
                 <div class="col-12 mb-3">
-                    <label for="empIsActive" class="form-label">Status</label>
-                    <select class="form-select" id="empIsActive" name="IsActive">
+                    <label for="desigIsActive" class="form-label">Status</label>
+                    <select class="form-select" id="desigIsActive" name="IsActive">
                         <option value="true">Active</option>
                         <option value="false">Inactive</option>
                     </select>
@@ -142,7 +114,7 @@
 
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                 <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">Cancel</button>
-                <button type="submit" class="btn btn-primary" id="submitBtn">Create Employee</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Create Designation</button>
             </div>
         </form>
     </div>
@@ -150,8 +122,8 @@
 
 @section Scripts {
     <script>
-        let employeeOffcanvas = null;
-        let employeeTable = null;
+        let designationOffcanvas = null;
+        let designationTable = null;
         let searchTimeout = null;
         let currentSearch = '';
 
@@ -167,50 +139,14 @@
                 visible: true
             },
             {
-                title: "Employee ID",
-                field: "employeeId",
-                hozAlign: "center",
-                visible: true,
-                formatter: function(cell) {
-                    const value = cell.getValue();
-                    return value ? `<span class="badge bg-info">${value}</span>` : '<span class="badge bg-secondary">N/A</span>';
-                }
-            },
-            {
-                title: "Full Name",
-                field: "fullName",
+                title: "Name",
+                field: "name",
                 hozAlign: "left",
                 visible: true
             },
             {
-                title: "Email",
-                field: "email",
-                hozAlign: "left",
-                visible: true
-            },
-            {
-                title: "Department",
-                field: "department",
-                hozAlign: "left",
-                visible: true,
-                formatter: function(cell) {
-                    const value = cell.getValue();
-                    return value || '-';
-                }
-            },
-            {
-                title: "Designation",
-                field: "designation",
-                hozAlign: "left",
-                visible: true,
-                formatter: function(cell) {
-                    const value = cell.getValue();
-                    return value || '-';
-                }
-            },
-            {
-                title: "Phone Number",
-                field: "phoneNumber",
+                title: "Description",
+                field: "description",
                 hozAlign: "left",
                 visible: true,
                 formatter: function(cell) {
@@ -242,29 +178,21 @@
                 formatter: function(cell) {
                     const row = cell.getRow().getData();
                     const id = row.id || '';
-                    const employeeId = (row.employeeId || '').toString().replace(/'/g, "\\'");
-                    const department = (row.department || '').toString().replace(/'/g, "\\'");
-                    const designation = (row.designation || '').toString().replace(/'/g, "\\'");
-                    const phoneNumber = (row.phoneNumber || '').toString().replace(/'/g, "\\'");
-                    const address = (row.address || '').toString().replace(/'/g, "\\'");
-                    const dateOfJoining = (row.dateOfJoining || '').toString().replace(/'/g, "\\'");
+                    const name = (row.name || '').toString().replace(/'/g, "\\'");
+                    const description = (row.description || '').toString().replace(/'/g, "\\'");
                     const isActive = row.isActive || false;
 
                     return `
                         <button class="btn btn-sm btn-primary me-2"
-                            onclick="openEditModalFromTable(
+                            onclick="openEditModal(
                                 '${id}',
-                                '${employeeId}',
-                                '${department}',
-                                '${designation}',
-                                '${phoneNumber}',
-                                '${address}',
-                                '${dateOfJoining}',
+                                '${name}',
+                                '${description}',
                                 ${isActive}
                             )">
                             <i class="bx bx-edit"></i> Edit
                         </button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteEmployee('${id}', '${employeeId}')">
+                        <button class="btn btn-sm btn-danger" onclick="deleteDesignation('${id}', '${name}')">
                             <i class="bx bx-trash"></i> Delete
                         </button>
                     `;
@@ -274,18 +202,18 @@
 
         // Initialize offcanvas and table on page load
         document.addEventListener('DOMContentLoaded', function() {
-            employeeOffcanvas = new bootstrap.Offcanvas(document.getElementById('employeeOffcanvas'));
+            designationOffcanvas = new bootstrap.Offcanvas(document.getElementById('designationOffcanvas'));
 
             // Load column filter settings and initialize table
-            EmployeesGear();
+            DesignationsGear();
         });
 
         // Load column filter settings and initialize table
-        function EmployeesGear() {
+        function DesignationsGear() {
             $.ajax({
                 url: '@Url.Action("GetFilteredColumn", "ColumnFilter")',
                 type: 'GET',
-                data: { type: 'Employees' },
+                data: { type: 'Designations' },
                 success: function (response) {
                     console.log("GetFilteredColumn response:", response);
 
@@ -325,7 +253,7 @@
                         }
                     }
                     populateCheckbox();
-                    initializeEmployeeTable();
+                    initializeDesignationTable();
                     setupSearchFilter();
                     setupExportButtons();
                     setupColumnFilterSave();
@@ -333,7 +261,7 @@
                 error: function (error) {
                     console.error("Error fetching column settings:", error);
                     populateCheckbox();
-                    initializeEmployeeTable();
+                    initializeDesignationTable();
                     setupSearchFilter();
                     setupExportButtons();
                     setupColumnFilterSave();
@@ -352,21 +280,21 @@
                                 <i class="bx bx-menu me-2 handle" style="cursor: move;"></i> ${x.title}
                             </span>
                             <div class="form-check form-switch">
-                                <input class="form-check-input toggle-column employees-column" type="checkbox" role="switch"
+                                <input class="form-check-input toggle-column designations-column" type="checkbox" role="switch"
                                        id="${x.field}" value="${x.field}" ${x.visible ? 'checked' : ''}
                                        onclick="showHideColumn('${x.field}')">
                             </div>
                         </li>`;
                 });
 
-            const columnList = document.getElementById('EmployeesColumnList');
+            const columnList = document.getElementById('DesignationsColumnList');
             columnList.innerHTML = items.join('');
             enableDragAndDrop();
         }
 
         // Enable drag and drop for column ordering
         function enableDragAndDrop() {
-            new Sortable(document.getElementById('EmployeesColumnList'), {
+            new Sortable(document.getElementById('DesignationsColumnList'), {
                 animation: 200,
                 handle: '.handle',
                 ghostClass: 'sortable-ghost',
@@ -386,22 +314,22 @@
         // Update column order based on drag and drop
         function updateColumnOrder() {
             let newOrder = [];
-            document.querySelectorAll('#EmployeesColumnList .draggable-item').forEach(item => {
+            document.querySelectorAll('#DesignationsColumnList .draggable-item').forEach(item => {
                 const field = item.getAttribute('data-field');
                 const title = item.querySelector('span').innerText.trim();
                 const visible = item.querySelector('input').checked;
                 newOrder.push({ field: field, title: title, visible: visible });
             });
 
-            let allColumns = employeeTable.getColumns().map(col => col.getDefinition());
+            let allColumns = designationTable.getColumns().map(col => col.getDefinition());
             let fixedColumns = allColumns.filter(col => col.field === 'id');
             let newColumns = newOrder.map(col => {
-                let existingColumn = employeeTable.getColumn(col.field);
+                let existingColumn = designationTable.getColumn(col.field);
                 return existingColumn ? existingColumn.getDefinition() : { title: col.title, field: col.field, visible: col.visible };
             });
 
             newColumns = [...newColumns, ...fixedColumns];
-            employeeTable.setColumns(newColumns);
+            designationTable.setColumns(newColumns);
 
             // Update TableFields array to match new order (for saving)
             const actionColumn = TableFields.find(col => col.field === 'id');
@@ -416,15 +344,15 @@
 
         // Show/hide individual column
         function showHideColumn(colName) {
-            employeeTable.toggleColumn(colName);
+            designationTable.toggleColumn(colName);
         }
 
         // Save column filter settings
         function setupColumnFilterSave() {
-            $("#saveEmployeesFilter").on("click", function () {
-                var colDefs = employeeTable.getColumnDefinitions();
+            $("#saveDesignationsFilter").on("click", function () {
+                var colDefs = designationTable.getColumnDefinitions();
 
-                $(".employees-column").each(function () {
+                $(".designations-column").each(function () {
                     var field = $(this).val();
                     var isVisible = $(this).is(":checked");
 
@@ -445,7 +373,7 @@
                     url: '@Url.Action("ColumnFilterCreation", "ColumnFilter")',
                     type: 'POST',
                     contentType: 'application/json',
-                    data: JSON.stringify({ keyValue: jsonData, type: 'Employees' }),
+                    data: JSON.stringify({ keyValue: jsonData, type: 'Designations' }),
                     success: function (response) {
                         console.log("Save response:", response);
                         if (response.Success === 1 || response.success === 1 || response.Success === true || response.success === true) {
@@ -469,7 +397,7 @@
         }
 
         // Delete column filter settings
-        function DeleteFilter_Employees(data) {
+        function DeleteFilter_Designations(data) {
             $.ajax({
                 url: '@Url.Action("DeleteColumnFilter", "ColumnFilter")',
                 type: "GET",
@@ -478,7 +406,7 @@
                     console.log("Delete response:", response);
                     if (response.Success == 1 || response.success == 1) {
                         toastr.success(response.Message || response.message || "Deleted successfully", "Success", { "toastClass": "toast-green" });
-                        EmployeesGear();
+                        DesignationsGear();
                     } else {
                         toastr.error(response.Message || response.message || "Error deleting filter", "Error", { "toastClass": "toast-red" });
                     }
@@ -492,21 +420,21 @@
 
         // Close dropdown when clicking outside
         document.addEventListener("click", function (event) {
-            let dropdown = document.querySelector(".gear-dropdown-employees");
+            let dropdown = document.querySelector(".gear-dropdown-designations");
             let button = document.getElementById("dropdownMenuButton1");
             if (dropdown && button && !dropdown.contains(event.target) && !button.contains(event.target)) {
                 dropdown.classList.remove("show");
             }
         });
 
-        document.querySelector(".gear-dropdown-employees").addEventListener("click", function (event) {
+        document.querySelector(".gear-dropdown-designations").addEventListener("click", function (event) {
             event.stopPropagation();
         });
 
         // Initialize Tabulator with server-side pagination
-        function initializeEmployeeTable() {
-            employeeTable = new Tabulator("#employeeTable", {
-                ajaxURL: '@Url.Action("GetEmployeesData", "Employees")',
+        function initializeDesignationTable() {
+            designationTable = new Tabulator("#designationTable", {
+                ajaxURL: '@Url.Action("GetDesignationsData", "Designations")',
                 ajaxParams: function() {
                     return {
                         search: currentSearch
@@ -548,181 +476,67 @@
                     // For Tabulator 5.x remote pagination, return only the data array
                     return response.data || [];
                 },
-                columns: TableFields,
-                locale: "en",
-                langs: {
-                    "en": {
-                        "pagination": {
-                            "first": "First",
-                            "prev": "Previous",
-                            "next": "Next",
-                            "last": "Last",
-                            "all": "All",
-                            "counter": "Showing {from} to {to} of {count} entries"
-                        }
-                    }
-                }
+                columns: TableFields
             });
         }
 
-        // Setup search filter
+        // Setup search filter with debounce
         function setupSearchFilter() {
             document.getElementById('searchInput').addEventListener('input', function(e) {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
                     currentSearch = e.target.value;
-                    if (employeeTable) {
-                        employeeTable.setPage(1);
-                        employeeTable.replaceData();
-                    }
-                }, 500); // 500ms debounce
+                    designationTable.setData();
+                }, 300);
             });
         }
 
         // Setup export buttons
         function setupExportButtons() {
             document.getElementById('exportCsvBtn').addEventListener('click', function() {
-                if (!employeeTable) {
-                    return;
-                }
-
-                employeeTable.download("csv", "employees.csv");
+                designationTable.download("csv", "designations_export.csv");
             });
 
             document.getElementById('exportExcelBtn').addEventListener('click', function() {
-                if (!employeeTable) {
-                    return;
-                }
-
-                employeeTable.download("xlsx", "employees.xlsx", { sheetName: "Employees" });
+                designationTable.download("xlsx", "designations_export.xlsx", { sheetName: "Designations" });
             });
 
             document.getElementById('exportPdfBtn').addEventListener('click', function() {
-                if (!employeeTable) {
-                    return;
-                }
-
-                employeeTable.download("pdf", "employees.pdf", {
-                    orientation: "landscape",
-                    autoTable: {
-                        theme: "grid"
-                    }
-                });
+                designationTable.download("pdf", "designations_export.pdf");
             });
-        }
-
-        // Open Edit Modal from Tabulator
-        function openEditModalFromTable(id, employeeId, department, designation, phoneNumber, address, dateOfJoining, isActive) {
-            openEditModal(
-                id,
-                employeeId,
-                department,
-                designation,
-                phoneNumber,
-                address,
-                dateOfJoining,
-                isActive.toString().toLowerCase()
-            );
         }
 
         // Open Create Modal
         function openCreateModal() {
-            document.getElementById('employeeOffcanvasLabel').textContent = 'Add Employee';
+            document.getElementById('designationOffcanvasLabel').textContent = 'Add Designation';
             document.getElementById('formAction').value = 'create';
-            document.getElementById('employeeForm').reset();
-            document.getElementById('employeeId').value = '';
-            document.getElementById('empEmployeeId').readOnly = false;
+            document.getElementById('designationForm').reset();
+            document.getElementById('designationId').value = '';
             document.getElementById('isActiveRow').style.display = 'none';
-            document.getElementById('submitBtn').textContent = 'Create Employee';
-            clearErrors();
-        }
-
-        // Open Edit Modal
-        function openEditModal(id, employeeId, department, designation, phoneNumber, address, dateOfJoining, isActive) {
-            document.getElementById('employeeOffcanvasLabel').textContent = 'Edit Employee';
-            document.getElementById('formAction').value = 'edit';
-            document.getElementById('employeeId').value = id;
-            document.getElementById('empEmployeeId').value = employeeId;
-            document.getElementById('empEmployeeId').readOnly = true;
-            
-            // Set department and designation dropdowns
-            document.getElementById('empDepartmentId').value = department || '';
-            document.getElementById('empDesignationId').value = designation || '';
-            document.getElementById('empDesignationId').disabled = !department;
-            
-            document.getElementById('empPhoneNumber').value = phoneNumber || '';
-            document.getElementById('empAddress').value = address || '';
-            document.getElementById('empDateOfJoining').value = dateOfJoining || '';
-            document.getElementById('empIsActive').value = isActive;
-            document.getElementById('isActiveRow').style.display = 'block';
-            document.getElementById('submitBtn').textContent = 'Update Employee';
+            document.getElementById('submitBtn').textContent = 'Create Designation';
             clearErrors();
 
             // Show the offcanvas
-            if (employeeOffcanvas) {
-                employeeOffcanvas.show();
-            } else {
-                employeeOffcanvas = new bootstrap.Offcanvas(document.getElementById('employeeOffcanvas'));
-                employeeOffcanvas.show();
-            }
+            designationOffcanvas = new bootstrap.Offcanvas(document.getElementById('designationOffcanvas'));
+            designationOffcanvas.show();
         }
 
-        // Load departments dropdown
-        async function loadDepartments() {
-            try {
-                const response = await fetch('@Url.Action("GetAll", "Departments")');
-                const result = await response.json();
-                
-                if (result.success) {
-                    const select = document.getElementById('empDepartmentId');
-                    select.innerHTML = '<option value="">Select Department</option>';
-                    result.data.forEach(dept => {
-                        select.innerHTML += `<option value="${dept.id}">${dept.name}</option>`;
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading departments:', error);
-            }
+        // Open Edit Modal
+        function openEditModal(id, name, description, isActive) {
+            document.getElementById('designationOffcanvasLabel').textContent = 'Edit Designation';
+            document.getElementById('formAction').value = 'edit';
+            document.getElementById('designationId').value = id;
+            document.getElementById('desigName').value = name;
+            document.getElementById('desigDescription').value = description || '';
+            document.getElementById('isActiveRow').style.display = 'block';
+            document.getElementById('desigIsActive').value = isActive.toString();
+            document.getElementById('submitBtn').textContent = 'Update Designation';
+            clearErrors();
+
+            // Show the offcanvas
+            designationOffcanvas = new bootstrap.Offcanvas(document.getElementById('designationOffcanvas'));
+            designationOffcanvas.show();
         }
-
-        // Load designations dropdown
-        async function loadDesignations() {
-            try {
-                const response = await fetch('@Url.Action("GetAll", "Designations")');
-                const result = await response.json();
-                
-                if (result.success) {
-                    const select = document.getElementById('empDesignationId');
-                    select.innerHTML = '<option value="">Select Designation</option>';
-                    result.data.forEach(desig => {
-                        select.innerHTML += `<option value="${desig.id}">${desig.name}</option>`;
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading designations:', error);
-            }
-        }
-
-        // Cascading dropdown handler
-        document.getElementById('empDepartmentId').addEventListener('change', function() {
-            const deptSelect = this;
-            const desigSelect = document.getElementById('empDesignationId');
-            
-            if (deptSelect.value) {
-                // Enable designation dropdown when department is selected
-                desigSelect.disabled = false;
-            } else {
-                // Disable and reset designation dropdown
-                desigSelect.disabled = true;
-                desigSelect.value = '';
-            }
-        });
-
-        // Load dropdowns on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadDepartments();
-            loadDesignations();
-        });
 
         // Clear validation errors
         function clearErrors() {
@@ -732,13 +546,13 @@
         }
 
         // Form Submit Handler
-        document.getElementById('employeeForm').addEventListener('submit', async function(e) {
+        document.getElementById('designationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             clearErrors();
 
             const formData = new FormData(this);
             const action = document.getElementById('formAction').value;
-            const url = action === 'create' ? '@Url.Action("Create", "Employees")' : '@Url.Action("Edit", "Employees")';
+            const url = action === 'create' ? '@Url.Action("Create", "Designations")' : '@Url.Action("Edit", "Designations")';
 
             try {
                 const response = await fetch(url, {
@@ -753,15 +567,15 @@
 
                 if (response.ok) {
                     // Close offcanvas
-                    if (employeeOffcanvas) {
-                        employeeOffcanvas.hide();
+                    if (designationOffcanvas) {
+                        designationOffcanvas.hide();
                     }
 
                     // Show success message
                     Swal.fire({
                         icon: 'success',
                         title: 'Success!',
-                        text: result.message || 'Employee saved successfully!',
+                        text: result.message || 'Designation saved successfully!',
                         timer: 2000
                     });
 
@@ -792,38 +606,37 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Error!',
-                    text: 'An error occurred while saving the employee.'
+                    text: 'An error occurred while saving the designation.'
                 });
             }
         });
 
-        // Delete Employee
-        function deleteEmployee(id, employeeId) {
+        // Delete Designation
+        function deleteDesignation(id, name) {
             Swal.fire({
-                title: 'Are you sure?',
-                html: `Do you want to delete employee <strong>${employeeId}</strong>?`,
+                title: 'Delete Designation?',
+                text: `Are you sure you want to delete "${name}"?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!',
-                cancelButtonText: 'Cancel'
-            }).then(async (result) => {
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
                 if (result.isConfirmed) {
-                    try {
-                        const formData = new FormData();
-                        formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+                    const formData = new FormData();
+                    formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
 
-                        const response = await fetch('@Url.Action("Delete", "Employees")/' + id, {
-                            method: 'POST',
-                            body: formData
-                        });
-
-                        if (response.ok) {
+                    fetch(`@Url.Action("Delete", "Designations")/${id}`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success || response.ok) {
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Deleted!',
-                                text: 'Employee has been deleted.',
+                                text: 'Designation deleted successfully!',
                                 timer: 2000
                             });
                             setTimeout(() => location.reload(), 2000);
@@ -831,17 +644,18 @@
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error!',
-                                text: 'Failed to delete employee.'
+                                text: result.message || 'Failed to delete designation.'
                             });
                         }
-                    } catch (error) {
+                    })
+                    .catch(error => {
                         console.error('Error:', error);
                         Swal.fire({
                             icon: 'error',
                             title: 'Error!',
-                            text: 'An error occurred while deleting the employee.'
+                            text: 'An error occurred while deleting the designation.'
                         });
-                    }
+                    });
                 }
             });
         }
