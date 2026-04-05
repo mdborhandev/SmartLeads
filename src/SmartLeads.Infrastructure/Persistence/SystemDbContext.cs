@@ -34,6 +34,8 @@ public class SystemDbContext : DbContext
         modelBuilder.Ignore<ColumnFilter>();
         modelBuilder.Ignore<Employee>();
         modelBuilder.Ignore<EmployeeUser>();
+        modelBuilder.Ignore<Department>();
+        modelBuilder.Ignore<Designation>();
 
         // Configure all entities to use Guid keys
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())

@@ -69,6 +69,8 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
         var employees = await _defaultDbContext.Employees
             .Where(e => e.CompanyId == companyId && !e.IsDeleted && e.IsActive)
             .Include(e => e.EmployeeUsers)
+            .Include(e => e.Department)
+            .Include(e => e.Designation)
             .ToListAsync(token);
 
         var userIds = employees
@@ -115,8 +117,8 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     EmployeeId = e.EmployeeId,
-                    Department = e.Department,
-                    Designation = e.Designation,
+                    Department = e.Department != null ? e.Department.Name : null,
+                    Designation = e.Designation != null ? e.Designation.Name : null,
                     Role = role,
                     IsActive = e.IsActive,
                     CreatedAt = user.CreatedAt

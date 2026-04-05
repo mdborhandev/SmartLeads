@@ -6,13 +6,19 @@ namespace SmartLeads.Domain.Models;
 /// </summary>
 public class Employee : BaseEntity
 {
-    public Guid CompanyId { get; set; }
     public Company Company { get; set; } = null!;
 
     // Employee Information (specific to this company)
     public string EmployeeId { get; set; } = string.Empty;  // Unique employee code per company (e.g., EMP001)
-    public string? Department { get; set; }
-    public string? Designation { get; set; }
+    
+    // Foreign keys
+    public Guid? DepartmentId { get; set; }
+    public Guid? DesignationId { get; set; }
+    
+    // Navigation properties
+    public Department? Department { get; set; }
+    public Designation? Designation { get; set; }
+    
     public string? PhoneNumber { get; set; }
     public string? Address { get; set; }
     public DateTime? DateOfJoining { get; set; }

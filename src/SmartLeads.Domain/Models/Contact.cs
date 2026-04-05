@@ -11,8 +11,7 @@ public class Contact : BaseEntity
     public string? Address { get; set; }
     public bool IsArchived { get; set; } = false;
 
-    // Foreign Key for User (Owner)
-    public Guid UserId { get; set; }
+    // Navigation property for User (Owner)
     public User User { get; set; } = null!;
 
     // Relationships

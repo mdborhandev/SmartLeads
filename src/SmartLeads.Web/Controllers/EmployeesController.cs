@@ -47,6 +47,8 @@ public class EmployeesController : Controller
             var employees = _unitOfWork.defaultDbContext.Employees
                 .Where(e => e.CompanyId == companyId && !e.IsDeleted)
                 .Include(e => e.EmployeeUsers)
+                .Include(e => e.Department)
+                .Include(e => e.Designation)
                 .AsQueryable();
 
             // Apply search
@@ -55,8 +57,8 @@ public class EmployeesController : Controller
                 var search = request.Search.ToLower();
                 employees = employees.Where(e =>
                     e.EmployeeId.ToLower().Contains(search) ||
-                    (e.Department != null && e.Department.ToLower().Contains(search)) ||
-                    (e.Designation != null && e.Designation.ToLower().Contains(search)) ||
+                    (e.Department != null && e.Department.Name.ToLower().Contains(search)) ||
+                    (e.Designation != null && e.Designation.Name.ToLower().Contains(search)) ||
                     (e.PhoneNumber != null && e.PhoneNumber.ToLower().Contains(search))
                 );
             }
@@ -66,20 +68,20 @@ public class EmployeesController : Controller
             // Apply sorting
             employees = request.SortField?.ToLower() switch
             {
-                "employeeid" => request.SortOrder?.ToLower() == "desc" 
-                    ? employees.OrderByDescending(e => e.EmployeeId) 
+                "employeeid" => request.SortOrder?.ToLower() == "desc"
+                    ? employees.OrderByDescending(e => e.EmployeeId)
                     : employees.OrderBy(e => e.EmployeeId),
-                "department" => request.SortOrder?.ToLower() == "desc" 
-                    ? employees.OrderByDescending(e => e.Department) 
-                    : employees.OrderBy(e => e.Department),
-                "designation" => request.SortOrder?.ToLower() == "desc" 
-                    ? employees.OrderByDescending(e => e.Designation) 
-                    : employees.OrderBy(e => e.Designation),
-                "isactive" => request.SortOrder?.ToLower() == "desc" 
-                    ? employees.OrderByDescending(e => e.IsActive) 
+                "department" => request.SortOrder?.ToLower() == "desc"
+                    ? employees.OrderByDescending(e => e.Department.Name)
+                    : employees.OrderBy(e => e.Department.Name),
+                "designation" => request.SortOrder?.ToLower() == "desc"
+                    ? employees.OrderByDescending(e => e.Designation.Name)
+                    : employees.OrderBy(e => e.Designation.Name),
+                "isactive" => request.SortOrder?.ToLower() == "desc"
+                    ? employees.OrderByDescending(e => e.IsActive)
                     : employees.OrderBy(e => e.IsActive),
-                "createdat" => request.SortOrder?.ToLower() == "desc" 
-                    ? employees.OrderByDescending(e => e.CreatedAt) 
+                "createdat" => request.SortOrder?.ToLower() == "desc"
+                    ? employees.OrderByDescending(e => e.CreatedAt)
                     : employees.OrderBy(e => e.CreatedAt),
                 _ => employees.OrderByDescending(e => e.CreatedAt)
             };
@@ -92,8 +94,8 @@ public class EmployeesController : Controller
                 {
                     e.Id,
                     e.EmployeeId,
-                    e.Department,
-                    e.Designation,
+                    Department = e.Department != null ? e.Department.Name : null,
+                    Designation = e.Designation != null ? e.Designation.Name : null,
                     e.PhoneNumber,
                     e.IsActive,
                     e.CreatedAt,
@@ -165,8 +167,8 @@ public class EmployeesController : Controller
             {
                 CompanyId = companyId,
                 EmployeeId = model.EmployeeId,
-                Department = model.Department,
-                Designation = model.Designation,
+                DepartmentId = model.DepartmentId,
+                DesignationId = model.DesignationId,
                 PhoneNumber = model.PhoneNumber,
                 Address = model.Address,
                 DateOfJoining = model.DateOfJoining,
@@ -197,8 +199,8 @@ public class EmployeesController : Controller
         {
             Id = employee.Id,
             EmployeeId = employee.EmployeeId,
-            Department = employee.Department,
-            Designation = employee.Designation,
+            DepartmentId = employee.DepartmentId,
+            DesignationId = employee.DesignationId,
             PhoneNumber = employee.PhoneNumber,
             Address = employee.Address,
             DateOfJoining = employee.DateOfJoining,
@@ -236,8 +238,8 @@ public class EmployeesController : Controller
         }
 
         // Update employee information
-        employee.Department = model.Department;
-        employee.Designation = model.Designation;
+        employee.DepartmentId = model.DepartmentId;
+        employee.DesignationId = model.DesignationId;
         employee.PhoneNumber = model.PhoneNumber;
         employee.Address = model.Address;
         employee.DateOfJoining = model.DateOfJoining;
@@ -278,10 +280,10 @@ public class EmployeeCreateViewModel
     public string EmployeeId { get; set; } = string.Empty;
 
     [Display(Name = "Department")]
-    public string? Department { get; set; }
+    public Guid? DepartmentId { get; set; }
 
     [Display(Name = "Designation")]
-    public string? Designation { get; set; }
+    public Guid? DesignationId { get; set; }
 
     [Display(Name = "Phone Number")]
     public string? PhoneNumber { get; set; }
@@ -302,10 +304,10 @@ public class EmployeeEditViewModel
     public string EmployeeId { get; set; } = string.Empty;
 
     [Display(Name = "Department")]
-    public string? Department { get; set; }
+    public Guid? DepartmentId { get; set; }
 
     [Display(Name = "Designation")]
-    public string? Designation { get; set; }
+    public Guid? DesignationId { get; set; }
 
     [Display(Name = "Phone Number")]
     public string? PhoneNumber { get; set; }

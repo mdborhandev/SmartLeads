@@ -22,6 +22,8 @@ public class DefaultDbContext : DbContext
     public DbSet<ColumnFilter> ColumnFilters { get; set; }
     public DbSet<Employee> Employees { get; set; }
     public DbSet<EmployeeUser> EmployeeUsers { get; set; }
+    public DbSet<Department> Departments { get; set; }
+    public DbSet<Designation> Designations { get; set; }
     public DbSet<Invitation> Invitations { get; set; }
 
     // Junction tables
@@ -46,23 +48,33 @@ public class DefaultDbContext : DbContext
         modelBuilder.Ignore<User>();
         modelBuilder.Ignore<Company>();
 
-        modelBuilder.Entity<Contact>()
-            .Ignore(c => c.User);
+        // Configure BaseEntity relationships for all entities
+        ConfigureBaseEntityRelationships(modelBuilder);
+
+        modelBuilder.Entity<Contact>(entity =>
+        {
+            entity.Ignore(c => c.User);
+        });
 
         // Note belongs to Contact
-        modelBuilder.Entity<Note>()
-            .Ignore(n => n.User)
-            .HasOne(n => n.Contact)
-            .WithMany(c => c.Notes)
-            .HasForeignKey(n => n.ContactId)
-            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Note>(entity =>
+        {
+            entity.Ignore(n => n.User);
+
+            entity.HasOne(n => n.Contact)
+                .WithMany(c => c.Notes)
+                .HasForeignKey(n => n.ContactId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
 
         // Attachment belongs to Contact
-        modelBuilder.Entity<Attachment>()
-            .HasOne(a => a.Contact)
-            .WithMany(c => c.Attachments)
-            .HasForeignKey(a => a.ContactId)
-            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Attachment>(entity =>
+        {
+            entity.HasOne(a => a.Contact)
+                .WithMany(c => c.Attachments)
+                .HasForeignKey(a => a.ContactId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
 
         // Many-to-Many: Contact <-> Group
         modelBuilder.Entity<ContactGroup>(entity =>
@@ -76,6 +88,11 @@ public class DefaultDbContext : DbContext
             entity.HasOne(cg => cg.Group)
                 .WithMany(g => g.ContactGroups)
                 .HasForeignKey(cg => cg.GroupId);
+        });
+
+        modelBuilder.Entity<Group>(entity =>
+        {
+            entity.Ignore(g => g.User);
         });
 
         // Many-to-Many: Contact <-> Tag
@@ -92,10 +109,35 @@ public class DefaultDbContext : DbContext
             .WithMany(t => t.ContactTags)
             .HasForeignKey(ct => ct.TagId);
 
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.Ignore(t => t.User);
+        });
+
         modelBuilder.Entity<Employee>(entity =>
         {
             entity.HasIndex(e => new { e.CompanyId, e.EmployeeId }).IsUnique();
-            entity.Ignore(e => e.Company);
+
+            // Configure relationships
+            entity.HasOne(e => e.Department)
+                .WithMany(d => d.Employees)
+                .HasForeignKey(e => e.DepartmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Designation)
+                .WithMany(d => d.Employees)
+                .HasForeignKey(e => e.DesignationId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Department>(entity =>
+        {
+            entity.HasIndex(d => new { d.CompanyId, d.Name }).IsUnique();
+        });
+
+        modelBuilder.Entity<Designation>(entity =>
+        {
+            entity.HasIndex(d => new { d.CompanyId, d.Name }).IsUnique();
         });
 
         modelBuilder.Entity<EmployeeUser>(entity =>
@@ -118,6 +160,37 @@ public class DefaultDbContext : DbContext
 
         modelBuilder.Entity<ColumnFilter>()
             .Ignore(cf => cf.CreatedByUser);
+    }
+
+    /// <summary>
+    /// Configures indexes for CompanyId and UserId for all BaseEntity types.
+    /// Note: No FK relationships to User/Company as they are in SystemDbContext (different database).
+    /// </summary>
+    private void ConfigureBaseEntityRelationships(ModelBuilder modelBuilder)
+    {
+        // Get all entity types that inherit from BaseEntity
+        var baseEntityTypes = modelBuilder.Model.GetEntityTypes()
+            .Where(et => typeof(BaseEntity).IsAssignableFrom(et.ClrType) && !et.ClrType.IsAbstract)
+            .ToList();
+
+        foreach (var entityType in baseEntityTypes)
+        {
+            // Add index for CompanyId
+            var companyIdProperty = entityType.FindProperty("CompanyId");
+            if (companyIdProperty != null)
+            {
+                modelBuilder.Entity(entityType.ClrType)
+                    .HasIndex("CompanyId");
+            }
+
+            // Add index for UserId
+            var userIdProperty = entityType.FindProperty("UserId");
+            if (userIdProperty != null)
+            {
+                modelBuilder.Entity(entityType.ClrType)
+                    .HasIndex("UserId");
+            }
+        }
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -5,8 +5,7 @@ public class Tag : BaseEntity
     public string Name { get; set; } = string.Empty;
     public string? Color { get; set; }
 
-    // Foreign Key for User (Owner)
-    public Guid UserId { get; set; }
+    // Navigation property for User (Owner)
     public User User { get; set; } = null!;
 
     public ICollection<ContactTag> ContactTags { get; set; } = new List<ContactTag>();
