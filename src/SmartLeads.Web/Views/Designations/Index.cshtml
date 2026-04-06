@@ -518,26 +518,34 @@
             });
         }
 
-        // Load departments dropdown
-        async function loadDepartments() {
-            try {
-                const response = await fetch('@Url.Action("GetAll", "Departments")');
-                const result = await response.json();
-                
-                if (result.success) {
-                    const select = document.getElementById('desigDepartmentId');
-                    select.innerHTML = '<option value="">Select Department</option>';
-                    result.data.forEach(dept => {
-                        select.innerHTML += `<option value="${dept.id}">${dept.name}</option>`;
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading departments:', error);
+        // Load departments dropdown with Select2
+        function loadDepartments() {
+            console.log('Loading departments with Select2...');
+            
+            // Clear any existing options first
+            $('#desigDepartmentId').html('<option value="">Select Department</option>');
+            
+            // Verify element exists
+            if ($('#desigDepartmentId').length === 0) {
+                console.error('Department dropdown element not found!');
+                return;
             }
+            
+            console.log('Initializing Select2 on #desigDepartmentId');
+            
+            // Use select2Initializer for consistent Select2 implementation
+            select2Initializer(
+                '#desigDepartmentId',
+                '@Url.Action("SearchDepartment", "Departments")',
+                '',
+                '#designationOffcanvas'
+            );
+            
+            console.log('Select2 initialized');
         }
 
         // Load dropdowns on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        $(document).ready(function() {
             loadDepartments();
         });
 
@@ -551,6 +559,22 @@
             document.getElementById('submitBtn').textContent = 'Create Designation';
             clearErrors();
 
+            // Destroy existing Select2 if it exists
+            if ($('#desigDepartmentId').hasClass('select2-hidden-accessible')) {
+                $('#desigDepartmentId').select2('destroy');
+            }
+
+            // Reset the select options
+            $('#desigDepartmentId').html('<option value="">Select Department</option>');
+
+            // Reinitialize Select2 for create mode
+            select2Initializer(
+                '#desigDepartmentId',
+                '@Url.Action("SearchDepartment", "Departments")',
+                '',
+                '#designationOffcanvas'
+            );
+
             // Show the offcanvas
             designationOffcanvas = new bootstrap.Offcanvas(document.getElementById('designationOffcanvas'));
             designationOffcanvas.show();
@@ -562,12 +586,54 @@
             document.getElementById('formAction').value = 'edit';
             document.getElementById('designationId').value = id;
             document.getElementById('desigName').value = name;
-            document.getElementById('desigDepartmentId').value = departmentId || '';
             document.getElementById('desigDescription').value = description || '';
             document.getElementById('isActiveRow').style.display = 'block';
             document.getElementById('desigIsActive').value = isActive.toString();
             document.getElementById('submitBtn').textContent = 'Update Designation';
             clearErrors();
+
+            // Destroy existing Select2 if it exists
+            if ($('#desigDepartmentId').hasClass('select2-hidden-accessible')) {
+                $('#desigDepartmentId').select2('destroy');
+            }
+
+            // If we have a department ID, set it as a selected option first
+            if (departmentId) {
+                // Clear and add the selected option
+                $('#desigDepartmentId').html('<option value="' + departmentId + '" selected></option>');
+            } else {
+                $('#desigDepartmentId').html('<option value="">Select Department</option>');
+            }
+
+            // Reinitialize Select2
+            select2Initializer(
+                '#desigDepartmentId',
+                '@Url.Action("SearchDepartment", "Departments")',
+                '',
+                '#designationOffcanvas'
+            );
+
+            // Set the selected value after initialization
+            if (departmentId) {
+                // Make an AJAX call to get the department name
+                $.ajax({
+                    url: '@Url.Action("SearchDepartment", "Departments")',
+                    type: 'GET',
+                    data: { searchTerm: '', selectedvalue: departmentId },
+                    success: function(data) {
+                        console.log('Edit mode - Selected department data:', data);
+                        // Find the selected department
+                        const selectedDept = data.find(d => d.selected === true);
+                        if (selectedDept) {
+                            var option = new Option(selectedDept.text, selectedDept.id, true, true);
+                            $('#desigDepartmentId').append(option).trigger('change');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching department for edit:', error);
+                    }
+                });
+            }
 
             // Show the offcanvas
             designationOffcanvas = new bootstrap.Offcanvas(document.getElementById('designationOffcanvas'));

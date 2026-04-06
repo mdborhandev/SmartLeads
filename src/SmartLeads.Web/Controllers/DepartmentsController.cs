@@ -129,6 +129,52 @@ public class DepartmentsController : Controller
         }
     }
 
+    // GET: Departments/SearchDepartment - Select2 search endpoint
+    [HttpGet]
+    public async Task<IActionResult> SearchDepartment(string searchTerm = "", string selectedvalue = "")
+    {
+        try
+        {
+            var companyIdClaim = User.FindFirst("CompanyId")?.Value;
+
+            if (string.IsNullOrEmpty(companyIdClaim))
+            {
+                return BadRequest(new { error = "CompanyId claim not found" });
+            }
+
+            var companyId = Guid.Parse(companyIdClaim);
+
+            var query = _unitOfWork.defaultDbContext.Departments
+                .Where(d => d.CompanyId == companyId && !d.IsDeleted && d.IsActive)
+                .AsQueryable();
+
+            // Apply search filter
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var searchLower = searchTerm.ToLower();
+                query = query.Where(d => d.Name.ToLower().Contains(searchLower));
+            }
+
+            // Get top 20 results ordered by name
+            var departments = await query
+                .OrderBy(d => d.Name)
+                .Take(20)
+                .Select(d => new SelectOptionDto
+                {
+                    id = d.Id.ToString(),
+                    text = d.Name,
+                    selected = selectedvalue != "" && d.Id.ToString() == selectedvalue
+                })
+                .ToListAsync();
+
+            return Ok(departments);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = true, message = ex.Message });
+        }
+    }
+
     // POST: Departments/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
