@@ -81,6 +81,7 @@ public class DesignationsController : Controller
                     d.Id,
                     d.Name,
                     d.DepartmentId,
+                    DepartmentName = d.Department != null ? d.Department.Name : null,
                     d.Description,
                     d.IsActive,
                     d.CreatedAt

@@ -155,6 +155,16 @@
                 visible: true
             },
             {
+                title: "Department",
+                field: "departmentName",
+                hozAlign: "left",
+                visible: true,
+                formatter: function(cell) {
+                    const value = cell.getValue();
+                    return value || '-';
+                }
+            },
+            {
                 title: "Description",
                 field: "description",
                 hozAlign: "left",
