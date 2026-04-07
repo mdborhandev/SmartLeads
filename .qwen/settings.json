@@ -6,7 +6,8 @@
       "Bash(pkill *)",
       "Bash(sleep *)",
       "Bash(psql *)",
-      "Bash(rm *)"
+      "Bash(rm *)",
+      "Bash(mv *)"
     ]
   },
   "$version": 3
