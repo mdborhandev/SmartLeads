@@ -1,8 +1,8 @@
 ﻿/* GT Framework Layout Styles for ContactManager */
 
-/* Custom styles for ContactManager application */
+/* Custom styles for ContactManager */
 .layout-menu {
-    background-color: var(--bs-body-bg);
+    background-color: var(--bs-paper-bg);
 }
 
 .app-brand-link {
