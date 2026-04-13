@@ -50,35 +50,6 @@
         </li>
     }
 
-    <li class="menu-header small">
-        <span class="menu-header-text" data-i18n="Company Actions">Company Actions</span>
-    </li>
-
-    <!-- Employees -->
-    <li class="menu-item">
-        <a href="javascript:void(0);" class="menu-link menu-toggle">
-            <i class="menu-icon icon-base bx bx-user"></i>
-            <div data-i18n="Employees">Employees</div>
-        </a>
-        <ul class="menu-sub">
-            <li class="menu-item">
-                <a href="@Url.Action("Index", "Employees")" class="menu-link">
-                    <div data-i18n="Employee List">Employee List</div>
-                </a>
-            </li>
-            <li class="menu-item">
-                <a href="@Url.Action("Index", "Departments")" class="menu-link">
-                    <div data-i18n="Departments">Departments</div>
-                </a>
-            </li>
-            <li class="menu-item">
-                <a href="@Url.Action("Index", "Designations")" class="menu-link">
-                    <div data-i18n="Designations">Designations</div>
-                </a>
-            </li>
-        </ul>
-    </li>
-
     <li class="menu-item">
         <a href="@Url.Action("CreateCompany", "UserCompany")" class="menu-link">
             <i class="menu-icon icon-base bx bx-plus-circle"></i>
@@ -88,23 +59,12 @@
 
     @if (User.Identity?.IsAuthenticated == true)
     {
-        <li class="menu-header small">
-            <span class="menu-header-text" data-i18n="Account">Account</span>
-        </li>
-
-        <li class="menu-item">
-            <a href="@Url.Action("Profile", "Auth")" class="menu-link">
-                <i class="menu-icon icon-base bx bx-user"></i>
-                <div data-i18n="Profile">Profile</div>
-            </a>
-        </li>
-
-        <li class="menu-item">
-            <form asp-controller="Auth" asp-action="Logout" method="post" class="menu-link">
+        <li class="menu-item" style="margin-top: auto; padding: 1rem;">
+            <form asp-controller="Auth" asp-action="Logout" method="post" style="width: 100%;">
                 @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-link menu-link p-0" style="width: 100%; text-align: left;">
-                    <i class="menu-icon icon-base bx bx-power-off"></i>
-                    <div data-i18n="Logout">Logout</div>
+                <button type="submit" class="btn btn-sm btn-outline-danger w-100" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <i class="icon-base bx bx-power-off"></i>
+                    <span data-i18n="Logout">Logout</span>
                 </button>
             </form>
         </li>
