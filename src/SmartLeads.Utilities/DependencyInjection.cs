@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SmartLeads.Utilities.Email;
 using SmartLeads.Utilities.Identity;
 using SmartLeads.Utilities.Interfaces;
+using SmartLeads.Utilities.Services;
 
 namespace SmartLeads.Utilities;
 
@@ -14,6 +15,7 @@ public static class DependencyInjection
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         return services;
     }

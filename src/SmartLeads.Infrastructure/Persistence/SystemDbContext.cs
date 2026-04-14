@@ -18,6 +18,8 @@ public class SystemDbContext : DbContext
     public DbSet<Company> Companies { get; set; }
     public DbSet<UserCompany> UserCompanies { get; set; }
     public DbSet<Invitation> Invitations { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
+    public DbSet<NotificationPreference> NotificationPreferences { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -74,6 +76,39 @@ public class SystemDbContext : DbContext
             .WithMany(c => c.ChildCompanies)
             .HasForeignKey(c => c.ParentCompanyId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // NotificationPreference configuration
+        modelBuilder.Entity<NotificationPreference>(entity =>
+        {
+            entity.HasIndex(np => new { np.UserId, np.NotificationType }).IsUnique();
+
+            entity.HasOne(np => np.User)
+                .WithMany()
+                .HasForeignKey(np => np.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(np => np.NotificationType)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+        });
+
+        // Notification configuration
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.Ignore(n => n.User);
+
+            entity.Property(n => n.Type)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            entity.Property(n => n.Status)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            entity.HasIndex(n => new { n.CompanyId, n.UserId });
+            entity.HasIndex(n => n.Status);
+            entity.HasIndex(n => n.Type);
+        });
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

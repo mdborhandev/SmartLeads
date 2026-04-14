@@ -71,12 +71,12 @@
 - [ ] Import error reporting and rollback
 
 ### Notification System
-- [ ] Create Notification model and database
-- [ ] In-app notification bell and dropdown
-- [ ] Email notifications for tasks, invitations, etc.
-- [ ] Notification preferences per user
-- [ ] Mark as read/unread functionality
-- [ ] Notification categories (Task, Email, System, Alert)
+- [x] Create Notification model and database
+- [x] In-app notification bell and dropdown
+- [x] Email notifications for tasks, invitations, etc.
+- [x] Notification preferences per user
+- [x] Mark as read/unread functionality
+- [x] Notification categories (Task, Email, System, Alert)
 
 ### Reports & Analytics
 - [ ] Lead conversion report

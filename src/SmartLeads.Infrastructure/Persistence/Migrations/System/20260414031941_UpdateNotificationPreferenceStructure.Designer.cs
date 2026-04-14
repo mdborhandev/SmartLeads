@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SmartLeads.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using SmartLeads.Infrastructure.Persistence;
 namespace SmartLeads.Infrastructure.Persistence.Migrations.System
 {
     [DbContext(typeof(SystemDbContext))]
-    partial class SystemDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260414031941_UpdateNotificationPreferenceStructure")]
+    partial class UpdateNotificationPreferenceStructure
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -138,77 +141,6 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations.System
                     b.HasIndex("InvitedByUserId");
 
                     b.ToTable("Invitations");
-                });
-
-            modelBuilder.Entity("SmartLeads.Domain.Models.Notification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ActionUrl")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("EmailSentAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsEmailSent")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Metadata")
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("RelatedEntityId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("RelatedEntityType")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Status");
-
-                    b.HasIndex("Type");
-
-                    b.HasIndex("CompanyId", "UserId");
-
-                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.NotificationPreference", b =>
@@ -388,17 +320,6 @@ namespace SmartLeads.Infrastructure.Persistence.Migrations.System
                     b.Navigation("Company");
 
                     b.Navigation("InvitedByUser");
-                });
-
-            modelBuilder.Entity("SmartLeads.Domain.Models.Notification", b =>
-                {
-                    b.HasOne("SmartLeads.Domain.Models.Company", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Company");
                 });
 
             modelBuilder.Entity("SmartLeads.Domain.Models.NotificationPreference", b =>

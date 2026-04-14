@@ -9,7 +9,9 @@ using SmartLeads.Infrastructure.Repositories;
 using SmartLeads.Infrastructure.Repositories.Implementation;
 using SmartLeads.Infrastructure.Repositories.Interface;
 using SmartLeads.Infrastructure.Services;
-using SmartLeads.Utilities.Interfaces;
+using UtilsIUserRepo = SmartLeads.Utilities.Interfaces.IUserRepo;
+using UtilsINotifRepo = SmartLeads.Utilities.Interfaces.INotificationRepo;
+using UtilsINotifPrefRepo = SmartLeads.Utilities.Interfaces.INotificationPreferenceRepo;
 
 namespace SmartLeads.Infrastructure;
 
@@ -45,10 +47,15 @@ public static class DependencyInjection
 
         // Register Repositories
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<UtilsIUserRepo>(sp => (UtilsIUserRepo)sp.GetRequiredService<IUserRepository>());
         services.AddScoped<ICompanyRepository, CompanyRepository>();
         services.AddScoped<IContactRepository, ContactRepository>();
         services.AddScoped<IInvitationRepository, InvitationRepository>();
         services.AddScoped<IColumnFilterRepository, ColumnFilterRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<UtilsINotifRepo>(sp => (UtilsINotifRepo)sp.GetRequiredService<INotificationRepository>());
+        services.AddScoped<INotificationPreferenceRepository, NotificationPreferenceRepository>();
+        services.AddScoped<UtilsINotifPrefRepo>(sp => (UtilsINotifPrefRepo)sp.GetRequiredService<INotificationPreferenceRepository>());
 
         // JWT Authentication
         var jwtSettings = configuration.GetSection("JwtSettings");

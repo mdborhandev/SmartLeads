@@ -11,6 +11,8 @@ public interface IUnitOfWork : IAsyncDisposable
     IColumnFilterRepository columnFilterRepository { get; }
     IDepartmentRepository departmentRepository { get; }
     IDesignationRepository designationRepository { get; }
+    INotificationRepository notificationRepository { get; }
+    INotificationPreferenceRepository notificationPreferenceRepository { get; }
 
     SystemDbContext systemDbContext { get; }
     DefaultDbContext defaultDbContext { get; }

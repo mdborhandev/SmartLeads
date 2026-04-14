@@ -1,0 +1,98 @@
+@model SmartLeads.Domain.DTOs.NotificationPreferencesViewModel
+@{
+    ViewData["Title"] = "Notification Preferences";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-cog"></i> Notification Preferences
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (Model.SaveSuccess)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle"></i> Preferences saved successfully!
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i> @Model.ErrorMessage
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+
+                    <form asp-action="Preferences" method="post">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Notification Type</th>
+                                        <th class="text-center">In-App Notifications</th>
+                                        <th class="text-center">Email Notifications</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < Model.Preferences.Count; i++)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@Model.Preferences[i].NotificationType</strong>
+                                                <input type="hidden" asp-for="Preferences[i].NotificationType" />
+                                                <input type="hidden" asp-for="Preferences[i].Id" />
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="custom-control custom-switch d-inline-block">
+                                                    <input type="checkbox" class="custom-control-input" 
+                                                           id="inapp_@i" asp-for="Preferences[i].EnableInApp">
+                                                    <label class="custom-control-label" for="inapp_@i"></label>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="custom-control custom-switch d-inline-block">
+                                                    <input type="checkbox" class="custom-control-input" 
+                                                           id="email_@i" asp-for="Preferences[i].EnableEmail">
+                                                    <label class="custom-control-label" for="email_@i"></label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Preferences
+                                </button>
+                                <a asp-controller="Auth" asp-action="Profile" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="alert alert-info mt-4">
+                        <i class="fas fa-info-circle"></i> <strong>Tip:</strong> 
+                        You can control how you receive notifications for each type. 
+                        In-app notifications appear in the notification bell, while email notifications are sent to your registered email address.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

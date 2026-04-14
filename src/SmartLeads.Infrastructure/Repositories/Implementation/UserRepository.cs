@@ -4,11 +4,11 @@ using SmartLeads.Domain.Enums;
 using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Persistence;
 using SmartLeads.Infrastructure.Repositories.Interface;
-using SmartLeads.Utilities.Interfaces;
+using IPasswordHasher = SmartLeads.Utilities.Interfaces.IPasswordHasher;
 
 namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
-public class UserRepository : GenericSystemRepository<User>, IUserRepository
+public class UserRepository : GenericSystemRepository<User>, IUserRepository, SmartLeads.Utilities.Interfaces.IUserRepo
 {
     private readonly SystemDbContext _systemDbContext;
     private readonly DefaultDbContext _defaultDbContext;

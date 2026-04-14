@@ -1,7 +1,7 @@
 using SmartLeads.Infrastructure.Persistence;
 using SmartLeads.Infrastructure.Repositories.Implementation;
 using SmartLeads.Infrastructure.Repositories.Interface;
-using SmartLeads.Utilities.Interfaces;
+using IPasswordHasher = SmartLeads.Utilities.Interfaces.IPasswordHasher;
 
 namespace SmartLeads.Infrastructure.Repositories;
 
@@ -19,6 +19,8 @@ public class UnitOfWork : IUnitOfWork
     public IColumnFilterRepository columnFilterRepository { get; private set; }
     public IDepartmentRepository departmentRepository { get; private set; }
     public IDesignationRepository designationRepository { get; private set; }
+    public INotificationRepository notificationRepository { get; private set; }
+    public INotificationPreferenceRepository notificationPreferenceRepository { get; private set; }
     public SystemDbContext systemDbContext => _systemDbContext;
     public DefaultDbContext defaultDbContext => _defaultDbContext;
     #endregion
@@ -33,6 +35,8 @@ public class UnitOfWork : IUnitOfWork
         userRepository = new UserRepository(systemDbContext, defaultDbContext, passwordHasher);
         companyRepository = new CompanyRepository(systemDbContext);
         invitationRepository = new InvitationRepository(defaultDbContext, systemDbContext);
+        notificationRepository = new NotificationRepository(systemDbContext);
+        notificationPreferenceRepository = new NotificationPreferenceRepository(systemDbContext);
 
         // Default database repositories
         contactRepository = new ContactRepository(defaultDbContext);

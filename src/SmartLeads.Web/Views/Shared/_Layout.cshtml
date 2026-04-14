@@ -261,6 +261,9 @@
 
                             @if (User.Identity?.IsAuthenticated == true)
                             {
+                                <!-- Notification Bell -->
+                                @await Component.InvokeAsync("NotificationBell")
+                                
                                 <!-- User -->
                                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
                                     <a class="nav-link dropdown-toggle hide-arrow p-0"

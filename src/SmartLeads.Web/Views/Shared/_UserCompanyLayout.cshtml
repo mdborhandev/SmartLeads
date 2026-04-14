@@ -192,6 +192,9 @@
                         }
 
                         <ul class="navbar-nav flex-row align-items-center ms-md-auto">
+                            <!-- Notification Bell -->
+                            @await Component.InvokeAsync("NotificationBell")
+
                             <!-- Layout Switcher -->
                             <li class="nav-item dropdown me-2 me-xl-0">
                                 <a class="nav-link dropdown-toggle hide-arrow"

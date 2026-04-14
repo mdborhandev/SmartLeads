@@ -20,9 +20,14 @@
             <i class="icon-base bx bx-user me-2"></i>
             <h5 class="mb-0">Profile Information</h5>
         </div>
-        <button type="button" class="btn btn-sm btn-label-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
-            <i class="icon-base bx bx-lock-alt me-1"></i> Change Password
-        </button>
+        <div class="d-flex gap-2">
+            <a asp-controller="Notifications" asp-action="Preferences" class="btn btn-sm btn-label-info">
+                <i class="icon-base bx bx-bell me-1"></i> Notification Settings
+            </a>
+            <button type="button" class="btn btn-sm btn-label-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                <i class="icon-base bx bx-lock-alt me-1"></i> Change Password
+            </button>
+        </div>
     </div>
     <div class="card-body">
         <form asp-action="Profile" method="post" enctype="multipart/form-data">

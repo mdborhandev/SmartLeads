@@ -47,6 +47,8 @@ public class DefaultDbContext : DbContext
         // Keep system entities out of the default database model.
         modelBuilder.Ignore<User>();
         modelBuilder.Ignore<Company>();
+        modelBuilder.Ignore<Notification>();
+        modelBuilder.Ignore<NotificationPreference>();
 
         // Configure BaseEntity relationships for all entities
         ConfigureBaseEntityRelationships(modelBuilder);
