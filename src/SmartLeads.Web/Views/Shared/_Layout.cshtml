@@ -1,8 +1,26 @@
 ﻿@using SmartLeads.Domain.Enums
 @using SmartLeads.Infrastructure.Repositories.Interface
 @using SmartLeads.Infrastructure.Services
+@using SmartLeads.Web.ViewComponents
+@using SmartLeads.Utilities.Interfaces
 @inject IUnitOfWork _unitOfWork
 @inject ICompanyContext _companyContext
+@inject INotificationService _notificationService
+
+@{
+    NotificationBellViewModel? notificationViewModel = null;
+    if (User.Identity?.IsAuthenticated == true)
+    {
+        var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+        var unreadCount = await _notificationService.GetUnreadCountAsync(userId);
+        var recentNotifications = await _notificationService.GetNotificationsAsync(userId, page: 1, pageSize: 10);
+        notificationViewModel = new NotificationBellViewModel
+        {
+            UnreadCount = unreadCount,
+            RecentNotifications = recentNotifications.Notifications
+        };
+    }
+}
 
 @{
     string GetRoleDisplayName(UserRole role) => role switch
@@ -350,6 +368,68 @@
         <div class="drag-target"></div>
     </div>
 
+    <!-- Notification Offcanvas Panel -->
+    <div class="notification-offcanvas offcanvas offcanvas-end" tabindex="-1" id="notificationOffcanvas" aria-labelledby="notificationOffcanvasLabel">
+        @if (notificationViewModel != null)
+        {
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="notificationOffcanvasLabel">
+                    <i class="icon-base bx bx-bell me-2"></i>Notifications
+                    @if (notificationViewModel.UnreadCount > 0)
+                    {
+                        <span class="badge bg-primary">@notificationViewModel.UnreadCount new</span>
+                    }
+                </h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="notifications-list" id="notificationList">
+                    @if (notificationViewModel.RecentNotifications.Any())
+                    {
+                        @foreach (var notification in notificationViewModel.RecentNotifications)
+                        {
+                            <a href="@(!string.IsNullOrEmpty(notification.ActionUrl) ? notification.ActionUrl : Url.Action("Details", "Notifications", new { id = notification.Id }))"
+                               class="notification-item @(notification.Status == NotificationStatus.Unread ? "unread" : "")">
+                                <div class="notification-content">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="notification-title">
+                                            @if (notification.Status == NotificationStatus.Unread)
+                                            {
+                                                <span class="badge bg-primary badge-sm me-1">New</span>
+                                            }
+                                            <strong>@notification.Title</strong>
+                                        </div>
+                                        <span class="badge bg-info badge-sm">@notification.Type</span>
+                                    </div>
+                                    <p class="notification-message text-muted mb-2">
+                                        @notification.Message.Substring(0, Math.Min(150, notification.Message.Length))@(notification.Message.Length > 150 ? "..." : "")
+                                    </p>
+                                    <small class="text-muted">@notification.CreatedAt.ToString("MMM dd, yyyy HH:mm")</small>
+                                </div>
+                            </a>
+                            <hr class="my-2" />
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="icon-base bx bx-bell-off text-muted mb-3" style="font-size: 3rem;"></i>
+                            <p class="text-muted mb-0">No notifications yet</p>
+                        </div>
+                    }
+                </div>
+                <div class="notification-footer mt-3">
+                    <a href="@Url.Action("Index", "Notifications")" class="btn btn-primary w-100 mb-2">
+                        <i class="icon-base bx bx-bell me-1"></i> View All Notifications
+                    </a>
+                    <a href="@Url.Action("Preferences", "Notifications")" class="btn btn-outline-secondary w-100">
+                        <i class="icon-base bx bx-cog me-1"></i> Settings
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+
     <!-- jQuery CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
@@ -531,6 +611,29 @@
                 toastr.error(error.message || 'Failed to switch layout', 'Error');
             });
         }
+
+        // Notification Offcanvas
+        (function() {
+            const notificationBellBtn = document.getElementById('notificationBellBtn');
+            const notificationOffcanvas = document.getElementById('notificationOffcanvas');
+
+            if (notificationBellBtn && notificationOffcanvas) {
+                const offcanvas = new bootstrap.Offcanvas(notificationOffcanvas);
+
+                notificationBellBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    offcanvas.toggle();
+                });
+
+                notificationOffcanvas.addEventListener('hidden.bs.offcanvas', function() {
+                    document.body.classList.remove('notification-offcanvas-open');
+                });
+
+                notificationOffcanvas.addEventListener('shown.bs.offcanvas', function() {
+                    document.body.classList.add('notification-offcanvas-open');
+                });
+            }
+        })();
     </script>
 
     <!-- Services -->
