@@ -166,41 +166,6 @@
                     </div>
 
                     <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
-                        <!-- Company Switcher -->
-                        @if (User.Identity?.IsAuthenticated == true && userCompanies.Any())
-                        {
-                            <li class="nav-item dropdown me-2 me-xl-0">
-                                <a class="nav-link dropdown-toggle hide-arrow"
-                                   id="companySwitcher"
-                                   href="javascript:void(0);"
-                                   data-bs-toggle="dropdown">
-                                    <i class="icon-base bx bx-buildings icon-md"></i>
-                                    <span class="d-none d-md-inline ms-2">@(currentCompany?.Name ?? "Select Company")</span>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="companySwitcher">
-                                    @foreach (var uc in userCompanies)
-                                    {
-                                        <li>
-                                            <button type="button"
-                                                    class="dropdown-item @(uc.CompanyId == currentCompanyId ? "active" : "")"
-                                                    onclick="switchCompany('@uc.CompanyId', '@uc.Company.Name')">
-                                                <i class="icon-base bx bx-@(uc.CompanyId == currentCompanyId ? "check-circle" : "circle") me-2"></i>
-                                                @uc.Company.Name
-                                                @if (uc.IsDefault)
-                                                {
-                                                    <span class="badge bg-label-primary ms-2">Default</span>
-                                                }
-                                                @if (uc.Role != UserRole.User)
-                                                {
-                                                    <span class="badge bg-label-secondary ms-2">@GetRoleDisplayName(uc.Role)</span>
-                                                }
-                                            </button>
-                                        </li>
-                                    }
-                                </ul>
-                            </li>
-                        }
-
                         <!-- Greeting -->
                         @if (User.Identity?.IsAuthenticated == true && !string.IsNullOrEmpty(fullName))
                         {
@@ -212,8 +177,40 @@
                         }
 
                         <ul class="navbar-nav flex-row align-items-center ms-md-auto">
-                            <!-- Notification Bell -->
-                            @await Component.InvokeAsync("NotificationBell")
+                            <!-- Company Switcher -->
+                            @if (User.Identity?.IsAuthenticated == true && userCompanies.Any())
+                            {
+                                <li class="nav-item dropdown me-2 me-xl-0">
+                                    <a class="nav-link dropdown-toggle hide-arrow"
+                                       id="companySwitcher"
+                                       href="javascript:void(0);"
+                                       data-bs-toggle="dropdown">
+                                        <i class="icon-base bx bx-buildings icon-md"></i>
+                                        <span class="d-none d-md-inline ms-2">@(currentCompany?.Name ?? "Select Company")</span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="companySwitcher">
+                                        @foreach (var uc in userCompanies)
+                                        {
+                                            <li>
+                                                <button type="button"
+                                                        class="dropdown-item @(uc.CompanyId == currentCompanyId ? "active" : "")"
+                                                        onclick="switchCompany('@uc.CompanyId', '@uc.Company.Name')">
+                                                    <i class="icon-base bx bx-@(uc.CompanyId == currentCompanyId ? "check-circle" : "circle") me-2"></i>
+                                                    @uc.Company.Name
+                                                    @if (uc.IsDefault)
+                                                    {
+                                                        <span class="badge bg-label-primary ms-2">Default</span>
+                                                    }
+                                                    @if (uc.Role != UserRole.User)
+                                                    {
+                                                        <span class="badge bg-label-secondary ms-2">@GetRoleDisplayName(uc.Role)</span>
+                                                    }
+                                                </button>
+                                            </li>
+                                        }
+                                    </ul>
+                                </li>
+                            }
 
                             <!-- Layout Switcher -->
                             <li class="nav-item dropdown me-2 me-xl-0">
@@ -275,6 +272,9 @@
 
                             @if (User.Identity?.IsAuthenticated == true)
                             {
+                                <!-- Notification Bell -->
+                                @await Component.InvokeAsync("NotificationBell")
+
                                 <!-- User -->
                                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
                                     <a class="nav-link dropdown-toggle hide-arrow p-0"
