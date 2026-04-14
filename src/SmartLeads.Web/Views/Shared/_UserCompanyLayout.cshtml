@@ -20,6 +20,7 @@
     string lastName = "";
     string fullName = "";
     string greeting = "Good day";
+    string profilePicture = "";
 
     // Get current company
     var currentCompanyId = _companyContext.CurrentCompanyId;
@@ -48,6 +49,7 @@
         {
             firstName = user.FirstName ?? "";
             lastName = user.LastName ?? "";
+            profilePicture = user.ProfilePicture ?? "";
             fullName = string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName)
                 ? userDisplayName
                 : $"{firstName} {lastName}".Trim();
@@ -261,7 +263,10 @@
                                        href="javascript:void(0);"
                                        data-bs-toggle="dropdown">
                                         <div class="avatar avatar-online">
-                                            <img src="~/gtlib/dependencylib/sneatlayout/assets/img/avatars/1.png" alt class="rounded-circle" />
+                                            <img src="@( !string.IsNullOrEmpty(profilePicture) ? profilePicture : "/gtlib/dependencylib/sneatlayout/assets/img/avatars/1.png")"
+                                                 alt="Profile"
+                                                 class="rounded-circle"
+                                                 style="width: 40px; height: 40px; object-fit: cover;" />
                                         </div>
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-end">
@@ -270,7 +275,10 @@
                                                 <div class="d-flex">
                                                     <div class="flex-shrink-0 me-3">
                                                         <div class="avatar avatar-online">
-                                                            <img src="~/gtlib/dependencylib/sneatlayout/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                                                            <img src="@( !string.IsNullOrEmpty(profilePicture) ? profilePicture : "/gtlib/dependencylib/sneatlayout/assets/img/avatars/1.png")"
+                                                                 alt="Profile"
+                                                                 class="rounded-circle"
+                                                                 style="width: 40px; height: 40px; object-fit: cover;" />
                                                         </div>
                                                     </div>
                                                     <div class="flex-grow-1">
