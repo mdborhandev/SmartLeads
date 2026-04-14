@@ -3,6 +3,7 @@
       class="layout-navbar-fixed layout-menu-fixed layout-compact"
       dir="ltr"
       data-skin="default"
+      data-bs-theme="dark"
       data-assets-path="/gtlib/dependencylib/sneatlayout/assets/"
       data-template="vertical-menu-template">
 
@@ -43,16 +44,16 @@
     <div class="theme-switcher">
         <div class="dropdown">
             <button class="btn btn-icon btn-sm dropdown-toggle hide-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="icon-base bx bx-sun icon-md theme-icon-active"></i>
+                <i class="icon-base bx bx-moon icon-md theme-icon-active"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
                 <li>
-                    <button type="button" class="dropdown-item align-items-center active" data-bs-theme-value="light">
+                    <button type="button" class="dropdown-item align-items-center" data-bs-theme-value="light">
                         <span><i class="icon-base bx bx-sun icon-md me-3"></i>Light</span>
                     </button>
                 </li>
                 <li>
-                    <button type="button" class="dropdown-item align-items-center" data-bs-theme-value="dark">
+                    <button type="button" class="dropdown-item align-items-center active" data-bs-theme-value="dark">
                         <span><i class="icon-base bx bx-moon icon-md me-3"></i>Dark</span>
                     </button>
                 </li>
@@ -92,8 +93,8 @@
             const themeButtons = document.querySelectorAll('[data-bs-theme-value]');
             const htmlElement = document.documentElement;
 
-            // Get saved theme or default to 'light'
-            const savedTheme = localStorage.getItem('theme') || 'light';
+            // Get saved theme or default to 'dark'
+            const savedTheme = localStorage.getItem('theme') || 'dark';
             setTheme(savedTheme);
 
             themeButtons.forEach(button => {

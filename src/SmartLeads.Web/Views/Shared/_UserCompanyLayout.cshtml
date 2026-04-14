@@ -59,7 +59,7 @@
       class="layout-navbar-fixed layout-menu-fixed layout-compact"
       dir="ltr"
       data-skin="default"
-      data-bs-theme="light"
+      data-bs-theme="dark"
       data-assets-path="/gtlib/dependencylib/sneatlayout/assets/"
       data-template="vertical-menu-template">
 
@@ -221,13 +221,13 @@
                                    id="nav-theme"
                                    href="javascript:void(0);"
                                    data-bs-toggle="dropdown">
-                                    <i class="icon-base bx bx-sun icon-md theme-icon-active"></i>
+                                    <i class="icon-base bx bx-moon icon-md theme-icon-active"></i>
                                     <span class="d-none ms-2" id="nav-theme-text">Toggle theme</span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-theme-text">
                                     <li>
                                         <button type="button"
-                                                class="dropdown-item align-items-center active"
+                                                class="dropdown-item align-items-center"
                                                 data-bs-theme-value="light"
                                                 aria-pressed="false">
                                             <span><i class="icon-base bx bx-sun icon-md me-3" data-icon="sun"></i>Light</span>
@@ -235,7 +235,7 @@
                                     </li>
                                     <li>
                                         <button type="button"
-                                                class="dropdown-item align-items-center"
+                                                class="dropdown-item align-items-center active"
                                                 data-bs-theme-value="dark"
                                                 aria-pressed="true">
                                             <span><i class="icon-base bx bx-moon icon-md me-3" data-icon="moon"></i>Dark</span>
@@ -356,8 +356,8 @@
             const htmlElement = document.documentElement;
             const themeIconActive = document.querySelector('.theme-icon-active');
 
-            // Get saved theme or default to 'light'
-            const savedTheme = localStorage.getItem('theme') || 'light';
+            // Get saved theme or default to 'dark'
+            const savedTheme = localStorage.getItem('theme') || 'dark';
             setTheme(savedTheme);
 
             // Theme button click handlers
