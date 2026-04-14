@@ -362,63 +362,64 @@
     </div>
 
     <!-- Notification Offcanvas Panel -->
-    <div class="notification-offcanvas offcanvas offcanvas-end" tabindex="-1" id="notificationOffcanvas" aria-labelledby="notificationOffcanvasLabel">
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="notificationOffcanvas" aria-labelledby="notificationOffcanvasLabel">
         @if (notificationViewModel != null)
         {
-            <div class="offcanvas-header">
-                <h5 class="offcanvas-title" id="notificationOffcanvasLabel">
-                    <i class="icon-base bx bx-bell me-2"></i>Notifications
+            <div class="offcanvas-header border-bottom">
+                <h5 class="offcanvas-title d-flex align-items-center gap-2" id="notificationOffcanvasLabel">
+                    <i class="icon-base bx bx-bell"></i>
+                    <span>Notifications</span>
                     @if (notificationViewModel.UnreadCount > 0)
                     {
-                        <span class="badge bg-primary">@notificationViewModel.UnreadCount new</span>
+                        <span class="badge badge-center bg-primary">@notificationViewModel.UnreadCount</span>
                     }
                 </h5>
-                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                <div class="d-flex align-items-center gap-1 ms-auto">
+                    <a href="@Url.Action("Index", "Notifications")" class="btn btn-icon btn-text-secondary rounded-pill" title="View All">
+                        <i class="icon-base bx bx-list-ul icon-md"></i>
+                    </a>
+                    <a href="@Url.Action("Preferences", "Notifications")" class="btn btn-icon btn-text-secondary rounded-pill" title="Settings">
+                        <i class="icon-base bx bx-cog icon-md"></i>
+                    </a>
+                    <button type="button" class="btn btn-icon btn-text-secondary rounded-pill" data-bs-dismiss="offcanvas" aria-label="Close">
+                        <i class="icon-base bx bx-x icon-md"></i>
+                    </button>
+                </div>
             </div>
-            <div class="offcanvas-body">
-                <div class="notifications-list" id="notificationList">
-                    @if (notificationViewModel.RecentNotifications.Any())
-                    {
+            <div class="offcanvas-body p-0">
+                @if (notificationViewModel.RecentNotifications.Any())
+                {
+                    <ul class="list-unstyled mb-0">
                         @foreach (var notification in notificationViewModel.RecentNotifications)
                         {
-                            <a href="@(!string.IsNullOrEmpty(notification.ActionUrl) ? notification.ActionUrl : Url.Action("Details", "Notifications", new { id = notification.Id }))"
-                               class="notification-item @(notification.Status == NotificationStatus.Unread ? "unread" : "")">
-                                <div class="notification-content">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div class="notification-title">
-                                            @if (notification.Status == NotificationStatus.Unread)
-                                            {
-                                                <span class="badge bg-primary badge-sm me-1">New</span>
-                                            }
-                                            <strong>@notification.Title</strong>
-                                        </div>
-                                        <span class="badge bg-info badge-sm">@notification.Type</span>
+                            <li>
+                                <a href="@(!string.IsNullOrEmpty(notification.ActionUrl) ? notification.ActionUrl : Url.Action("Details", "Notifications", new { id = notification.Id }))"
+                                   class="d-flex align-items-start gap-3 p-3 border-bottom text-body @((notification.Status == NotificationStatus.Unread ? "bg-primary-hover" : ""))">
+                                    <div class="flex-shrink-0">
+                                        <i class="icon-base bx @((notification.Status == NotificationStatus.Unread ? "bx-bell" : "bx-bell-off")) icon-md text-primary"></i>
                                     </div>
-                                    <p class="notification-message text-muted mb-2">
-                                        @notification.Message.Substring(0, Math.Min(150, notification.Message.Length))@(notification.Message.Length > 150 ? "..." : "")
-                                    </p>
-                                    <small class="text-muted">@notification.CreatedAt.ToString("MMM dd, yyyy HH:mm")</small>
-                                </div>
-                            </a>
-                            <hr class="my-2" />
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start mb-1">
+                                            <h6 class="mb-0">@notification.Title</h6>
+                                            <span class="badge bg-label-info">@notification.Type</span>
+                                        </div>
+                                        <p class="mb-1 text-muted small">
+                                            @notification.Message.Substring(0, Math.Min(100, notification.Message.Length))@(notification.Message.Length > 100 ? "..." : "")
+                                        </p>
+                                        <small class="text-muted">@notification.CreatedAt.ToString("MMM dd, HH:mm")</small>
+                                    </div>
+                                </a>
+                            </li>
                         }
-                    }
-                    else
-                    {
-                        <div class="text-center py-5">
-                            <i class="icon-base bx bx-bell-off text-muted mb-3" style="font-size: 3rem;"></i>
-                            <p class="text-muted mb-0">No notifications yet</p>
-                        </div>
-                    }
-                </div>
-                <div class="notification-footer mt-3">
-                    <a href="@Url.Action("Index", "Notifications")" class="btn btn-primary w-100 mb-2">
-                        <i class="icon-base bx bx-bell me-1"></i> View All Notifications
-                    </a>
-                    <a href="@Url.Action("Preferences", "Notifications")" class="btn btn-outline-secondary w-100">
-                        <i class="icon-base bx bx-cog me-1"></i> Settings
-                    </a>
-                </div>
+                    </ul>
+                }
+                else
+                {
+                    <div class="d-flex flex-column align-items-center justify-content-center py-5">
+                        <i class="icon-base bx bx-bell-off text-muted mb-2" style="font-size: 3rem;"></i>
+                        <p class="text-muted mb-0">No notifications yet</p>
+                    </div>
+                }
             </div>
         }
     </div>
