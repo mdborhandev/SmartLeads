@@ -88,45 +88,144 @@
             <h6 class="mb-3">Employee Information</h6>
             
             <div class="row">
-                <div class="col-md-12 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="empEmployeeId" class="form-label">Employee ID <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="empEmployeeId" name="EmployeeId" placeholder="e.g., EMP001" required />
                     <span class="text-danger" id="employeeIdError"></span>
                 </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empFirstName" class="form-label">First Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="empFirstName" name="FirstName" required />
+                    <span class="text-danger" id="firstNameError"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empLastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="empLastName" name="LastName" required />
+                    <span class="text-danger" id="lastNameError"></span>
+                </div>
             </div>
 
             <div class="row">
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
+                    <label for="empMiddleName" class="form-label">Middle Name</label>
+                    <input type="text" class="form-control" id="empMiddleName" name="MiddleName" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empNickName" class="form-label">Nick Name</label>
+                    <input type="text" class="form-control" id="empNickName" name="NickName" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empWorkEmail" class="form-label">Work Email</label>
+                    <input type="email" class="form-control" id="empWorkEmail" name="WorkEmail" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="empPersonalEmail" class="form-label">Personal Email</label>
+                    <input type="email" class="form-control" id="empPersonalEmail" name="PersonalEmail" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empPhoneNumber" class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" id="empPhoneNumber" name="PhoneNumber" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empAlternatePhoneNumber" class="form-label">Alternate Phone Number</label>
+                    <input type="tel" class="form-control" id="empAlternatePhoneNumber" name="AlternatePhoneNumber" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
                     <label for="empDepartmentId" class="form-label">Department</label>
                     <select class="form-select" id="empDepartmentId" name="DepartmentId">
                         <option value="">Select Department</option>
                     </select>
                 </div>
-
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="empDesignationId" class="form-label">Designation</label>
                     <select class="form-select" id="empDesignationId" name="DesignationId" disabled>
                         <option value="">Select Designation</option>
                     </select>
                 </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="empPhoneNumber" class="form-label">Phone Number</label>
-                    <input type="tel" class="form-control" id="empPhoneNumber" name="PhoneNumber" />
-                </div>
-
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="empDateOfJoining" class="form-label">Date of Joining</label>
                     <input type="date" class="form-control" id="empDateOfJoining" name="DateOfJoining" />
                 </div>
             </div>
 
             <div class="row">
-                <div class="col-12 mb-3">
+                <div class="col-md-4 mb-3">
+                    <label for="empDateOfBirth" class="form-label">Date of Birth</label>
+                    <input type="date" class="form-control" id="empDateOfBirth" name="DateOfBirth" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empGender" class="form-label">Gender</label>
+                    <input type="text" class="form-control" id="empGender" name="Gender" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empMaritalStatus" class="form-label">Marital Status</label>
+                    <input type="text" class="form-control" id="empMaritalStatus" name="MaritalStatus" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="empBloodGroup" class="form-label">Blood Group</label>
+                    <input type="text" class="form-control" id="empBloodGroup" name="BloodGroup" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empNationality" class="form-label">Nationality</label>
+                    <input type="text" class="form-control" id="empNationality" name="Nationality" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empNationalIdNumber" class="form-label">National ID Number</label>
+                    <input type="text" class="form-control" id="empNationalIdNumber" name="NationalIdNumber" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="empJoiningType" class="form-label">Joining Type</label>
+                    <input type="text" class="form-control" id="empJoiningType" name="JoiningType" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empEmploymentStatus" class="form-label">Employment Status</label>
+                    <input type="text" class="form-control" id="empEmploymentStatus" name="EmploymentStatus" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empProfilePhotoUrl" class="form-label">Profile Photo URL</label>
+                    <input type="text" class="form-control" id="empProfilePhotoUrl" name="ProfilePhotoUrl" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="empEmergencyContactName" class="form-label">Emergency Contact Name</label>
+                    <input type="text" class="form-control" id="empEmergencyContactName" name="EmergencyContactName" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empEmergencyContactPhone" class="form-label">Emergency Contact Phone</label>
+                    <input type="text" class="form-control" id="empEmergencyContactPhone" name="EmergencyContactPhone" />
+                </div>
+                <div class="col-md-4 mb-3">
                     <label for="empAddress" class="form-label">Address</label>
-                    <textarea class="form-control" id="empAddress" name="Address" rows="2"></textarea>
+                    <input type="text" class="form-control" id="empAddress" name="Address" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="empPresentAddress" class="form-label">Present Address</label>
+                    <input type="text" class="form-control" id="empPresentAddress" name="PresentAddress" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empPermanentAddress" class="form-label">Permanent Address</label>
+                    <input type="text" class="form-control" id="empPermanentAddress" name="PermanentAddress" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empNotes" class="form-label">Notes</label>
+                    <input type="text" class="form-control" id="empNotes" name="Notes" />
                 </div>
             </div>
 
@@ -179,12 +278,6 @@
             {
                 title: "Full Name",
                 field: "fullName",
-                hozAlign: "left",
-                visible: true
-            },
-            {
-                title: "Email",
-                field: "email",
                 hozAlign: "left",
                 visible: true
             },
@@ -243,13 +336,34 @@
                     const row = cell.getRow().getData();
                     const id = row.id || '';
                     const employeeId = (row.employeeId || '').toString().replace(/'/g, "\\'");
+                    const firstName = (row.firstName || '').toString().replace(/'/g, "\\'");
+                    const lastName = (row.lastName || '').toString().replace(/'/g, "\\'");
+                    const middleName = (row.middleName || '').toString().replace(/'/g, "\\'");
+                    const nickName = (row.nickName || '').toString().replace(/'/g, "\\'");
+                    const workEmail = (row.workEmail || '').toString().replace(/'/g, "\\'");
+                    const personalEmail = (row.personalEmail || '').toString().replace(/'/g, "\\'");
                     const departmentId = (row.departmentId || '').toString().replace(/'/g, "\\'");
                     const designationId = (row.designationId || '').toString().replace(/'/g, "\\'");
                     const departmentName = (row.department || '').toString().replace(/'/g, "\\'");
                     const designationName = (row.designation || '').toString().replace(/'/g, "\\'");
                     const phoneNumber = (row.phoneNumber || '').toString().replace(/'/g, "\\'");
+                    const alternatePhoneNumber = (row.alternatePhoneNumber || '').toString().replace(/'/g, "\\'");
+                    const emergencyContactName = (row.emergencyContactName || '').toString().replace(/'/g, "\\'");
+                    const emergencyContactPhone = (row.emergencyContactPhone || '').toString().replace(/'/g, "\\'");
+                    const dateOfBirth = (row.dateOfBirth || '').toString().replace(/'/g, "\\'");
+                    const gender = (row.gender || '').toString().replace(/'/g, "\\'");
+                    const maritalStatus = (row.maritalStatus || '').toString().replace(/'/g, "\\'");
+                    const bloodGroup = (row.bloodGroup || '').toString().replace(/'/g, "\\'");
+                    const nationality = (row.nationality || '').toString().replace(/'/g, "\\'");
+                    const nationalIdNumber = (row.nationalIdNumber || '').toString().replace(/'/g, "\\'");
+                    const presentAddress = (row.presentAddress || '').toString().replace(/'/g, "\\'");
+                    const permanentAddress = (row.permanentAddress || '').toString().replace(/'/g, "\\'");
                     const address = (row.address || '').toString().replace(/'/g, "\\'");
                     const dateOfJoining = (row.dateOfJoining || '').toString().replace(/'/g, "\\'");
+                    const joiningType = (row.joiningType || '').toString().replace(/'/g, "\\'");
+                    const employmentStatus = (row.employmentStatus || '').toString().replace(/'/g, "\\'");
+                    const profilePhotoUrl = (row.profilePhotoUrl || '').toString().replace(/'/g, "\\'");
+                    const notes = (row.notes || '').toString().replace(/'/g, "\\'");
                     const isActive = row.isActive || false;
 
                     return `
@@ -257,13 +371,34 @@
                             onclick="openEditModalFromTable(
                                 '${id}',
                                 '${employeeId}',
+                                '${firstName}',
+                                '${lastName}',
+                                '${middleName}',
+                                '${nickName}',
+                                '${workEmail}',
+                                '${personalEmail}',
                                 '${departmentId}',
                                 '${designationId}',
                                 '${departmentName}',
                                 '${designationName}',
                                 '${phoneNumber}',
+                                '${alternatePhoneNumber}',
+                                '${emergencyContactName}',
+                                '${emergencyContactPhone}',
+                                '${dateOfBirth}',
+                                '${gender}',
+                                '${maritalStatus}',
+                                '${bloodGroup}',
+                                '${nationality}',
+                                '${nationalIdNumber}',
+                                '${presentAddress}',
+                                '${permanentAddress}',
                                 '${address}',
                                 '${dateOfJoining}',
+                                '${joiningType}',
+                                '${employmentStatus}',
+                                '${profilePhotoUrl}',
+                                '${notes}',
                                 ${isActive}
                             )">
                             <i class="bx bx-edit"></i> Edit
@@ -616,17 +751,38 @@
         }
 
         // Open Edit Modal from Tabulator
-        function openEditModalFromTable(id, employeeId, departmentId, designationId, departmentName, designationName, phoneNumber, address, dateOfJoining, isActive) {
+        function openEditModalFromTable(id, employeeId, firstName, lastName, middleName, nickName, workEmail, personalEmail, departmentId, designationId, departmentName, designationName, phoneNumber, alternatePhoneNumber, emergencyContactName, emergencyContactPhone, dateOfBirth, gender, maritalStatus, bloodGroup, nationality, nationalIdNumber, presentAddress, permanentAddress, address, dateOfJoining, joiningType, employmentStatus, profilePhotoUrl, notes, isActive) {
             openEditModal(
                 id,
                 employeeId,
+                firstName,
+                lastName,
+                middleName,
+                nickName,
+                workEmail,
+                personalEmail,
                 departmentId,
                 designationId,
                 departmentName,
                 designationName,
                 phoneNumber,
+                alternatePhoneNumber,
+                emergencyContactName,
+                emergencyContactPhone,
+                dateOfBirth,
+                gender,
+                maritalStatus,
+                bloodGroup,
+                nationality,
+                nationalIdNumber,
+                presentAddress,
+                permanentAddress,
                 address,
                 dateOfJoining,
+                joiningType,
+                employmentStatus,
+                profilePhotoUrl,
+                notes,
                 isActive.toString().toLowerCase()
             );
         }
@@ -646,11 +802,32 @@
         }
 
         // Open Edit Modal
-        function openEditModal(id, employeeId, departmentId, designationId, departmentName, designationName, phoneNumber, address, dateOfJoining, isActive) {
+        function openEditModal(id, employeeId, firstName, lastName, middleName, nickName, workEmail, personalEmail, departmentId, designationId, departmentName, designationName, phoneNumber, alternatePhoneNumber, emergencyContactName, emergencyContactPhone, dateOfBirth, gender, maritalStatus, bloodGroup, nationality, nationalIdNumber, presentAddress, permanentAddress, address, dateOfJoining, joiningType, employmentStatus, profilePhotoUrl, notes, isActive) {
             document.getElementById('employeeOffcanvasLabel').textContent = 'Edit Employee';
             document.getElementById('formAction').value = 'edit';
             document.getElementById('employeeId').value = id;
             document.getElementById('empEmployeeId').value = employeeId;
+            document.getElementById('empFirstName').value = firstName || '';
+            document.getElementById('empLastName').value = lastName || '';
+            document.getElementById('empMiddleName').value = middleName || '';
+            document.getElementById('empNickName').value = nickName || '';
+            document.getElementById('empWorkEmail').value = workEmail || '';
+            document.getElementById('empPersonalEmail').value = personalEmail || '';
+            document.getElementById('empAlternatePhoneNumber').value = alternatePhoneNumber || '';
+            document.getElementById('empEmergencyContactName').value = emergencyContactName || '';
+            document.getElementById('empEmergencyContactPhone').value = emergencyContactPhone || '';
+            document.getElementById('empDateOfBirth').value = dateOfBirth || '';
+            document.getElementById('empGender').value = gender || '';
+            document.getElementById('empMaritalStatus').value = maritalStatus || '';
+            document.getElementById('empBloodGroup').value = bloodGroup || '';
+            document.getElementById('empNationality').value = nationality || '';
+            document.getElementById('empNationalIdNumber').value = nationalIdNumber || '';
+            document.getElementById('empPresentAddress').value = presentAddress || '';
+            document.getElementById('empPermanentAddress').value = permanentAddress || '';
+            document.getElementById('empJoiningType').value = joiningType || '';
+            document.getElementById('empEmploymentStatus').value = employmentStatus || '';
+            document.getElementById('empProfilePhotoUrl').value = profilePhotoUrl || '';
+            document.getElementById('empNotes').value = notes || '';
             document.getElementById('empEmployeeId').readOnly = true;
             
             // Set department and designation dropdowns using shared Select2 helpers

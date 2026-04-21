@@ -57,6 +57,11 @@ public class EmployeesController : Controller
                 var search = request.Search.ToLower();
                 employees = employees.Where(e =>
                     e.EmployeeId.ToLower().Contains(search) ||
+                    e.FirstName.ToLower().Contains(search) ||
+                    e.LastName.ToLower().Contains(search) ||
+                    ((e.NickName ?? string.Empty).ToLower().Contains(search)) ||
+                    ((e.WorkEmail ?? string.Empty).ToLower().Contains(search)) ||
+                    ((e.PersonalEmail ?? string.Empty).ToLower().Contains(search)) ||
                     (e.Department != null && e.Department.Name.ToLower().Contains(search)) ||
                     (e.Designation != null && e.Designation.Name.ToLower().Contains(search)) ||
                     (e.PhoneNumber != null && e.PhoneNumber.ToLower().Contains(search))
@@ -94,25 +99,35 @@ public class EmployeesController : Controller
                 {
                     e.Id,
                     e.EmployeeId,
+                    e.FirstName,
+                    e.LastName,
+                    e.MiddleName,
+                    e.NickName,
+                    e.WorkEmail,
+                    e.PersonalEmail,
                     e.DepartmentId,
                     e.DesignationId,
                     Department = e.Department != null ? e.Department.Name : null,
                     Designation = e.Designation != null ? e.Designation.Name : null,
                     e.PhoneNumber,
+                    e.AlternatePhoneNumber,
+                    e.EmergencyContactName,
+                    e.EmergencyContactPhone,
                     e.IsActive,
                     e.CreatedAt,
-                    Username = e.EmployeeUsers
-                        .Where(eu => eu.IsPrimary)
-                        .Select(eu => eu.User.Username)
-                        .FirstOrDefault() ?? "N/A",
-                    Email = e.EmployeeUsers
-                        .Where(eu => eu.IsPrimary)
-                        .Select(eu => eu.User.Email)
-                        .FirstOrDefault() ?? "N/A",
-                    FullName = e.EmployeeUsers
-                        .Where(eu => eu.IsPrimary)
-                        .Select(eu => eu.User.FirstName + " " + eu.User.LastName)
-                        .FirstOrDefault() ?? "N/A"
+                    e.DateOfBirth,
+                    e.Gender,
+                    e.MaritalStatus,
+                    e.BloodGroup,
+                    e.Nationality,
+                    e.NationalIdNumber,
+                    e.PresentAddress,
+                    e.PermanentAddress,
+                    e.JoiningType,
+                    e.EmploymentStatus,
+                    e.ProfilePhotoUrl,
+                    e.Notes,
+                    FullName = (e.FirstName + " " + e.LastName).Trim()
                 })
                 .ToListAsync();
 
@@ -169,10 +184,31 @@ public class EmployeesController : Controller
             {
                 CompanyId = companyId,
                 EmployeeId = model.EmployeeId,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                MiddleName = model.MiddleName,
+                NickName = model.NickName,
+                WorkEmail = model.WorkEmail,
+                PersonalEmail = model.PersonalEmail,
                 DepartmentId = model.DepartmentId,
                 DesignationId = model.DesignationId,
                 PhoneNumber = model.PhoneNumber,
+                AlternatePhoneNumber = model.AlternatePhoneNumber,
+                EmergencyContactName = model.EmergencyContactName,
+                EmergencyContactPhone = model.EmergencyContactPhone,
                 Address = model.Address,
+                DateOfBirth = model.DateOfBirth,
+                Gender = model.Gender,
+                MaritalStatus = model.MaritalStatus,
+                BloodGroup = model.BloodGroup,
+                Nationality = model.Nationality,
+                NationalIdNumber = model.NationalIdNumber,
+                PresentAddress = model.PresentAddress,
+                PermanentAddress = model.PermanentAddress,
+                JoiningType = model.JoiningType,
+                EmploymentStatus = model.EmploymentStatus,
+                ProfilePhotoUrl = model.ProfilePhotoUrl,
+                Notes = model.Notes,
                 DateOfJoining = model.DateOfJoining,
                 IsActive = true
             };
@@ -201,10 +237,31 @@ public class EmployeesController : Controller
         {
             Id = employee.Id,
             EmployeeId = employee.EmployeeId,
+            FirstName = employee.FirstName,
+            LastName = employee.LastName,
+            MiddleName = employee.MiddleName,
+            NickName = employee.NickName,
+            WorkEmail = employee.WorkEmail,
+            PersonalEmail = employee.PersonalEmail,
             DepartmentId = employee.DepartmentId,
             DesignationId = employee.DesignationId,
             PhoneNumber = employee.PhoneNumber,
+            AlternatePhoneNumber = employee.AlternatePhoneNumber,
+            EmergencyContactName = employee.EmergencyContactName,
+            EmergencyContactPhone = employee.EmergencyContactPhone,
             Address = employee.Address,
+            DateOfBirth = employee.DateOfBirth,
+            Gender = employee.Gender,
+            MaritalStatus = employee.MaritalStatus,
+            BloodGroup = employee.BloodGroup,
+            Nationality = employee.Nationality,
+            NationalIdNumber = employee.NationalIdNumber,
+            PresentAddress = employee.PresentAddress,
+            PermanentAddress = employee.PermanentAddress,
+            JoiningType = employee.JoiningType,
+            EmploymentStatus = employee.EmploymentStatus,
+            ProfilePhotoUrl = employee.ProfilePhotoUrl,
+            Notes = employee.Notes,
             DateOfJoining = employee.DateOfJoining,
             IsActive = employee.IsActive
         };
@@ -240,10 +297,31 @@ public class EmployeesController : Controller
         }
 
         // Update employee information
+        employee.FirstName = model.FirstName;
+        employee.LastName = model.LastName;
+        employee.MiddleName = model.MiddleName;
+        employee.NickName = model.NickName;
+        employee.WorkEmail = model.WorkEmail;
+        employee.PersonalEmail = model.PersonalEmail;
         employee.DepartmentId = model.DepartmentId;
         employee.DesignationId = model.DesignationId;
         employee.PhoneNumber = model.PhoneNumber;
+        employee.AlternatePhoneNumber = model.AlternatePhoneNumber;
+        employee.EmergencyContactName = model.EmergencyContactName;
+        employee.EmergencyContactPhone = model.EmergencyContactPhone;
         employee.Address = model.Address;
+        employee.DateOfBirth = model.DateOfBirth;
+        employee.Gender = model.Gender;
+        employee.MaritalStatus = model.MaritalStatus;
+        employee.BloodGroup = model.BloodGroup;
+        employee.Nationality = model.Nationality;
+        employee.NationalIdNumber = model.NationalIdNumber;
+        employee.PresentAddress = model.PresentAddress;
+        employee.PermanentAddress = model.PermanentAddress;
+        employee.JoiningType = model.JoiningType;
+        employee.EmploymentStatus = model.EmploymentStatus;
+        employee.ProfilePhotoUrl = model.ProfilePhotoUrl;
+        employee.Notes = model.Notes;
         employee.DateOfJoining = model.DateOfJoining;
         employee.IsActive = model.IsActive;
         employee.UpdatedAt = DateTime.UtcNow;
@@ -281,6 +359,28 @@ public class EmployeeCreateViewModel
     [Display(Name = "Employee ID")]
     public string EmployeeId { get; set; } = string.Empty;
 
+    [Required]
+    [Display(Name = "First Name")]
+    public string FirstName { get; set; } = string.Empty;
+
+    [Required]
+    [Display(Name = "Last Name")]
+    public string LastName { get; set; } = string.Empty;
+
+    [Display(Name = "Nick Name")]
+    public string? NickName { get; set; }
+
+    [Display(Name = "Middle Name")]
+    public string? MiddleName { get; set; }
+
+    [EmailAddress]
+    [Display(Name = "Work Email")]
+    public string? WorkEmail { get; set; }
+
+    [EmailAddress]
+    [Display(Name = "Personal Email")]
+    public string? PersonalEmail { get; set; }
+
     [Display(Name = "Department")]
     public Guid? DepartmentId { get; set; }
 
@@ -290,11 +390,56 @@ public class EmployeeCreateViewModel
     [Display(Name = "Phone Number")]
     public string? PhoneNumber { get; set; }
 
+    [Display(Name = "Alternate Phone Number")]
+    public string? AlternatePhoneNumber { get; set; }
+
+    [Display(Name = "Emergency Contact Name")]
+    public string? EmergencyContactName { get; set; }
+
+    [Display(Name = "Emergency Contact Phone")]
+    public string? EmergencyContactPhone { get; set; }
+
     [Display(Name = "Address")]
     public string? Address { get; set; }
 
+    [Display(Name = "Present Address")]
+    public string? PresentAddress { get; set; }
+
+    [Display(Name = "Permanent Address")]
+    public string? PermanentAddress { get; set; }
+
+    [Display(Name = "Date of Birth")]
+    public DateTime? DateOfBirth { get; set; }
+
+    [Display(Name = "Gender")]
+    public string? Gender { get; set; }
+
+    [Display(Name = "Marital Status")]
+    public string? MaritalStatus { get; set; }
+
+    [Display(Name = "Blood Group")]
+    public string? BloodGroup { get; set; }
+
+    [Display(Name = "Nationality")]
+    public string? Nationality { get; set; }
+
+    [Display(Name = "National ID Number")]
+    public string? NationalIdNumber { get; set; }
+
     [Display(Name = "Date of Joining")]
     public DateTime? DateOfJoining { get; set; }
+
+    [Display(Name = "Joining Type")]
+    public string? JoiningType { get; set; }
+
+    [Display(Name = "Employment Status")]
+    public string? EmploymentStatus { get; set; }
+
+    [Display(Name = "Profile Photo URL")]
+    public string? ProfilePhotoUrl { get; set; }
+
+    [Display(Name = "Notes")]
+    public string? Notes { get; set; }
 }
 
 public class EmployeeEditViewModel
@@ -305,6 +450,28 @@ public class EmployeeEditViewModel
     [Display(Name = "Employee ID")]
     public string EmployeeId { get; set; } = string.Empty;
 
+    [Required]
+    [Display(Name = "First Name")]
+    public string FirstName { get; set; } = string.Empty;
+
+    [Required]
+    [Display(Name = "Last Name")]
+    public string LastName { get; set; } = string.Empty;
+
+    [Display(Name = "Nick Name")]
+    public string? NickName { get; set; }
+
+    [Display(Name = "Middle Name")]
+    public string? MiddleName { get; set; }
+
+    [EmailAddress]
+    [Display(Name = "Work Email")]
+    public string? WorkEmail { get; set; }
+
+    [EmailAddress]
+    [Display(Name = "Personal Email")]
+    public string? PersonalEmail { get; set; }
+
     [Display(Name = "Department")]
     public Guid? DepartmentId { get; set; }
 
@@ -314,11 +481,56 @@ public class EmployeeEditViewModel
     [Display(Name = "Phone Number")]
     public string? PhoneNumber { get; set; }
 
+    [Display(Name = "Alternate Phone Number")]
+    public string? AlternatePhoneNumber { get; set; }
+
+    [Display(Name = "Emergency Contact Name")]
+    public string? EmergencyContactName { get; set; }
+
+    [Display(Name = "Emergency Contact Phone")]
+    public string? EmergencyContactPhone { get; set; }
+
     [Display(Name = "Address")]
     public string? Address { get; set; }
 
+    [Display(Name = "Present Address")]
+    public string? PresentAddress { get; set; }
+
+    [Display(Name = "Permanent Address")]
+    public string? PermanentAddress { get; set; }
+
+    [Display(Name = "Date of Birth")]
+    public DateTime? DateOfBirth { get; set; }
+
+    [Display(Name = "Gender")]
+    public string? Gender { get; set; }
+
+    [Display(Name = "Marital Status")]
+    public string? MaritalStatus { get; set; }
+
+    [Display(Name = "Blood Group")]
+    public string? BloodGroup { get; set; }
+
+    [Display(Name = "Nationality")]
+    public string? Nationality { get; set; }
+
+    [Display(Name = "National ID Number")]
+    public string? NationalIdNumber { get; set; }
+
     [Display(Name = "Date of Joining")]
     public DateTime? DateOfJoining { get; set; }
+
+    [Display(Name = "Joining Type")]
+    public string? JoiningType { get; set; }
+
+    [Display(Name = "Employment Status")]
+    public string? EmploymentStatus { get; set; }
+
+    [Display(Name = "Profile Photo URL")]
+    public string? ProfilePhotoUrl { get; set; }
+
+    [Display(Name = "Notes")]
+    public string? Notes { get; set; }
 
     [Display(Name = "Status")]
     public bool IsActive { get; set; } = true;
