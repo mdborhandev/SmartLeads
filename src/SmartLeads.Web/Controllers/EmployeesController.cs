@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using SmartLeads.Domain.DTOs;
 using SmartLeads.Infrastructure.Repositories.Interface;
 using SmartLeads.Domain.Models;
-using SmartLeads.Infrastructure.Services;
-using System.ComponentModel.DataAnnotations;
 
 namespace SmartLeads.Web.Controllers;
 
@@ -17,13 +15,11 @@ public class EmployeesController : Controller
         _unitOfWork = unitOfWork;
     }
 
-    // GET: Employees
     public async Task<IActionResult> Index()
     {
         return View();
     }
 
-    // GET: Employees/Data - API endpoint for server-side pagination and search
     [HttpGet]
     public async Task<IActionResult> GetEmployeesData([FromQuery] PaginationRequest request)
     {
@@ -33,17 +29,16 @@ public class EmployeesController : Controller
             
             if (string.IsNullOrEmpty(companyIdClaim))
             {
-                return BadRequest(new { error = "CompanyId claim not found" });
+                return BadRequest(new { success = false, message = "Invalid company context." });
             }
 
             var companyId = Guid.Parse(companyIdClaim);
 
             if (companyId == Guid.Empty)
             {
-                return BadRequest(new { error = "Invalid company context" });
+                return BadRequest(new { success = false, message = "Invalid company context." });
             }
 
-            // Get all employees for this company with their linked users
             var employees = _unitOfWork.defaultDbContext.Employees
                 .Where(e => e.CompanyId == companyId && !e.IsDeleted)
                 .Include(e => e.EmployeeUsers)
@@ -51,7 +46,6 @@ public class EmployeesController : Controller
                 .Include(e => e.Designation)
                 .AsQueryable();
 
-            // Apply search
             if (!string.IsNullOrWhiteSpace(request.Search))
             {
                 var search = request.Search.ToLower();
@@ -70,7 +64,6 @@ public class EmployeesController : Controller
 
             var totalCount = employees.Count();
 
-            // Apply sorting
             employees = request.SortField?.ToLower() switch
             {
                 "employeeid" => request.SortOrder?.ToLower() == "desc"
@@ -91,48 +84,47 @@ public class EmployeesController : Controller
                 _ => employees.OrderByDescending(e => e.CreatedAt)
             };
 
-            // Apply pagination
             var items = await employees
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(e => new
+                .Select(e => new EmployeeDto
                 {
-                    e.Id,
-                    e.EmployeeId,
-                    e.FirstName,
-                    e.LastName,
-                    e.MiddleName,
-                    e.NickName,
-                    e.WorkEmail,
-                    e.PersonalEmail,
-                    e.DepartmentId,
-                    e.DesignationId,
+                    Id = e.Id,
+                    EmployeeId = e.EmployeeId,
+                    FirstName = e.FirstName,
+                    LastName = e.LastName,
+                    MiddleName = e.MiddleName,
+                    NickName = e.NickName,
+                    WorkEmail = e.WorkEmail,
+                    PersonalEmail = e.PersonalEmail,
+                    DepartmentId = e.DepartmentId,
+                    DesignationId = e.DesignationId,
                     Department = e.Department != null ? e.Department.Name : null,
                     Designation = e.Designation != null ? e.Designation.Name : null,
-                    e.PhoneNumber,
-                    e.AlternatePhoneNumber,
-                    e.EmergencyContactName,
-                    e.EmergencyContactPhone,
-                    e.IsActive,
-                    e.CreatedAt,
-                    e.DateOfBirth,
-                    e.Gender,
-                    e.MaritalStatus,
-                    e.BloodGroup,
-                    e.Nationality,
-                    e.NationalIdNumber,
-                    e.PresentAddress,
-                    e.PermanentAddress,
-                    e.JoiningType,
-                    e.EmploymentStatus,
-                    e.ProfilePhotoUrl,
-                    e.Notes,
-                    FullName = (e.FirstName + " " + e.LastName).Trim()
+                    PhoneNumber = e.PhoneNumber,
+                    AlternatePhoneNumber = e.AlternatePhoneNumber,
+                    EmergencyContactName = e.EmergencyContactName,
+                    EmergencyContactPhone = e.EmergencyContactPhone,
+                    IsActive = e.IsActive,
+                    CreatedAt = e.CreatedAt,
+                    DateOfBirth = e.DateOfBirth,
+                    Gender = e.Gender,
+                    MaritalStatus = e.MaritalStatus,
+                    BloodGroup = e.BloodGroup,
+                    Nationality = e.Nationality,
+                    NationalIdNumber = e.NationalIdNumber,
+                    PresentAddress = e.PresentAddress,
+                    PermanentAddress = e.PermanentAddress,
+                    JoiningType = e.JoiningType,
+                    EmploymentStatus = e.EmploymentStatus,
+                    ProfilePhotoUrl = e.ProfilePhotoUrl,
+                    Notes = e.Notes
                 })
                 .ToListAsync();
 
             return Ok(new
             {
+                success = true,
                 data = items,
                 total = totalCount,
                 page = request.Page,
@@ -141,99 +133,180 @@ public class EmployeesController : Controller
         }
         catch (Exception ex)
         {
-            return BadRequest(new { error = "Failed to get employees", message = ex.Message });
+            return BadRequest(new { success = false, message = "Failed to get employees.", details = ex.Message });
         }
     }
 
-    // POST: Employees/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(EmployeeCreateViewModel model)
+    public async Task<IActionResult> Save(EmployeeDto model)
     {
-        if (!ModelState.IsValid)
+        // Log received data for debugging
+        Console.WriteLine($"Received model: EmployeeId={model.EmployeeId}, FirstName={model.FirstName}, LastName={model.LastName}, Id={model.Id}");
+
+        var errors = new Dictionary<string, List<string>>();
+        var companyIdClaim = User.FindFirst("CompanyId")?.Value;
+
+        if (string.IsNullOrEmpty(companyIdClaim))
         {
-            var errors = ModelState
-                .Where(x => x.Value.Errors.Count > 0)
-                .ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
-                );
-            return BadRequest(new { errors });
+            return BadRequest(new { success = false, message = "Invalid company context. Please login again." });
         }
 
-        var companyId = Guid.Parse(User.FindFirst("CompanyId")?.Value ?? Guid.Empty.ToString());
+        var companyId = Guid.Parse(companyIdClaim);
 
-        if (companyId == Guid.Empty)
+        // Manual validation - check required fields
+        if (string.IsNullOrWhiteSpace(model.EmployeeId))
         {
-            return BadRequest(new { errors = new { __global = new[] { "Invalid company context." } } });
+            errors["EmployeeId"] = new List<string> { "Employee ID is required" };
         }
+
+        if (string.IsNullOrWhiteSpace(model.FirstName))
+        {
+            errors["FirstName"] = new List<string> { "First name is required" };
+        }
+
+        if (string.IsNullOrWhiteSpace(model.LastName))
+        {
+            errors["LastName"] = new List<string> { "Last name is required" };
+        }
+
+        if (model.DateOfBirth.HasValue && model.DateOfBirth.Value > DateTime.Now)
+        {
+            errors["DateOfBirth"] = new List<string> { "Date of birth cannot be in the future." };
+        }
+
+        if (model.DateOfJoining.HasValue && model.DateOfJoining.Value > DateTime.Now)
+        {
+            errors["DateOfJoining"] = new List<string> { "Date of joining cannot be in the future." };
+        }
+
+        if (errors.Any())
+        {
+            return BadRequest(new { success = false, errors, message = "Validation failed. Please check the form." });
+        }
+
+        var isEdit = model.Id.HasValue && model.Id.Value != Guid.Empty;
 
         try
         {
-            // Check if EmployeeId already exists for this company
-            var existingEmployee = await _unitOfWork.defaultDbContext.Employees
-                .FirstOrDefaultAsync(e => e.EmployeeId == model.EmployeeId && e.CompanyId == companyId);
+            var employeeRepo = _unitOfWork.employeeRepository;
 
-            if (existingEmployee != null)
+            if (isEdit)
             {
-                return BadRequest(new { errors = new { EmployeeId = new[] { "Employee ID already exists." } } });
+                var employee = await employeeRepo.GetByIdAsync(model.Id!.Value);
+                if (employee == null)
+                {
+                    return NotFound(new { success = false, message = "Employee not found." });
+                }
+
+                if (employee.EmployeeId != model.EmployeeId)
+                {
+                    var duplicate = await employeeRepo.GetByEmployeeIdExcludingIdAsync(model.EmployeeId, companyId, employee.Id);
+                    if (duplicate != null)
+                    {
+                        return BadRequest(new { success = false, errors = new { EmployeeId = new List<string> { "Employee ID already exists." } }, message = "Employee ID already exists." });
+                    }
+                }
+
+                employee.EmployeeId = model.EmployeeId;
+                employee.FirstName = model.FirstName;
+                employee.LastName = model.LastName;
+                employee.MiddleName = model.MiddleName;
+                employee.NickName = model.NickName;
+                employee.WorkEmail = model.WorkEmail;
+                employee.PersonalEmail = model.PersonalEmail;
+                employee.DepartmentId = model.DepartmentId;
+                employee.DesignationId = model.DesignationId;
+                employee.PhoneNumber = model.PhoneNumber;
+                employee.AlternatePhoneNumber = model.AlternatePhoneNumber;
+                employee.EmergencyContactName = model.EmergencyContactName;
+                employee.EmergencyContactPhone = model.EmergencyContactPhone;
+                employee.Address = model.Address;
+                employee.DateOfBirth = model.DateOfBirth;
+                employee.Gender = model.Gender;
+                employee.MaritalStatus = model.MaritalStatus;
+                employee.BloodGroup = model.BloodGroup;
+                employee.Nationality = model.Nationality;
+                employee.NationalIdNumber = model.NationalIdNumber;
+                employee.PresentAddress = model.PresentAddress;
+                employee.PermanentAddress = model.PermanentAddress;
+                employee.JoiningType = model.JoiningType;
+                employee.EmploymentStatus = model.EmploymentStatus;
+                employee.ProfilePhotoUrl = model.ProfilePhotoUrl;
+                employee.Notes = model.Notes;
+                employee.DateOfJoining = model.DateOfJoining;
+                employee.IsActive = model.IsActive;
+                employee.UpdatedAt = DateTime.UtcNow;
+
+                employeeRepo.Edit(employee);
+                await _unitOfWork.SaveAsync();
+
+                return Ok(new { success = true, message = "Employee updated successfully!" });
             }
-
-            // Create Employee record
-            var employee = new Employee
+            else
             {
-                CompanyId = companyId,
-                EmployeeId = model.EmployeeId,
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                MiddleName = model.MiddleName,
-                NickName = model.NickName,
-                WorkEmail = model.WorkEmail,
-                PersonalEmail = model.PersonalEmail,
-                DepartmentId = model.DepartmentId,
-                DesignationId = model.DesignationId,
-                PhoneNumber = model.PhoneNumber,
-                AlternatePhoneNumber = model.AlternatePhoneNumber,
-                EmergencyContactName = model.EmergencyContactName,
-                EmergencyContactPhone = model.EmergencyContactPhone,
-                Address = model.Address,
-                DateOfBirth = model.DateOfBirth,
-                Gender = model.Gender,
-                MaritalStatus = model.MaritalStatus,
-                BloodGroup = model.BloodGroup,
-                Nationality = model.Nationality,
-                NationalIdNumber = model.NationalIdNumber,
-                PresentAddress = model.PresentAddress,
-                PermanentAddress = model.PermanentAddress,
-                JoiningType = model.JoiningType,
-                EmploymentStatus = model.EmploymentStatus,
-                ProfilePhotoUrl = model.ProfilePhotoUrl,
-                Notes = model.Notes,
-                DateOfJoining = model.DateOfJoining,
-                IsActive = true
-            };
+                var existingEmployee = await employeeRepo.GetByEmployeeIdAsync(model.EmployeeId, companyId);
+                if (existingEmployee != null)
+                {
+                    return BadRequest(new { success = false, errors = new { EmployeeId = new List<string> { "Employee ID already exists." } }, message = "Employee ID already exists." });
+                }
 
-            await _unitOfWork.defaultDbContext.Employees.AddAsync(employee);
-            await _unitOfWork.SaveAsync();
+                var employee = new Employee
+                {
+                    Id = Guid.NewGuid(),
+                    CompanyId = companyId,
+                    EmployeeId = model.EmployeeId,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    MiddleName = model.MiddleName,
+                    NickName = model.NickName,
+                    WorkEmail = model.WorkEmail,
+                    PersonalEmail = model.PersonalEmail,
+                    DepartmentId = model.DepartmentId,
+                    DesignationId = model.DesignationId,
+                    PhoneNumber = model.PhoneNumber,
+                    AlternatePhoneNumber = model.AlternatePhoneNumber,
+                    EmergencyContactName = model.EmergencyContactName,
+                    EmergencyContactPhone = model.EmergencyContactPhone,
+                    Address = model.Address,
+                    DateOfBirth = model.DateOfBirth,
+                    Gender = model.Gender,
+                    MaritalStatus = model.MaritalStatus,
+                    BloodGroup = model.BloodGroup,
+                    Nationality = model.Nationality,
+                    NationalIdNumber = model.NationalIdNumber,
+                    PresentAddress = model.PresentAddress,
+                    PermanentAddress = model.PermanentAddress,
+                    JoiningType = model.JoiningType,
+                    EmploymentStatus = model.EmploymentStatus,
+                    ProfilePhotoUrl = model.ProfilePhotoUrl,
+                    Notes = model.Notes,
+                    DateOfJoining = model.DateOfJoining,
+                    IsActive = true
+                };
 
-            return Ok(new { success = true, message = "Employee created successfully!" });
+                await employeeRepo.AddAsync(employee);
+                await _unitOfWork.SaveAsync();
+
+                return Ok(new { success = true, message = "Employee created successfully!" });
+            }
         }
         catch (Exception ex)
         {
-            return BadRequest(new { errors = new { __global = new[] { $"Error creating employee: {ex.Message}" } } });
+            return BadRequest(new { success = false, message = "An error occurred while saving employee.", details = ex.Message });
         }
     }
 
-    // GET: Employees/Edit/5
-    public async Task<IActionResult> Edit(Guid id)
+    [HttpGet]
+    public async Task<IActionResult> GetEmployee(Guid id)
     {
-        var employee = await _unitOfWork.defaultDbContext.Employees.FindAsync(id);
+        var employee = await _unitOfWork.employeeRepository.GetByIdAsync(id);
         if (employee == null)
         {
-            return NotFound();
+            return NotFound(new { success = false, message = "Employee not found." });
         }
 
-        var model = new EmployeeEditViewModel
+        var model = new EmployeeDto
         {
             Id = employee.Id,
             EmployeeId = employee.EmployeeId,
@@ -250,288 +323,39 @@ public class EmployeesController : Controller
             EmergencyContactName = employee.EmergencyContactName,
             EmergencyContactPhone = employee.EmergencyContactPhone,
             Address = employee.Address,
+            PresentAddress = employee.PresentAddress,
+            PermanentAddress = employee.PermanentAddress,
             DateOfBirth = employee.DateOfBirth,
             Gender = employee.Gender,
             MaritalStatus = employee.MaritalStatus,
             BloodGroup = employee.BloodGroup,
             Nationality = employee.Nationality,
             NationalIdNumber = employee.NationalIdNumber,
-            PresentAddress = employee.PresentAddress,
-            PermanentAddress = employee.PermanentAddress,
+            DateOfJoining = employee.DateOfJoining,
             JoiningType = employee.JoiningType,
             EmploymentStatus = employee.EmploymentStatus,
             ProfilePhotoUrl = employee.ProfilePhotoUrl,
             Notes = employee.Notes,
-            DateOfJoining = employee.DateOfJoining,
             IsActive = employee.IsActive
         };
 
-        return View(model);
+        return Ok(new { success = true, data = model });
     }
 
-    // POST: Employees/Edit/5
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(Guid id, EmployeeEditViewModel model)
-    {
-        if (id != model.Id)
-        {
-            return NotFound();
-        }
-
-        if (!ModelState.IsValid)
-        {
-            var errors = ModelState
-                .Where(x => x.Value.Errors.Count > 0)
-                .ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
-                );
-            return BadRequest(new { errors });
-        }
-
-        var employee = await _unitOfWork.defaultDbContext.Employees.FindAsync(id);
-        if (employee == null)
-        {
-            return NotFound();
-        }
-
-        // Update employee information
-        employee.FirstName = model.FirstName;
-        employee.LastName = model.LastName;
-        employee.MiddleName = model.MiddleName;
-        employee.NickName = model.NickName;
-        employee.WorkEmail = model.WorkEmail;
-        employee.PersonalEmail = model.PersonalEmail;
-        employee.DepartmentId = model.DepartmentId;
-        employee.DesignationId = model.DesignationId;
-        employee.PhoneNumber = model.PhoneNumber;
-        employee.AlternatePhoneNumber = model.AlternatePhoneNumber;
-        employee.EmergencyContactName = model.EmergencyContactName;
-        employee.EmergencyContactPhone = model.EmergencyContactPhone;
-        employee.Address = model.Address;
-        employee.DateOfBirth = model.DateOfBirth;
-        employee.Gender = model.Gender;
-        employee.MaritalStatus = model.MaritalStatus;
-        employee.BloodGroup = model.BloodGroup;
-        employee.Nationality = model.Nationality;
-        employee.NationalIdNumber = model.NationalIdNumber;
-        employee.PresentAddress = model.PresentAddress;
-        employee.PermanentAddress = model.PermanentAddress;
-        employee.JoiningType = model.JoiningType;
-        employee.EmploymentStatus = model.EmploymentStatus;
-        employee.ProfilePhotoUrl = model.ProfilePhotoUrl;
-        employee.Notes = model.Notes;
-        employee.DateOfJoining = model.DateOfJoining;
-        employee.IsActive = model.IsActive;
-        employee.UpdatedAt = DateTime.UtcNow;
-
-        await _unitOfWork.SaveAsync();
-
-        return Ok(new { success = true, message = "Employee updated successfully!" });
-    }
-
-    // POST: Employees/Delete/5
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var employee = await _unitOfWork.defaultDbContext.Employees.FindAsync(id);
+        var employee = await _unitOfWork.employeeRepository.GetByIdAsync(id);
         if (employee == null)
         {
-            return NotFound();
+            return NotFound(new { success = false, message = "Employee not found." });
         }
 
-        // Soft delete
-        employee.IsDeleted = true;
-        employee.DeletedAt = DateTime.UtcNow;
+        await _unitOfWork.employeeRepository.SoftDeleteAsync(id);
         await _unitOfWork.SaveAsync();
 
         TempData["SuccessMessage"] = "Employee deleted successfully!";
         return RedirectToAction(nameof(Index));
     }
-}
-
-// View Models for Employee
-public class EmployeeCreateViewModel
-{
-    [Required]
-    [Display(Name = "Employee ID")]
-    public string EmployeeId { get; set; } = string.Empty;
-
-    [Required]
-    [Display(Name = "First Name")]
-    public string FirstName { get; set; } = string.Empty;
-
-    [Required]
-    [Display(Name = "Last Name")]
-    public string LastName { get; set; } = string.Empty;
-
-    [Display(Name = "Nick Name")]
-    public string? NickName { get; set; }
-
-    [Display(Name = "Middle Name")]
-    public string? MiddleName { get; set; }
-
-    [EmailAddress]
-    [Display(Name = "Work Email")]
-    public string? WorkEmail { get; set; }
-
-    [EmailAddress]
-    [Display(Name = "Personal Email")]
-    public string? PersonalEmail { get; set; }
-
-    [Display(Name = "Department")]
-    public Guid? DepartmentId { get; set; }
-
-    [Display(Name = "Designation")]
-    public Guid? DesignationId { get; set; }
-
-    [Display(Name = "Phone Number")]
-    public string? PhoneNumber { get; set; }
-
-    [Display(Name = "Alternate Phone Number")]
-    public string? AlternatePhoneNumber { get; set; }
-
-    [Display(Name = "Emergency Contact Name")]
-    public string? EmergencyContactName { get; set; }
-
-    [Display(Name = "Emergency Contact Phone")]
-    public string? EmergencyContactPhone { get; set; }
-
-    [Display(Name = "Address")]
-    public string? Address { get; set; }
-
-    [Display(Name = "Present Address")]
-    public string? PresentAddress { get; set; }
-
-    [Display(Name = "Permanent Address")]
-    public string? PermanentAddress { get; set; }
-
-    [Display(Name = "Date of Birth")]
-    public DateTime? DateOfBirth { get; set; }
-
-    [Display(Name = "Gender")]
-    public string? Gender { get; set; }
-
-    [Display(Name = "Marital Status")]
-    public string? MaritalStatus { get; set; }
-
-    [Display(Name = "Blood Group")]
-    public string? BloodGroup { get; set; }
-
-    [Display(Name = "Nationality")]
-    public string? Nationality { get; set; }
-
-    [Display(Name = "National ID Number")]
-    public string? NationalIdNumber { get; set; }
-
-    [Display(Name = "Date of Joining")]
-    public DateTime? DateOfJoining { get; set; }
-
-    [Display(Name = "Joining Type")]
-    public string? JoiningType { get; set; }
-
-    [Display(Name = "Employment Status")]
-    public string? EmploymentStatus { get; set; }
-
-    [Display(Name = "Profile Photo URL")]
-    public string? ProfilePhotoUrl { get; set; }
-
-    [Display(Name = "Notes")]
-    public string? Notes { get; set; }
-}
-
-public class EmployeeEditViewModel
-{
-    public Guid Id { get; set; }
-
-    [Required]
-    [Display(Name = "Employee ID")]
-    public string EmployeeId { get; set; } = string.Empty;
-
-    [Required]
-    [Display(Name = "First Name")]
-    public string FirstName { get; set; } = string.Empty;
-
-    [Required]
-    [Display(Name = "Last Name")]
-    public string LastName { get; set; } = string.Empty;
-
-    [Display(Name = "Nick Name")]
-    public string? NickName { get; set; }
-
-    [Display(Name = "Middle Name")]
-    public string? MiddleName { get; set; }
-
-    [EmailAddress]
-    [Display(Name = "Work Email")]
-    public string? WorkEmail { get; set; }
-
-    [EmailAddress]
-    [Display(Name = "Personal Email")]
-    public string? PersonalEmail { get; set; }
-
-    [Display(Name = "Department")]
-    public Guid? DepartmentId { get; set; }
-
-    [Display(Name = "Designation")]
-    public Guid? DesignationId { get; set; }
-
-    [Display(Name = "Phone Number")]
-    public string? PhoneNumber { get; set; }
-
-    [Display(Name = "Alternate Phone Number")]
-    public string? AlternatePhoneNumber { get; set; }
-
-    [Display(Name = "Emergency Contact Name")]
-    public string? EmergencyContactName { get; set; }
-
-    [Display(Name = "Emergency Contact Phone")]
-    public string? EmergencyContactPhone { get; set; }
-
-    [Display(Name = "Address")]
-    public string? Address { get; set; }
-
-    [Display(Name = "Present Address")]
-    public string? PresentAddress { get; set; }
-
-    [Display(Name = "Permanent Address")]
-    public string? PermanentAddress { get; set; }
-
-    [Display(Name = "Date of Birth")]
-    public DateTime? DateOfBirth { get; set; }
-
-    [Display(Name = "Gender")]
-    public string? Gender { get; set; }
-
-    [Display(Name = "Marital Status")]
-    public string? MaritalStatus { get; set; }
-
-    [Display(Name = "Blood Group")]
-    public string? BloodGroup { get; set; }
-
-    [Display(Name = "Nationality")]
-    public string? Nationality { get; set; }
-
-    [Display(Name = "National ID Number")]
-    public string? NationalIdNumber { get; set; }
-
-    [Display(Name = "Date of Joining")]
-    public DateTime? DateOfJoining { get; set; }
-
-    [Display(Name = "Joining Type")]
-    public string? JoiningType { get; set; }
-
-    [Display(Name = "Employment Status")]
-    public string? EmploymentStatus { get; set; }
-
-    [Display(Name = "Profile Photo URL")]
-    public string? ProfilePhotoUrl { get; set; }
-
-    [Display(Name = "Notes")]
-    public string? Notes { get; set; }
-
-    [Display(Name = "Status")]
-    public bool IsActive { get; set; } = true;
 }

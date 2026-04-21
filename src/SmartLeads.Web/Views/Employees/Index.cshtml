@@ -917,27 +917,41 @@
             });
         }
 
-        // Form Submit Handler
+// Form Submit Handler
         document.getElementById('employeeForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             clearErrors();
 
-            const formData = new FormData(this);
-            const action = document.getElementById('formAction').value;
-            const url = action === 'create' ? '@Url.Action("Create", "Employees")' : '@Url.Action("Edit", "Employees")';
+            const form = this;
+            const formData = new FormData(form);
+            const url = '@Url.Action("Save", "Employees")';
+
+            // Remove Id from formData for create (backend generates Id)
+            const idValue = document.getElementById('employeeId').value;
+            if (!idValue || idValue === '') {
+                formData.delete('Id');
+            }
+
+            // Get AntiForgeryToken
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
             try {
+                console.log('Form data entries:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(key, value);
+                }
+                
                 const response = await fetch(url, {
                     method: 'POST',
-                    body: formData,
-                    headers: {
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                    }
+                    body: formData
                 });
 
+                console.log('Response status:', response.status);
+                
                 const result = await response.json();
+                console.log('Save response:', result);
 
-                if (response.ok) {
+                if (result.success) {
                     // Close offcanvas
                     if (employeeOffcanvas) {
                         employeeOffcanvas.hide();
@@ -954,23 +968,48 @@
                     // Reload page
                     setTimeout(() => location.reload(), 2000);
                 } else {
-                    // Handle validation errors
+                    // Handle errors
                     const errors = result.errors;
-                    if (errors) {
+                    
+                    // Show field errors
+                    if (errors && typeof errors === 'object') {
                         for (const [key, value] of Object.entries(errors)) {
-                            if (key === '__global') {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error!',
-                                    text: value.join(' ')
-                                });
+                            const errorText = Array.isArray(value) ? value.join(', ') : value;
+                            
+                            // Find error span - match field names to error element IDs
+                            const errorElId = key.replace(/([A-Z])/g, (m) => m.toLowerCase());
+                            const errorEl = document.getElementById(errorElId + 'Error');
+                            
+                            if (errorEl) {
+                                errorEl.textContent = errorText;
                             } else {
-                                const errorEl = document.getElementById(key.toLowerCase() + 'Error');
-                                if (errorEl) {
-                                    errorEl.textContent = value.join(' ');
-                                }
+                                console.log('Error element not found for:', key);
                             }
                         }
+                        
+                        // Show main error message
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Validation Error',
+                            text: result.message || 'Please check the form for errors.'
+                        });
+                        
+                        // Focus first error field
+                        const firstErrorKey = Object.keys(errors).find(k => k !== '__global');
+                        if (firstErrorKey) {
+                            const inputEl = document.querySelector(`[name="${firstErrorKey}"]`);
+                            if (inputEl) {
+                                inputEl.focus();
+                                inputEl.classList.add('is-invalid');
+                            }
+                        }
+                    } else {
+                        // No field errors, show general error
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: result.message || 'An error occurred while saving.'
+                        });
                     }
                 }
             } catch (error) {

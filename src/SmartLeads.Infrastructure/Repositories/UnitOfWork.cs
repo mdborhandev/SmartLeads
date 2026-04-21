@@ -21,6 +21,7 @@ public class UnitOfWork : IUnitOfWork
     public IDesignationRepository designationRepository { get; private set; }
     public INotificationRepository notificationRepository { get; private set; }
     public INotificationPreferenceRepository notificationPreferenceRepository { get; private set; }
+    public IEmployeeRepository employeeRepository { get; private set; }
     public SystemDbContext systemDbContext => _systemDbContext;
     public DefaultDbContext defaultDbContext => _defaultDbContext;
     #endregion
@@ -43,6 +44,7 @@ public class UnitOfWork : IUnitOfWork
         columnFilterRepository = new ColumnFilterRepository(defaultDbContext);
         departmentRepository = new DepartmentRepository(defaultDbContext);
         designationRepository = new DesignationRepository(defaultDbContext);
+        employeeRepository = new EmployeeRepository(defaultDbContext);
     }
 
     public async Task SaveAsync(CancellationToken token = default)
