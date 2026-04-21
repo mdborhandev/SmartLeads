@@ -59,13 +59,13 @@
 
     @if (User.Identity?.IsAuthenticated == true)
     {
-        <li class="menu-item" style="margin-top: auto; padding: 1rem;">
-            <form asp-controller="Auth" asp-action="Logout" method="post" style="width: 100%;">
+        <li class="menu-item mt-auto">
+            <a href="javascript:void(0);" class="menu-link" onclick="document.getElementById('logoutForm').submit(); return false;">
+                <i class="menu-icon icon-base bx bx-power-off"></i>
+                <div data-i18n="Logout">Logout</div>
+            </a>
+            <form id="logoutForm" asp-controller="Auth" asp-action="Logout" method="post" style="display: none;">
                 @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-sm btn-outline-danger w-100" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                    <i class="icon-base bx bx-power-off"></i>
-                    <span data-i18n="Logout">Logout</span>
-                </button>
             </form>
         </li>
     }
