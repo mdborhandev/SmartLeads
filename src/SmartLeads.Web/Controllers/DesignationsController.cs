@@ -131,6 +131,55 @@ public class DesignationsController : Controller
         }
     }
 
+    // GET: Designations/SearchDesignation - Select2 search endpoint
+    [HttpGet]
+    public async Task<IActionResult> SearchDesignation(string searchTerm = "", string type = "", string selectedvalue = "")
+    {
+        try
+        {
+            var companyIdClaim = User.FindFirst("CompanyId")?.Value;
+
+            if (string.IsNullOrEmpty(companyIdClaim))
+            {
+                return BadRequest(new { error = "CompanyId claim not found" });
+            }
+
+            var companyId = Guid.Parse(companyIdClaim);
+            var query = _unitOfWork.defaultDbContext.Designations
+                .Where(d => d.CompanyId == companyId && !d.IsDeleted && d.IsActive)
+                .AsQueryable();
+
+            // "type" carries DepartmentId from select2Initializer for cascading filter.
+            if (!string.IsNullOrWhiteSpace(type) && Guid.TryParse(type, out var departmentId))
+            {
+                query = query.Where(d => d.DepartmentId == departmentId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var searchLower = searchTerm.ToLower();
+                query = query.Where(d => d.Name.ToLower().Contains(searchLower));
+            }
+
+            var designations = await query
+                .OrderBy(d => d.Name)
+                .Take(20)
+                .Select(d => new SelectOptionDto
+                {
+                    id = d.Id.ToString(),
+                    text = d.Name,
+                    selected = selectedvalue != "" && d.Id.ToString() == selectedvalue
+                })
+                .ToListAsync();
+
+            return Ok(designations);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = true, message = ex.Message });
+        }
+    }
+
     // POST: Designations/Create
     [HttpPost]
     [ValidateAntiForgeryToken]

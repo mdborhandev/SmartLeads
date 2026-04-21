@@ -533,7 +533,7 @@
             console.log('Loading departments with Select2...');
             
             // Clear any existing options first
-            $('#desigDepartmentId').html('<option value="">Select Department</option>');
+            ResetSelected('#desigDepartmentId', 'Select Department');
             
             // Verify element exists
             if ($('#desigDepartmentId').length === 0) {
@@ -575,7 +575,7 @@
             }
 
             // Reset the select options
-            $('#desigDepartmentId').html('<option value="">Select Department</option>');
+            ResetSelected('#desigDepartmentId', 'Select Department');
 
             // Reinitialize Select2 for create mode
             select2Initializer(
@@ -607,13 +607,8 @@
                 $('#desigDepartmentId').select2('destroy');
             }
 
-            // If we have a department ID, set it as a selected option first
-            if (departmentId) {
-                // Clear and add the selected option
-                $('#desigDepartmentId').html('<option value="' + departmentId + '" selected></option>');
-            } else {
-                $('#desigDepartmentId').html('<option value="">Select Department</option>');
-            }
+            // Reset options before reinitializing Select2
+            ResetSelected('#desigDepartmentId', 'Select Department');
 
             // Reinitialize Select2
             select2Initializer(
@@ -635,8 +630,7 @@
                         // Find the selected department
                         const selectedDept = data.find(d => d.selected === true);
                         if (selectedDept) {
-                            var option = new Option(selectedDept.text, selectedDept.id, true, true);
-                            $('#desigDepartmentId').append(option).trigger('change');
+                            DefaultSelected('#desigDepartmentId', selectedDept.id, selectedDept.text);
                         }
                     },
                     error: function(xhr, status, error) {

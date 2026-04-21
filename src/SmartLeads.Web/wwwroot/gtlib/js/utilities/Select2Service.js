@@ -105,3 +105,16 @@ function DefaultSelected(selector, value, text) {
         params: { data: data }
     });
 }
+
+// Helper function to reset a Select2 dropdown with placeholder option
+function ResetSelected(selector, placeholder = 'Select an option') {
+    var dropdown = $(selector);
+
+    if (!dropdown.length) {
+        console.error(`Select2 Reset: Element ${selector} not found`);
+        return;
+    }
+
+    dropdown.html(`<option value="">${placeholder}</option>`);
+    dropdown.val('').trigger('change');
+}

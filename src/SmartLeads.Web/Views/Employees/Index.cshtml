@@ -243,8 +243,10 @@
                     const row = cell.getRow().getData();
                     const id = row.id || '';
                     const employeeId = (row.employeeId || '').toString().replace(/'/g, "\\'");
-                    const department = (row.department || '').toString().replace(/'/g, "\\'");
-                    const designation = (row.designation || '').toString().replace(/'/g, "\\'");
+                    const departmentId = (row.departmentId || '').toString().replace(/'/g, "\\'");
+                    const designationId = (row.designationId || '').toString().replace(/'/g, "\\'");
+                    const departmentName = (row.department || '').toString().replace(/'/g, "\\'");
+                    const designationName = (row.designation || '').toString().replace(/'/g, "\\'");
                     const phoneNumber = (row.phoneNumber || '').toString().replace(/'/g, "\\'");
                     const address = (row.address || '').toString().replace(/'/g, "\\'");
                     const dateOfJoining = (row.dateOfJoining || '').toString().replace(/'/g, "\\'");
@@ -255,8 +257,10 @@
                             onclick="openEditModalFromTable(
                                 '${id}',
                                 '${employeeId}',
-                                '${department}',
-                                '${designation}',
+                                '${departmentId}',
+                                '${designationId}',
+                                '${departmentName}',
+                                '${designationName}',
                                 '${phoneNumber}',
                                 '${address}',
                                 '${dateOfJoining}',
@@ -612,12 +616,14 @@
         }
 
         // Open Edit Modal from Tabulator
-        function openEditModalFromTable(id, employeeId, department, designation, phoneNumber, address, dateOfJoining, isActive) {
+        function openEditModalFromTable(id, employeeId, departmentId, designationId, departmentName, designationName, phoneNumber, address, dateOfJoining, isActive) {
             openEditModal(
                 id,
                 employeeId,
-                department,
-                designation,
+                departmentId,
+                designationId,
+                departmentName,
+                designationName,
                 phoneNumber,
                 address,
                 dateOfJoining,
@@ -635,20 +641,21 @@
             document.getElementById('isActiveRow').style.display = 'none';
             document.getElementById('submitBtn').textContent = 'Create Employee';
             clearErrors();
+            loadDepartments();
+            loadDesignations();
         }
 
         // Open Edit Modal
-        function openEditModal(id, employeeId, department, designation, phoneNumber, address, dateOfJoining, isActive) {
+        function openEditModal(id, employeeId, departmentId, designationId, departmentName, designationName, phoneNumber, address, dateOfJoining, isActive) {
             document.getElementById('employeeOffcanvasLabel').textContent = 'Edit Employee';
             document.getElementById('formAction').value = 'edit';
             document.getElementById('employeeId').value = id;
             document.getElementById('empEmployeeId').value = employeeId;
             document.getElementById('empEmployeeId').readOnly = true;
             
-            // Set department and designation dropdowns
-            document.getElementById('empDepartmentId').value = department || '';
-            document.getElementById('empDesignationId').value = designation || '';
-            document.getElementById('empDesignationId').disabled = !department;
+            // Set department and designation dropdowns using shared Select2 helpers
+            loadDepartments(departmentId, departmentName || '');
+            loadDesignations(departmentId, designationId, designationName || '');
             
             document.getElementById('empPhoneNumber').value = phoneNumber || '';
             document.getElementById('empAddress').value = address || '';
@@ -667,55 +674,57 @@
             }
         }
 
-        // Load departments dropdown
-        async function loadDepartments() {
-            try {
-                const response = await fetch('@Url.Action("GetAll", "Departments")');
-                const result = await response.json();
-                
-                if (result.success) {
-                    const select = document.getElementById('empDepartmentId');
-                    select.innerHTML = '<option value="">Select Department</option>';
-                    result.data.forEach(dept => {
-                        select.innerHTML += `<option value="${dept.id}">${dept.name}</option>`;
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading departments:', error);
+        // Load departments dropdown with Select2
+        function loadDepartments(selectedDepartmentId = '', selectedDepartmentName = '') {
+            if ($('#empDepartmentId').hasClass('select2-hidden-accessible')) {
+                $('#empDepartmentId').select2('destroy');
+            }
+
+            ResetSelected('#empDepartmentId', 'Select Department');
+
+            select2Initializer(
+                '#empDepartmentId',
+                '@Url.Action("SearchDepartment", "Departments")',
+                '',
+                '#employeeOffcanvas'
+            );
+
+            if (selectedDepartmentId) {
+                DefaultSelected('#empDepartmentId', selectedDepartmentId, selectedDepartmentName || 'Selected Department');
             }
         }
 
-        // Load designations dropdown
-        async function loadDesignations() {
-            try {
-                const response = await fetch('@Url.Action("GetAll", "Designations")');
-                const result = await response.json();
-                
-                if (result.success) {
-                    const select = document.getElementById('empDesignationId');
-                    select.innerHTML = '<option value="">Select Designation</option>';
-                    result.data.forEach(desig => {
-                        select.innerHTML += `<option value="${desig.id}">${desig.name}</option>`;
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading designations:', error);
+        // Load designations dropdown with Select2
+        function loadDesignations(departmentId = '', selectedDesignationId = '', selectedDesignationName = '') {
+            if ($('#empDesignationId').hasClass('select2-hidden-accessible')) {
+                $('#empDesignationId').select2('destroy');
+            }
+
+            ResetSelected('#empDesignationId', 'Select Designation');
+
+            if (!departmentId) {
+                $('#empDesignationId').prop('disabled', true);
+                return;
+            }
+
+            $('#empDesignationId').prop('disabled', false);
+
+            select2Initializer(
+                '#empDesignationId',
+                '@Url.Action("SearchDesignation", "Designations")',
+                departmentId,
+                '#employeeOffcanvas'
+            );
+
+            if (selectedDesignationId) {
+                DefaultSelected('#empDesignationId', selectedDesignationId, selectedDesignationName || 'Selected Designation');
             }
         }
 
         // Cascading dropdown handler
-        document.getElementById('empDepartmentId').addEventListener('change', function() {
-            const deptSelect = this;
-            const desigSelect = document.getElementById('empDesignationId');
-            
-            if (deptSelect.value) {
-                // Enable designation dropdown when department is selected
-                desigSelect.disabled = false;
-            } else {
-                // Disable and reset designation dropdown
-                desigSelect.disabled = true;
-                desigSelect.value = '';
-            }
+        $('#empDepartmentId').on('change select2:select', function() {
+            const selectedDepartmentId = $('#empDepartmentId').val() || '';
+            loadDesignations(selectedDepartmentId);
         });
 
         // Load dropdowns on page load

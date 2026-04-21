@@ -94,6 +94,8 @@ public class EmployeesController : Controller
                 {
                     e.Id,
                     e.EmployeeId,
+                    e.DepartmentId,
+                    e.DesignationId,
                     Department = e.Department != null ? e.Department.Name : null,
                     Designation = e.Designation != null ? e.Designation.Name : null,
                     e.PhoneNumber,
