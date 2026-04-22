@@ -79,7 +79,9 @@
             <div class="row">
                 <div class="col-12 mb-3">
                     <label for="variableType" class="form-label">Type <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="variableType" name="Type" placeholder="e.g., Gender, Religion, MaritalStatus" required />
+                    <select class="form-select" id="variableType" name="Type" required>
+                        <option value="">Select Type</option>
+                    </select>
                     <span class="text-danger" id="typeError"></span>
                 </div>
             </div>
@@ -89,21 +91,6 @@
                     <label for="variableValue" class="form-label">Value <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="variableValue" name="Value" placeholder="e.g., Male, Female, Muslim" required />
                     <span class="text-danger" id="valueError"></span>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="variableValue1" class="form-label">Value 1</label>
-                    <input type="text" class="form-control" id="variableValue1" name="Value1" placeholder="Optional" />
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="variableValue2" class="form-label">Value 2</label>
-                    <input type="text" class="form-control" id="variableValue2" name="Value2" placeholder="Optional" />
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="variableValue3" class="form-label">Value 3</label>
-                    <input type="text" class="form-control" id="variableValue3" name="Value3" placeholder="Optional" />
                 </div>
             </div>
 
@@ -169,36 +156,6 @@
                 visible: true
             },
             {
-                title: "Value 1",
-                field: "value1",
-                hozAlign: "left",
-                visible: false,
-                formatter: function(cell) {
-                    const value = cell.getValue();
-                    return value || '-';
-                }
-            },
-            {
-                title: "Value 2",
-                field: "value2",
-                hozAlign: "left",
-                visible: false,
-                formatter: function(cell) {
-                    const value = cell.getValue();
-                    return value || '-';
-                }
-            },
-            {
-                title: "Value 3",
-                field: "value3",
-                hozAlign: "left",
-                visible: false,
-                formatter: function(cell) {
-                    const value = cell.getValue();
-                    return value || '-';
-                }
-            },
-            {
                 title: "Description",
                 field: "description",
                 hozAlign: "left",
@@ -240,9 +197,6 @@
                     const id = row.id || '';
                     const type = (row.type || '').toString().replace(/'/g, "\\'");
                     const value = (row.value || '').toString().replace(/'/g, "\\'");
-                    const value1 = (row.value1 || '').toString().replace(/'/g, "\\'");
-                    const value2 = (row.value2 || '').toString().replace(/'/g, "\\'");
-                    const value3 = (row.value3 || '').toString().replace(/'/g, "\\'");
                     const description = (row.description || '').toString().replace(/'/g, "\\'");
                     const sortOrder = row.sortOrder || 0;
                     const isActive = row.isActive || false;
@@ -253,9 +207,6 @@
                                 '${id}',
                                 '${type}',
                                 '${value}',
-                                '${value1}',
-                                '${value2}',
-                                '${value3}',
                                 '${description}',
                                 ${sortOrder},
                                 ${isActive}
@@ -553,6 +504,21 @@
             });
         }
 
+        function loadTypes() {
+            console.log('Loading types with Select2...');
+            
+            ResetSelected('#variableType', 'Select Type');
+            
+            select2Initializer(
+                '#variableType',
+                '@Url.Action("SearchType", "Variables")',
+                '',
+                '#variableOffcanvas'
+            );
+            
+            console.log('Select2 initialized for types');
+        }
+
         function openCreateModal() {
             document.getElementById('variableOffcanvasLabel').textContent = 'Add Variable';
             document.getElementById('formAction').value = 'create';
@@ -564,25 +530,50 @@
             document.getElementById('submitBtn').textContent = 'Create Variable';
             clearErrors();
 
+            if ($('#variableType').hasClass('select2-hidden-accessible')) {
+                $('#variableType').select2('destroy');
+            }
+            ResetSelected('#variableType', 'Select Type');
+            loadTypes();
+
             variableOffcanvas = new bootstrap.Offcanvas(document.getElementById('variableOffcanvas'));
             variableOffcanvas.show();
         }
 
-        function openEditModal(id, type, value, value1, value2, value3, description, sortOrder, isActive) {
+        function openEditModal(id, type, value, description, sortOrder, isActive) {
             document.getElementById('variableOffcanvasLabel').textContent = 'Edit Variable';
             document.getElementById('formAction').value = 'edit';
             document.getElementById('variableId').value = id;
-            document.getElementById('variableType').value = type;
             document.getElementById('variableValue').value = value;
-            document.getElementById('variableValue1').value = value1 || '';
-            document.getElementById('variableValue2').value = value2 || '';
-            document.getElementById('variableValue3').value = value3 || '';
             document.getElementById('variableDescription').value = description || '';
             document.getElementById('variableSortOrder').value = sortOrder;
             document.getElementById('variableIsActive').value = isActive.toString();
             document.getElementById('isActiveRow').style.display = 'block';
             document.getElementById('submitBtn').textContent = 'Update Variable';
             clearErrors();
+
+            if ($('#variableType').hasClass('select2-hidden-accessible')) {
+                $('#variableType').select2('destroy');
+            }
+            ResetSelected('#variableType', 'Select Type');
+            loadTypes();
+
+            if (type) {
+                $.ajax({
+                    url: '@Url.Action("SearchType", "Variables")',
+                    type: 'GET',
+                    data: { searchTerm: '', selectedvalue: type },
+                    success: function(data) {
+                        const selectedType = data.find(x => x.selected === true);
+                        if (selectedType) {
+                            DefaultSelected('#variableType', selectedType.id, selectedType.text);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching type for edit:', error);
+                    }
+                });
+            }
 
             variableOffcanvas = new bootstrap.Offcanvas(document.getElementById('variableOffcanvas'));
             variableOffcanvas.show();
@@ -610,9 +601,6 @@
                 Id: id ? id : null,
                 Type: document.getElementById('variableType').value,
                 Value: document.getElementById('variableValue').value,
-                Value1: document.getElementById('variableValue1').value || null,
-                Value2: document.getElementById('variableValue2').value || null,
-                Value3: document.getElementById('variableValue3').value || null,
                 Description: document.getElementById('variableDescription').value || null,
                 SortOrder: parseInt(document.getElementById('variableSortOrder').value) || 0,
                 IsActive: document.getElementById('variableIsActive').value === 'true'

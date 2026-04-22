@@ -22,6 +22,20 @@ public class VariablesController : Controller
     }
 
     [HttpGet]
+    public IActionResult SearchType(string searchTerm = "", string selectedvalue = "")
+    {
+        try
+        {
+            var types = _unitOfWork.variableRepository.GetAllCommonDataType(searchTerm, selectedvalue);
+            return Ok(types);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = true, message = ex.Message });
+        }
+    }
+
+    [HttpGet]
     public async Task<IActionResult> GetVariablesData([FromQuery] PaginationRequest request)
     {
         try
