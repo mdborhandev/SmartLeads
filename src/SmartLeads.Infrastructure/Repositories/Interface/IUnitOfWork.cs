@@ -14,6 +14,7 @@ public interface IUnitOfWork : IAsyncDisposable
     INotificationRepository notificationRepository { get; }
     INotificationPreferenceRepository notificationPreferenceRepository { get; }
     IEmployeeRepository employeeRepository { get; }
+    IVariableRepository variableRepository { get; }
 
     SystemDbContext systemDbContext { get; }
     DefaultDbContext defaultDbContext { get; }

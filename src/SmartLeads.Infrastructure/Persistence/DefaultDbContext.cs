@@ -25,6 +25,7 @@ public class DefaultDbContext : DbContext
     public DbSet<Department> Departments { get; set; }
     public DbSet<Designation> Designations { get; set; }
     public DbSet<Invitation> Invitations { get; set; }
+    public DbSet<Variable> Variables { get; set; }
 
     // Junction tables
     public DbSet<ContactGroup> ContactGroups { get; set; }
