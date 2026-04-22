@@ -36,6 +36,55 @@ public class VariablesController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> SearchVariable(string searchTerm = "", string type = "", string selectedvalue = "")
+    {
+        try
+        {
+            var companyIdClaim = User.FindFirst("CompanyId")?.Value;
+
+            if (string.IsNullOrEmpty(companyIdClaim))
+            {
+                return BadRequest(new { error = "CompanyId claim not found" });
+            }
+
+            var companyId = Guid.Parse(companyIdClaim);
+
+            var query = _unitOfWork.defaultDbContext.Variables
+                .Where(v => v.CompanyId == companyId && !v.IsDeleted && v.IsActive)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                query = query.Where(v => v.Type == type);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var searchLower = searchTerm.ToLower();
+                query = query.Where(v => v.Value.ToLower().Contains(searchLower));
+            }
+
+            var variables = await query
+                .OrderBy(v => v.SortOrder)
+                .ThenBy(v => v.Value)
+                .Take(20)
+                .Select(v => new SelectOptionDto
+                {
+                    id = v.Id.ToString(),
+                    text = v.Value,
+                    selected = selectedvalue != "" && v.Id.ToString() == selectedvalue
+                })
+                .ToListAsync();
+
+            return Ok(variables);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = true, message = ex.Message });
+        }
+    }
+
+    [HttpGet]
     public async Task<IActionResult> GetVariablesData([FromQuery] PaginationRequest request)
     {
         try

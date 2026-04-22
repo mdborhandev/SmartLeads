@@ -157,22 +157,30 @@
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="empGender" class="form-label">Gender</label>
-                    <input type="text" class="form-control" id="empGender" name="Gender" />
+                    <select class="form-select" id="empGender" name="Gender" data-variable-type="Gender">
+                        <option value="">Select Gender</option>
+                    </select>
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="empMaritalStatus" class="form-label">Marital Status</label>
-                    <input type="text" class="form-control" id="empMaritalStatus" name="MaritalStatus" />
+                    <select class="form-select" id="empMaritalStatus" name="MaritalStatus" data-variable-type="Marital Status">
+                        <option value="">Select Marital Status</option>
+                    </select>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label for="empBloodGroup" class="form-label">Blood Group</label>
-                    <input type="text" class="form-control" id="empBloodGroup" name="BloodGroup" />
+                    <select class="form-select" id="empBloodGroup" name="BloodGroup" data-variable-type="Blood Group">
+                        <option value="">Select Blood Group</option>
+                    </select>
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="empNationality" class="form-label">Nationality</label>
-                    <input type="text" class="form-control" id="empNationality" name="Nationality" />
+                    <select class="form-select" id="empNationality" name="Nationality" data-variable-type="Nationality">
+                        <option value="">Select Nationality</option>
+                    </select>
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="empNationalIdNumber" class="form-label">National ID Number</label>
@@ -1052,6 +1060,10 @@
             // Set department and designation dropdowns using shared Select2 helpers
             loadDepartments(departmentId, departmentName || '');
             loadDesignations(departmentId, designationId, designationName || '');
+            loadGender(gender);
+            loadMaritalStatus(maritalStatus);
+            loadBloodGroup(bloodGroup);
+            loadNationality(nationality);
             
             document.getElementById('empPhoneNumber').value = phoneNumber || '';
             document.getElementById('empAddress').value = address || '';
@@ -1117,6 +1129,51 @@
             }
         }
 
+        // Load Variable dropdowns (Gender, MaritalStatus, BloodGroup, Nationality)
+        function loadGender(selectedValue = '') {
+            if ($('#empGender').hasClass('select2-hidden-accessible')) {
+                $('#empGender').select2('destroy');
+            }
+            ResetSelected('#empGender', 'Select Gender');
+            select2Initializer('#empGender', '@Url.Action("SearchVariable", "Variables")', 'Gender', '#employeeOffcanvas');
+            if (selectedValue) {
+                DefaultSelected('#empGender', selectedValue, selectedValue);
+            }
+        }
+
+        function loadMaritalStatus(selectedValue = '') {
+            if ($('#empMaritalStatus').hasClass('select2-hidden-accessible')) {
+                $('#empMaritalStatus').select2('destroy');
+            }
+            ResetSelected('#empMaritalStatus', 'Select Marital Status');
+            select2Initializer('#empMaritalStatus', '@Url.Action("SearchVariable", "Variables")', 'Marital Status', '#employeeOffcanvas');
+            if (selectedValue) {
+                DefaultSelected('#empMaritalStatus', selectedValue, selectedValue);
+            }
+        }
+
+        function loadBloodGroup(selectedValue = '') {
+            if ($('#empBloodGroup').hasClass('select2-hidden-accessible')) {
+                $('#empBloodGroup').select2('destroy');
+            }
+            ResetSelected('#empBloodGroup', 'Select Blood Group');
+            select2Initializer('#empBloodGroup', '@Url.Action("SearchVariable", "Variables")', 'Blood Group', '#employeeOffcanvas');
+            if (selectedValue) {
+                DefaultSelected('#empBloodGroup', selectedValue, selectedValue);
+            }
+        }
+
+        function loadNationality(selectedValue = '') {
+            if ($('#empNationality').hasClass('select2-hidden-accessible')) {
+                $('#empNationality').select2('destroy');
+            }
+            ResetSelected('#empNationality', 'Select Nationality');
+            select2Initializer('#empNationality', '@Url.Action("SearchVariable", "Variables")', 'Nationality', '#employeeOffcanvas');
+            if (selectedValue) {
+                DefaultSelected('#empNationality', selectedValue, selectedValue);
+            }
+        }
+
         // Cascading dropdown handler
         $('#empDepartmentId').on('change select2:select', function() {
             const selectedDepartmentId = $('#empDepartmentId').val() || '';
@@ -1127,6 +1184,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadDepartments();
             loadDesignations();
+            loadGender();
+            loadMaritalStatus();
+            loadBloodGroup();
+            loadNationality();
         });
 
         // Clear validation errors
