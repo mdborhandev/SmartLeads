@@ -18,19 +18,11 @@ public class VariableRepository : GenericRepository<Variable>, IVariableReposito
     private readonly List<CommonDataTypeDto> _commonDataTypes = new List<CommonDataTypeDto>
     {
         new CommonDataTypeDto { Id = "Gender", Text = "Gender" },
-        new CommonDataTypeDto { Id = "Religion", Text = "Religion" },
         new CommonDataTypeDto { Id = "Marital Status", Text = "Marital Status" },
         new CommonDataTypeDto { Id = "Blood Group", Text = "Blood Group" },
         new CommonDataTypeDto { Id = "Nationality", Text = "Nationality" },
-        new CommonDataTypeDto { Id = "Employee Type", Text = "Employee Type" },
-        new CommonDataTypeDto { Id = "Department Type", Text = "Department Type" },
-        new CommonDataTypeDto { Id = "Leave Type", Text = "Leave Type" },
-        new CommonDataTypeDto { Id = "Shift Type", Text = "Shift Type" },
-        new CommonDataTypeDto { Id = "Device Type", Text = "Device Type" },
-        new CommonDataTypeDto { Id = "Attendance Status", Text = "Attendance Status" },
-        new CommonDataTypeDto { Id = "Approval State", Text = "Approval State" },
-        new CommonDataTypeDto { Id = "Notice Period", Text = "Notice Period" },
-        new CommonDataTypeDto { Id = "Salary Grade", Text = "Salary Grade" }
+        new CommonDataTypeDto { Id = "Joining Type", Text = "Joining Type" },
+        new CommonDataTypeDto { Id = "Employment Status", Text = "Employment Status" }
     };
 
     public List<CommonDataTypeDto> GetAllCommonDataType(string searchTerm = null)
