@@ -145,32 +145,15 @@ public class DesignationsController : Controller
             }
 
             var companyId = Guid.Parse(companyIdClaim);
-            var query = _unitOfWork.defaultDbContext.Designations
-                .Where(d => d.CompanyId == companyId && !d.IsDeleted && d.IsActive)
-                .AsQueryable();
 
-            // "type" carries DepartmentId from select2Initializer for cascading filter.
-            if (!string.IsNullOrWhiteSpace(type) && Guid.TryParse(type, out var departmentId))
+            // "type" carries DepartmentId from select2Initializer for cascading filter
+            Guid? departmentId = null;
+            if (!string.IsNullOrWhiteSpace(type) && Guid.TryParse(type, out var parsedDeptId))
             {
-                query = query.Where(d => d.DepartmentId == departmentId);
+                departmentId = parsedDeptId;
             }
 
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                var searchLower = searchTerm.ToLower();
-                query = query.Where(d => d.Name.ToLower().Contains(searchLower));
-            }
-
-            var designations = await query
-                .OrderBy(d => d.Name)
-                .Take(20)
-                .Select(d => new SelectOptionDto
-                {
-                    id = d.Id.ToString(),
-                    text = d.Name,
-                    selected = selectedvalue != "" && d.Id.ToString() == selectedvalue
-                })
-                .ToListAsync();
+            var designations = await _unitOfWork.designationRepository.SearchDesignationsAsync(searchTerm, selectedvalue, companyId, departmentId);
 
             return Ok(designations);
         }

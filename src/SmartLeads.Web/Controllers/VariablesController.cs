@@ -49,32 +49,7 @@ public class VariablesController : Controller
 
             var companyId = Guid.Parse(companyIdClaim);
 
-            var query = _unitOfWork.defaultDbContext.Variables
-                .Where(v => v.CompanyId == companyId && !v.IsDeleted && v.IsActive)
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(type))
-            {
-                query = query.Where(v => v.Type == type);
-            }
-
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                var searchLower = searchTerm.ToLower();
-                query = query.Where(v => v.Value.ToLower().Contains(searchLower));
-            }
-
-            var variables = await query
-                .OrderBy(v => v.SortOrder)
-                .ThenBy(v => v.Value)
-                .Take(20)
-                .Select(v => new SelectOptionDto
-                {
-                    id = v.Id.ToString(),
-                    text = v.Value,
-                    selected = selectedvalue != "" && v.Id.ToString() == selectedvalue
-                })
-                .ToListAsync();
+            var variables = await _unitOfWork.variableRepository.SearchVariablesAsync(searchTerm, type, selectedvalue, companyId);
 
             return Ok(variables);
         }

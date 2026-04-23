@@ -8,11 +8,8 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
 public class VariableRepository : GenericRepository<Variable>, IVariableRepository
 {
-    private readonly DefaultDbContext _defaultDbContext;
-
     public VariableRepository(DefaultDbContext dbContext) : base(dbContext)
     {
-        _defaultDbContext = dbContext;
     }
 
     private readonly List<CommonDataTypeDto> _commonDataTypes = new List<CommonDataTypeDto>
@@ -81,5 +78,34 @@ public class VariableRepository : GenericRepository<Variable>, IVariableReposito
     {
         return await _defaultDbContext.Variables
             .FirstOrDefaultAsync(v => v.Type == type && v.Value == value && v.CompanyId == companyId && !v.IsDeleted);
+    }
+
+    public async Task<List<SelectOptionDto>> SearchVariablesAsync(string searchTerm, string type, string selectedvalue, Guid companyId)
+    {
+        var query = _defaultDbContext.Variables
+            .Where(v => v.CompanyId == companyId && !v.IsDeleted && v.IsActive);
+
+        if (!string.IsNullOrWhiteSpace(type))
+        {
+            query = query.Where(v => v.Type == type);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var searchLower = searchTerm.ToLower();
+            query = query.Where(v => v.Value.ToLower().Contains(searchLower));
+        }
+
+        return await query
+            .OrderBy(v => v.SortOrder)
+            .ThenBy(v => v.Value)
+            .Take(20)
+            .Select(v => new SelectOptionDto
+            {
+                id = v.Id.ToString(),
+                text = v.Value,
+                selected = selectedvalue != "" && v.Id.ToString() == selectedvalue
+            })
+            .ToListAsync();
     }
 }

@@ -10,4 +10,5 @@ public interface IVariableRepository : IGenericRepository<Variable>
     Task<IEnumerable<Variable>> GetByTypeAsync(string type, Guid companyId);
     Task<IEnumerable<string>> GetTypesAsync(Guid companyId);
     Task<Variable?> GetByTypeAndValueAsync(string type, string value, Guid companyId);
+    Task<List<SelectOptionDto>> SearchVariablesAsync(string searchTerm, string type, string selectedvalue, Guid companyId);
 }

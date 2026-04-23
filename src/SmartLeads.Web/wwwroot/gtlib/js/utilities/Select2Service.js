@@ -21,7 +21,7 @@ function select2Initializer(selector, url, type, parent, autoOpen = false, AutoS
                 return {
                     searchTerm: params.term || '',
                     type: type,
-                    selectedvalue: ''
+                    selectedvalue: $(selector).val() || ''
                 };
             },
             processResults: function (data) {

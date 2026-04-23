@@ -39,90 +39,14 @@ public class EmployeesController : Controller
                 return BadRequest(new { success = false, message = "Invalid company context." });
             }
 
-            var employees = _unitOfWork.defaultDbContext.Employees
-                .Where(e => e.CompanyId == companyId && !e.IsDeleted)
-                .Include(e => e.EmployeeUsers)
-                .Include(e => e.Department)
-                .Include(e => e.Designation)
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(request.Search))
-            {
-                var search = request.Search.ToLower();
-                employees = employees.Where(e =>
-                    e.EmployeeId.ToLower().Contains(search) ||
-                    e.FirstName.ToLower().Contains(search) ||
-                    e.LastName.ToLower().Contains(search) ||
-                    ((e.NickName ?? string.Empty).ToLower().Contains(search)) ||
-                    ((e.WorkEmail ?? string.Empty).ToLower().Contains(search)) ||
-                    ((e.PersonalEmail ?? string.Empty).ToLower().Contains(search)) ||
-                    (e.Department != null && e.Department.Name.ToLower().Contains(search)) ||
-                    (e.Designation != null && e.Designation.Name.ToLower().Contains(search)) ||
-                    (e.PhoneNumber != null && e.PhoneNumber.ToLower().Contains(search))
-                );
-            }
-
-            var totalCount = employees.Count();
-
-            employees = request.SortField?.ToLower() switch
-            {
-                "employeeid" => request.SortOrder?.ToLower() == "desc"
-                    ? employees.OrderByDescending(e => e.EmployeeId)
-                    : employees.OrderBy(e => e.EmployeeId),
-                "department" => request.SortOrder?.ToLower() == "desc"
-                    ? employees.OrderByDescending(e => e.Department.Name)
-                    : employees.OrderBy(e => e.Department.Name),
-                "designation" => request.SortOrder?.ToLower() == "desc"
-                    ? employees.OrderByDescending(e => e.Designation.Name)
-                    : employees.OrderBy(e => e.Designation.Name),
-                "isactive" => request.SortOrder?.ToLower() == "desc"
-                    ? employees.OrderByDescending(e => e.IsActive)
-                    : employees.OrderBy(e => e.IsActive),
-                "createdat" => request.SortOrder?.ToLower() == "desc"
-                    ? employees.OrderByDescending(e => e.CreatedAt)
-                    : employees.OrderBy(e => e.CreatedAt),
-                _ => employees.OrderByDescending(e => e.CreatedAt)
-            };
-
-            var items = await employees
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .Select(e => new EmployeeDto
-                {
-                    Id = e.Id,
-                    EmployeeId = e.EmployeeId,
-                    FirstName = e.FirstName,
-                    LastName = e.LastName,
-                    MiddleName = e.MiddleName,
-                    NickName = e.NickName,
-                    WorkEmail = e.WorkEmail,
-                    PersonalEmail = e.PersonalEmail,
-                    DepartmentId = e.DepartmentId,
-                    DesignationId = e.DesignationId,
-                    Department = e.Department != null ? e.Department.Name : null,
-                    Designation = e.Designation != null ? e.Designation.Name : null,
-                    PhoneNumber = e.PhoneNumber,
-                    AlternatePhoneNumber = e.AlternatePhoneNumber,
-                    EmergencyContactName = e.EmergencyContactName,
-                    EmergencyContactPhone = e.EmergencyContactPhone,
-                    Address = e.Address,
-                    IsActive = e.IsActive,
-                    CreatedAt = e.CreatedAt,
-                    DateOfBirth = e.DateOfBirth,
-                    Gender = e.Gender,
-                    MaritalStatus = e.MaritalStatus,
-                    BloodGroup = e.BloodGroup,
-                    Nationality = e.Nationality,
-                    NationalIdNumber = e.NationalIdNumber,
-                    PresentAddress = e.PresentAddress,
-                    PermanentAddress = e.PermanentAddress,
-                    DateOfJoining = e.DateOfJoining,
-                    JoiningType = e.JoiningType,
-                    EmploymentStatus = e.EmploymentStatus,
-                    ProfilePhotoUrl = e.ProfilePhotoUrl,
-                    Notes = e.Notes
-                })
-                .ToListAsync();
+            var (items, totalCount) = await _unitOfWork.employeeRepository.GetEmployeesDataAsync(
+                request.Search ?? "",
+                request.SortField ?? "",
+                request.SortOrder ?? "",
+                request.Page,
+                request.PageSize,
+                companyId
+            );
 
             return Ok(new
             {
@@ -189,10 +113,21 @@ public class EmployeesController : Controller
 
         var isEdit = model.Id.HasValue && model.Id.Value != Guid.Empty;
 
+        var employeeRepo = _unitOfWork.employeeRepository;
+
+        // Fallback: If Id is empty but EmployeeId exists, try to find the employee
+        if (!isEdit && !string.IsNullOrWhiteSpace(model.EmployeeId))
+        {
+            var existingByEmployeeId = await employeeRepo.GetByEmployeeIdAsync(model.EmployeeId, companyId);
+            if (existingByEmployeeId != null)
+            {
+                model.Id = existingByEmployeeId.Id;
+                isEdit = true;
+            }
+        }
+
         try
         {
-            var employeeRepo = _unitOfWork.employeeRepository;
-
             if (isEdit)
             {
                 var employee = await employeeRepo.GetByIdAsync(model.Id!.Value);

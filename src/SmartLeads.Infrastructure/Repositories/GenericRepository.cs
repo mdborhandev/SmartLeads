@@ -17,8 +17,11 @@ public class GenericSystemRepository<TEntity> : BaseRepository<TEntity, Guid>, I
 public class GenericCompanyRepository<TEntity> : BaseRepository<TEntity, Guid>, IGenericCompanyRepository<TEntity>
     where TEntity : BaseEntity
 {
+    protected readonly DefaultDbContext _defaultDbContext;
+
     public GenericCompanyRepository(DefaultDbContext dbContext) : base(dbContext)
     {
+        _defaultDbContext = dbContext;
     }
 }
 
