@@ -191,11 +191,15 @@
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label for="empJoiningType" class="form-label">Joining Type</label>
-                    <input type="text" class="form-control" id="empJoiningType" name="JoiningType" />
+                    <select class="form-select" id="empJoiningType" name="JoiningType" data-variable-type="Joining Type">
+                        <option value="">Select Joining Type</option>
+                    </select>
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="empEmploymentStatus" class="form-label">Employment Status</label>
-                    <input type="text" class="form-control" id="empEmploymentStatus" name="EmploymentStatus" />
+                    <select class="form-select" id="empEmploymentStatus" name="EmploymentStatus" data-variable-type="Employment Status">
+                        <option value="">Select Employment Status</option>
+                    </select>
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="empProfilePhotoUrl" class="form-label">Profile Photo URL</label>
@@ -638,7 +642,7 @@
         ];
 
         // Initialize offcanvas and table on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        $(document).ready(function() {
             employeeOffcanvas = new bootstrap.Offcanvas(document.getElementById('employeeOffcanvas'));
 
             // Load column filter settings and initialize table
@@ -1026,6 +1030,7 @@
             clearErrors();
             loadDepartments();
             loadDesignations();
+            resetAllDropdowns();
         }
 
         // Open Edit Modal
@@ -1051,19 +1056,22 @@
             document.getElementById('empNationalIdNumber').value = nationalIdNumber || '';
             document.getElementById('empPresentAddress').value = presentAddress || '';
             document.getElementById('empPermanentAddress').value = permanentAddress || '';
-            document.getElementById('empJoiningType').value = joiningType || '';
-            document.getElementById('empEmploymentStatus').value = employmentStatus || '';
             document.getElementById('empProfilePhotoUrl').value = profilePhotoUrl || '';
             document.getElementById('empNotes').value = notes || '';
             document.getElementById('empEmployeeId').readOnly = true;
             
-            // Set department and designation dropdowns using shared Select2 helpers
+            // Set department and designation dropdowns
             loadDepartments(departmentId, departmentName || '');
             loadDesignations(departmentId, designationId, designationName || '');
-            loadGender(gender);
-            loadMaritalStatus(maritalStatus);
-            loadBloodGroup(bloodGroup);
-            loadNationality(nationality);
+            
+            // Reset dropdowns first, then set values
+            resetAllDropdowns();
+            DefaultSelected('#empGender', gender, gender);
+            DefaultSelected('#empMaritalStatus', maritalStatus, maritalStatus);
+            DefaultSelected('#empBloodGroup', bloodGroup, bloodGroup);
+            DefaultSelected('#empNationality', nationality, nationality);
+            DefaultSelected('#empJoiningType', joiningType, joiningType);
+            DefaultSelected('#empEmploymentStatus', employmentStatus, employmentStatus);
             
             document.getElementById('empPhoneNumber').value = phoneNumber || '';
             document.getElementById('empAddress').value = address || '';
@@ -1129,72 +1137,39 @@
             }
         }
 
-        // Load Variable dropdowns (Gender, MaritalStatus, BloodGroup, Nationality)
-        function loadGender(selectedValue = '') {
-            if ($('#empGender').hasClass('select2-hidden-accessible')) {
-                $('#empGender').select2('destroy');
-            }
-            ResetSelected('#empGender', 'Select Gender');
-            select2Initializer('#empGender', '@Url.Action("SearchVariable", "Variables")', 'Gender', '#employeeOffcanvas');
-            if (selectedValue) {
-                DefaultSelected('#empGender', selectedValue, selectedValue);
-            }
-        }
-
-        function loadMaritalStatus(selectedValue = '') {
-            if ($('#empMaritalStatus').hasClass('select2-hidden-accessible')) {
-                $('#empMaritalStatus').select2('destroy');
-            }
-            ResetSelected('#empMaritalStatus', 'Select Marital Status');
-            select2Initializer('#empMaritalStatus', '@Url.Action("SearchVariable", "Variables")', 'Marital Status', '#employeeOffcanvas');
-            if (selectedValue) {
-                DefaultSelected('#empMaritalStatus', selectedValue, selectedValue);
-            }
-        }
-
-        function loadBloodGroup(selectedValue = '') {
-            if ($('#empBloodGroup').hasClass('select2-hidden-accessible')) {
-                $('#empBloodGroup').select2('destroy');
-            }
-            ResetSelected('#empBloodGroup', 'Select Blood Group');
-            select2Initializer('#empBloodGroup', '@Url.Action("SearchVariable", "Variables")', 'Blood Group', '#employeeOffcanvas');
-            if (selectedValue) {
-                DefaultSelected('#empBloodGroup', selectedValue, selectedValue);
-            }
-        }
-
-        function loadNationality(selectedValue = '') {
-            if ($('#empNationality').hasClass('select2-hidden-accessible')) {
-                $('#empNationality').select2('destroy');
-            }
-            ResetSelected('#empNationality', 'Select Nationality');
-            select2Initializer('#empNationality', '@Url.Action("SearchVariable", "Variables")', 'Nationality', '#employeeOffcanvas');
-            if (selectedValue) {
-                DefaultSelected('#empNationality', selectedValue, selectedValue);
-            }
-        }
-
         // Cascading dropdown handler
         $('#empDepartmentId').on('change select2:select', function() {
             const selectedDepartmentId = $('#empDepartmentId').val() || '';
             loadDesignations(selectedDepartmentId);
         });
 
-        // Load dropdowns on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        // Reset all variable dropdowns (Gender, MaritalStatus, BloodGroup, Nationality, JoiningType, EmploymentStatus)
+        function resetAllDropdowns() {
+            ResetSelected('#empGender', 'Select Gender');
+            ResetSelected('#empMaritalStatus', 'Select Marital Status');
+            ResetSelected('#empBloodGroup', 'Select Blood Group');
+            ResetSelected('#empNationality', 'Select Nationality');
+            ResetSelected('#empJoiningType', 'Select Joining Type');
+            ResetSelected('#empEmploymentStatus', 'Select Employment Status');
+        }
+
+        // Load dropdowns on page load - Initialize Select2 only once
+        $(document).ready(function() {
             loadDepartments();
             loadDesignations();
-            loadGender();
-            loadMaritalStatus();
-            loadBloodGroup();
-            loadNationality();
+            
+            // Initialize variable dropdowns once
+            select2Initializer('#empGender', '@Url.Action("SearchVariable", "Variables")', 'Gender', '#employeeOffcanvas');
+            select2Initializer('#empMaritalStatus', '@Url.Action("SearchVariable", "Variables")', 'Marital Status', '#employeeOffcanvas');
+            select2Initializer('#empBloodGroup', '@Url.Action("SearchVariable", "Variables")', 'Blood Group', '#employeeOffcanvas');
+            select2Initializer('#empNationality', '@Url.Action("SearchVariable", "Variables")', 'Nationality', '#employeeOffcanvas');
+            select2Initializer('#empJoiningType', '@Url.Action("SearchVariable", "Variables")', 'Joining Type', '#employeeOffcanvas');
+            select2Initializer('#empEmploymentStatus', '@Url.Action("SearchVariable", "Variables")', 'Employment Status', '#employeeOffcanvas');
         });
 
         // Clear validation errors
         function clearErrors() {
-            document.querySelectorAll('.text-danger').forEach(el => {
-                el.textContent = '';
-            });
+            $('.text-danger').text('');
         }
 
 // Form Submit Handler
