@@ -59,15 +59,15 @@ public class DesignationsController : Controller
             var totalCount = designations.Count();
 
             // Apply sorting
-            designations = request.SortField?.ToLower() switch
+            designations = request.GetSortField()?.ToLower() switch
             {
-                "name" => request.SortOrder?.ToLower() == "desc"
+                "name" => request.GetSortOrder()?.ToLower() == "desc"
                     ? designations.OrderByDescending(d => d.Name)
                     : designations.OrderBy(d => d.Name),
-                "isactive" => request.SortOrder?.ToLower() == "desc"
+                "isactive" => request.GetSortOrder()?.ToLower() == "desc"
                     ? designations.OrderByDescending(d => d.IsActive)
                     : designations.OrderBy(d => d.IsActive),
-                "createdat" => request.SortOrder?.ToLower() == "desc"
+                "createdat" => request.GetSortOrder()?.ToLower() == "desc"
                     ? designations.OrderByDescending(d => d.CreatedAt)
                     : designations.OrderBy(d => d.CreatedAt),
                 _ => designations.OrderByDescending(d => d.CreatedAt)

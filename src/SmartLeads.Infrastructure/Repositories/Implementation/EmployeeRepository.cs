@@ -28,9 +28,6 @@ public class EmployeeRepository : GenericRepository<Employee>, IEmployeeReposito
     {
         var query = _defaultDbContext.Employees
             .Where(e => e.CompanyId == companyId && !e.IsDeleted)
-            .Include(e => e.EmployeeUsers)
-            .Include(e => e.Department)
-            .Include(e => e.Designation)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -40,12 +37,7 @@ public class EmployeeRepository : GenericRepository<Employee>, IEmployeeReposito
                 e.EmployeeId.ToLower().Contains(search) ||
                 e.FirstName.ToLower().Contains(search) ||
                 e.LastName.ToLower().Contains(search) ||
-                ((e.NickName ?? string.Empty).ToLower().Contains(search)) ||
-                ((e.WorkEmail ?? string.Empty).ToLower().Contains(search)) ||
-                ((e.PersonalEmail ?? string.Empty).ToLower().Contains(search)) ||
-                (e.Department != null && e.Department.Name.ToLower().Contains(search)) ||
-                (e.Designation != null && e.Designation.Name.ToLower().Contains(search)) ||
-                (e.PhoneNumber != null && e.PhoneNumber.ToLower().Contains(search))
+                ((e.NickName ?? string.Empty).ToLower().Contains(search))
             );
         }
 
@@ -56,12 +48,6 @@ public class EmployeeRepository : GenericRepository<Employee>, IEmployeeReposito
             "employeeid" => sortOrder?.ToLower() == "desc"
                 ? query.OrderByDescending(e => e.EmployeeId)
                 : query.OrderBy(e => e.EmployeeId),
-            "department" => sortOrder?.ToLower() == "desc"
-                ? query.OrderByDescending(e => e.Department.Name)
-                : query.OrderBy(e => e.Department.Name),
-            "designation" => sortOrder?.ToLower() == "desc"
-                ? query.OrderByDescending(e => e.Designation.Name)
-                : query.OrderBy(e => e.Designation.Name),
             "isactive" => sortOrder?.ToLower() == "desc"
                 ? query.OrderByDescending(e => e.IsActive)
                 : query.OrderBy(e => e.IsActive),
@@ -71,45 +57,76 @@ public class EmployeeRepository : GenericRepository<Employee>, IEmployeeReposito
             _ => query.OrderByDescending(e => e.CreatedAt)
         };
 
-        var items = await query
+        var employees = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(e => new EmployeeDto
-            {
-                Id = e.Id,
-                EmployeeId = e.EmployeeId,
-                FirstName = e.FirstName,
-                LastName = e.LastName,
-                MiddleName = e.MiddleName,
-                NickName = e.NickName,
-                WorkEmail = e.WorkEmail,
-                PersonalEmail = e.PersonalEmail,
-                DepartmentId = e.DepartmentId,
-                DesignationId = e.DesignationId,
-                Department = e.Department != null ? e.Department.Name : null,
-                Designation = e.Designation != null ? e.Designation.Name : null,
-                PhoneNumber = e.PhoneNumber,
-                AlternatePhoneNumber = e.AlternatePhoneNumber,
-                EmergencyContactName = e.EmergencyContactName,
-                EmergencyContactPhone = e.EmergencyContactPhone,
-                Address = e.Address,
-                IsActive = e.IsActive,
-                CreatedAt = e.CreatedAt,
-                DateOfBirth = e.DateOfBirth,
-                Gender = e.Gender,
-                MaritalStatus = e.MaritalStatus,
-                BloodGroup = e.BloodGroup,
-                Nationality = e.Nationality,
-                NationalIdNumber = e.NationalIdNumber,
-                PresentAddress = e.PresentAddress,
-                PermanentAddress = e.PermanentAddress,
-                DateOfJoining = e.DateOfJoining,
-                JoiningType = e.JoiningType,
-                EmploymentStatus = e.EmploymentStatus,
-                ProfilePhotoUrl = e.ProfilePhotoUrl,
-                Notes = e.Notes
-            })
             .ToListAsync();
+
+        // Get all variable values from employees
+        var allVariableValues = employees
+            .Where(e => e.Gender != null).Select(e => e.Gender!)
+            .Concat(employees.Where(e => e.MaritalStatus != null).Select(e => e.MaritalStatus!))
+            .Concat(employees.Where(e => e.BloodGroup != null).Select(e => e.BloodGroup!))
+            .Concat(employees.Where(e => e.Nationality != null).Select(e => e.Nationality!))
+            .Concat(employees.Where(e => e.JoiningType != null).Select(e => e.JoiningType!))
+            .Concat(employees.Where(e => e.EmploymentStatus != null).Select(e => e.EmploymentStatus!))
+            .Distinct()
+            .ToList();
+
+        // Fetch variables where Value matches (the stored value is the ID, but for backward compatibility we match by Value too)
+        var variables = await _defaultDbContext.Variables
+            .Where(v => allVariableValues.Contains(v.Value) && v.CompanyId == companyId)
+            .ToDictionaryAsync(v => v.Value, v => v.Value);
+
+        // Also fetch by Id for GUID-based storage
+        var variablesById = await _defaultDbContext.Variables
+            .Where(v => allVariableValues.Contains(v.Id.ToString()) && v.CompanyId == companyId)
+            .ToDictionaryAsync(v => v.Id.ToString(), v => v.Value);
+
+        // Convert to DTO with display text
+        var items = employees.Select(e => new EmployeeDto
+        {
+            Id = e.Id,
+            EmployeeId = e.EmployeeId,
+            FirstName = e.FirstName,
+            LastName = e.LastName,
+            MiddleName = e.MiddleName,
+            NickName = e.NickName,
+            WorkEmail = e.WorkEmail,
+            PersonalEmail = e.PersonalEmail,
+            DepartmentId = e.DepartmentId,
+            DesignationId = e.DesignationId,
+            Department = null, // Will be loaded separately if needed
+            Designation = null,
+            PhoneNumber = e.PhoneNumber,
+            AlternatePhoneNumber = e.AlternatePhoneNumber,
+            EmergencyContactName = e.EmergencyContactName,
+            EmergencyContactPhone = e.EmergencyContactPhone,
+            Address = e.Address,
+            IsActive = e.IsActive,
+            CreatedAt = e.CreatedAt,
+            DateOfBirth = e.DateOfBirth,
+            // Store original values
+            Gender = e.Gender,
+            MaritalStatus = e.MaritalStatus,
+            BloodGroup = e.BloodGroup,
+            Nationality = e.Nationality,
+            JoiningType = e.JoiningType,
+            EmploymentStatus = e.EmploymentStatus,
+            NationalIdNumber = e.NationalIdNumber,
+            PresentAddress = e.PresentAddress,
+            PermanentAddress = e.PermanentAddress,
+            DateOfJoining = e.DateOfJoining,
+            ProfilePhotoUrl = e.ProfilePhotoUrl,
+            Notes = e.Notes,
+            // Get display text - first try by Id, then by Value
+            GenderText = e.Gender != null ? (variablesById.ContainsKey(e.Gender) ? variablesById[e.Gender] : (variables.ContainsKey(e.Gender) ? variables[e.Gender] : e.Gender)) : null,
+            MaritalStatusText = e.MaritalStatus != null ? (variablesById.ContainsKey(e.MaritalStatus) ? variablesById[e.MaritalStatus] : (variables.ContainsKey(e.MaritalStatus) ? variables[e.MaritalStatus] : e.MaritalStatus)) : null,
+            BloodGroupText = e.BloodGroup != null ? (variablesById.ContainsKey(e.BloodGroup) ? variablesById[e.BloodGroup] : (variables.ContainsKey(e.BloodGroup) ? variables[e.BloodGroup] : e.BloodGroup)) : null,
+            NationalityText = e.Nationality != null ? (variablesById.ContainsKey(e.Nationality) ? variablesById[e.Nationality] : (variables.ContainsKey(e.Nationality) ? variables[e.Nationality] : e.Nationality)) : null,
+            JoiningTypeText = e.JoiningType != null ? (variablesById.ContainsKey(e.JoiningType) ? variablesById[e.JoiningType] : (variables.ContainsKey(e.JoiningType) ? variables[e.JoiningType] : e.JoiningType)) : null,
+            EmploymentStatusText = e.EmploymentStatus != null ? (variablesById.ContainsKey(e.EmploymentStatus) ? variablesById[e.EmploymentStatus] : (variables.ContainsKey(e.EmploymentStatus) ? variables[e.EmploymentStatus] : e.EmploymentStatus)) : null
+        }).ToList();
 
         return (items, totalCount);
     }

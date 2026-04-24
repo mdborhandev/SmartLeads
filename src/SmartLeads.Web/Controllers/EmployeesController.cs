@@ -25,7 +25,11 @@ public class EmployeesController : Controller
     {
         try
         {
+            Console.WriteLine($"=== GetEmployeesData ===");
+            Console.WriteLine($"Page: {request.GetPage()}, PageSize: {request.GetPageSize()}, Search: {request.Search}");
+            
             var companyIdClaim = User.FindFirst("CompanyId")?.Value;
+            Console.WriteLine($"CompanyIdClaim: {companyIdClaim}");
             
             if (string.IsNullOrEmpty(companyIdClaim))
             {
@@ -33,33 +37,34 @@ public class EmployeesController : Controller
             }
 
             var companyId = Guid.Parse(companyIdClaim);
-
-            if (companyId == Guid.Empty)
-            {
-                return BadRequest(new { success = false, message = "Invalid company context." });
-            }
+            Console.WriteLine($"Parsed CompanyId: {companyId}");
 
             var (items, totalCount) = await _unitOfWork.employeeRepository.GetEmployeesDataAsync(
                 request.Search ?? "",
-                request.SortField ?? "",
-                request.SortOrder ?? "",
-                request.Page,
-                request.PageSize,
+                request.GetSortField() ?? "",
+                request.GetSortOrder() ?? "",
+                request.GetPage(),
+                request.GetPageSize(),
                 companyId
             );
+
+            Console.WriteLine($"Result: {items.Count} items, Total: {totalCount}");
 
             return Ok(new
             {
                 success = true,
                 data = items,
                 total = totalCount,
-                page = request.Page,
-                pageSize = request.PageSize
+                page = request.GetPage(),
+                pageSize = request.GetPageSize()
             });
         }
         catch (Exception ex)
         {
-            return BadRequest(new { success = false, message = "Failed to get employees.", details = ex.Message });
+            Console.WriteLine($"=== ERROR ===");
+            Console.WriteLine($"Message: {ex.Message}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
+            return BadRequest(new { success = false, message = ex.Message, details = ex.StackTrace });
         }
     }
 

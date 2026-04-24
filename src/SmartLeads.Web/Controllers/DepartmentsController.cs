@@ -59,15 +59,15 @@ public class DepartmentsController : Controller
             var totalCount = departments.Count();
 
             // Apply sorting
-            departments = request.SortField?.ToLower() switch
+            departments = request.GetSortField()?.ToLower() switch
             {
-                "name" => request.SortOrder?.ToLower() == "desc"
+                "name" => request.GetSortOrder()?.ToLower() == "desc"
                     ? departments.OrderByDescending(d => d.Name)
                     : departments.OrderBy(d => d.Name),
-                "isactive" => request.SortOrder?.ToLower() == "desc"
+                "isactive" => request.GetSortOrder()?.ToLower() == "desc"
                     ? departments.OrderByDescending(d => d.IsActive)
                     : departments.OrderBy(d => d.IsActive),
-                "createdat" => request.SortOrder?.ToLower() == "desc"
+                "createdat" => request.GetSortOrder()?.ToLower() == "desc"
                     ? departments.OrderByDescending(d => d.CreatedAt)
                     : departments.OrderBy(d => d.CreatedAt),
                 _ => departments.OrderByDescending(d => d.CreatedAt)

@@ -94,18 +94,18 @@ public class VariablesController : Controller
 
             var totalCount = variables.Count();
 
-            variables = request.SortField?.ToLower() switch
+            variables = request.GetSortField()?.ToLower() switch
             {
-                "type" => request.SortOrder?.ToLower() == "desc"
+                "type" => request.GetSortOrder()?.ToLower() == "desc"
                     ? variables.OrderByDescending(v => v.Type)
                     : variables.OrderBy(v => v.Type),
-                "value" => request.SortOrder?.ToLower() == "desc"
+                "value" => request.GetSortOrder()?.ToLower() == "desc"
                     ? variables.OrderByDescending(v => v.Value)
                     : variables.OrderBy(v => v.Value),
-                "isactive" => request.SortOrder?.ToLower() == "desc"
+                "isactive" => request.GetSortOrder()?.ToLower() == "desc"
                     ? variables.OrderByDescending(v => v.IsActive)
                     : variables.OrderBy(v => v.IsActive),
-                "createdat" => request.SortOrder?.ToLower() == "desc"
+                "createdat" => request.GetSortOrder()?.ToLower() == "desc"
                     ? variables.OrderByDescending(v => v.CreatedAt)
                     : variables.OrderBy(v => v.CreatedAt),
                 _ => variables.OrderByDescending(v => v.CreatedAt)

@@ -155,7 +155,7 @@
                     <label for="empDateOfBirth" class="form-label">Date of Birth</label>
                     <input type="date" class="form-control" id="empDateOfBirth" name="DateOfBirth" />
                 </div>
-                <div class="col-md-4 mb-3">
+<div class="col-md-4 mb-3">
                     <label for="empGender" class="form-label">Gender</label>
                     <select class="form-select" id="empGender" name="Gender" data-variable-type="Gender">
                         <option value="">Select Gender</option>
@@ -167,9 +167,6 @@
                         <option value="">Select Marital Status</option>
                     </select>
                 </div>
-            </div>
-
-            <div class="row">
                 <div class="col-md-4 mb-3">
                     <label for="empBloodGroup" class="form-label">Blood Group</label>
                     <select class="form-select" id="empBloodGroup" name="BloodGroup" data-variable-type="Blood Group">
@@ -179,6 +176,27 @@
                 <div class="col-md-4 mb-3">
                     <label for="empNationality" class="form-label">Nationality</label>
                     <select class="form-select" id="empNationality" name="Nationality" data-variable-type="Nationality">
+                        <option value="">Select Nationality</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empMaritalStatus" class="form-label">Marital Status</label>
+                    <select class="form-select" id="empMaritalStatus" name="MaritalStatusId" data-variable-type="Marital Status">
+                        <option value="">Select Marital Status</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="empBloodGroup" class="form-label">Blood Group</label>
+                    <select class="form-select" id="empBloodGroup" name="BloodGroupId" data-variable-type="Blood Group">
+                        <option value="">Select Blood Group</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="empNationality" class="form-label">Nationality</label>
+                    <select class="form-select" id="empNationality" name="NationalityId" data-variable-type="Nationality">
                         <option value="">Select Nationality</option>
                     </select>
                 </div>
@@ -409,7 +427,7 @@
             },
             {
                 title: "Gender",
-                field: "gender",
+                field: "genderText",
                 hozAlign: "center",
                 visible: false,
                 formatter: function(cell) {
@@ -419,7 +437,7 @@
             },
             {
                 title: "Marital",
-                field: "maritalStatus",
+                field: "maritalStatusText",
                 hozAlign: "center",
                 visible: false,
                 formatter: function(cell) {
@@ -429,7 +447,7 @@
             },
             {
                 title: "Blood Group",
-                field: "bloodGroup",
+                field: "bloodGroupText",
                 hozAlign: "center",
                 visible: false,
                 formatter: function(cell) {
@@ -439,7 +457,7 @@
             },
             {
                 title: "Nationality",
-                field: "nationality",
+                field: "nationalityText",
                 hozAlign: "left",
                 visible: false,
                 formatter: function(cell) {
@@ -501,7 +519,7 @@
             },
             {
                 title: "Joining Type",
-                field: "joiningType",
+                field: "joiningTypeText",
                 hozAlign: "center",
                 visible: false,
                 formatter: function(cell) {
@@ -511,7 +529,7 @@
             },
             {
                 title: "Employment Status",
-                field: "employmentStatus",
+                field: "employmentStatusText",
                 hozAlign: "center",
                 visible: false,
                 formatter: function(cell) {
@@ -581,17 +599,24 @@
                     const emergencyContactName = (row.emergencyContactName || '').toString().replace(/'/g, "\\'");
                     const emergencyContactPhone = (row.emergencyContactPhone || '').toString().replace(/'/g, "\\'");
                     const dateOfBirth = (row.dateOfBirth || '').toString().replace(/'/g, "\\'");
+                    // Variable values (stored ID)
                     const gender = (row.gender || '').toString().replace(/'/g, "\\'");
+                    const genderText = (row.genderText || row.gender || '').toString().replace(/'/g, "\\'");
                     const maritalStatus = (row.maritalStatus || '').toString().replace(/'/g, "\\'");
+                    const maritalStatusText = (row.maritalStatusText || row.maritalStatus || '').toString().replace(/'/g, "\\'");
                     const bloodGroup = (row.bloodGroup || '').toString().replace(/'/g, "\\'");
+                    const bloodGroupText = (row.bloodGroupText || row.bloodGroup || '').toString().replace(/'/g, "\\'");
                     const nationality = (row.nationality || '').toString().replace(/'/g, "\\'");
+                    const nationalityText = (row.nationalityText || row.nationality || '').toString().replace(/'/g, "\\'");
                     const nationalIdNumber = (row.nationalIdNumber || '').toString().replace(/'/g, "\\'");
                     const presentAddress = (row.presentAddress || '').toString().replace(/'/g, "\\'");
                     const permanentAddress = (row.permanentAddress || '').toString().replace(/'/g, "\\'");
                     const address = (row.address || '').toString().replace(/'/g, "\\'");
                     const dateOfJoining = (row.dateOfJoining || '').toString().replace(/'/g, "\\'");
                     const joiningType = (row.joiningType || '').toString().replace(/'/g, "\\'");
+                    const joiningTypeText = (row.joiningTypeText || row.joiningType || '').toString().replace(/'/g, "\\'");
                     const employmentStatus = (row.employmentStatus || '').toString().replace(/'/g, "\\'");
+                    const employmentStatusText = (row.employmentStatusText || row.employmentStatus || '').toString().replace(/'/g, "\\'");
                     const profilePhotoUrl = (row.profilePhotoUrl || '').toString().replace(/'/g, "\\'");
                     const notes = (row.notes || '').toString().replace(/'/g, "\\'");
                     const isActive = row.isActive || false;
@@ -617,16 +642,22 @@
                                 '${emergencyContactPhone}',
                                 '${dateOfBirth}',
                                 '${gender}',
+                                '${genderText}',
                                 '${maritalStatus}',
+                                '${maritalStatusText}',
                                 '${bloodGroup}',
+                                '${bloodGroupText}',
                                 '${nationality}',
+                                '${nationalityText}',
                                 '${nationalIdNumber}',
                                 '${presentAddress}',
                                 '${permanentAddress}',
                                 '${address}',
                                 '${dateOfJoining}',
                                 '${joiningType}',
+                                '${joiningTypeText}',
                                 '${employmentStatus}',
+                                '${employmentStatusText}',
                                 '${profilePhotoUrl}',
                                 '${notes}',
                                 ${isActive}
@@ -982,7 +1013,7 @@
         }
 
         // Open Edit Modal from Tabulator
-        function openEditModalFromTable(id, employeeId, firstName, lastName, middleName, nickName, workEmail, personalEmail, departmentId, designationId, departmentName, designationName, phoneNumber, alternatePhoneNumber, emergencyContactName, emergencyContactPhone, dateOfBirth, gender, maritalStatus, bloodGroup, nationality, nationalIdNumber, presentAddress, permanentAddress, address, dateOfJoining, joiningType, employmentStatus, profilePhotoUrl, notes, isActive) {
+        function openEditModalFromTable(id, employeeId, firstName, lastName, middleName, nickName, workEmail, personalEmail, departmentId, designationId, departmentName, designationName, phoneNumber, alternatePhoneNumber, emergencyContactName, emergencyContactPhone, dateOfBirth, gender, genderText, maritalStatus, maritalStatusText, bloodGroup, bloodGroupText, nationality, nationalityText, nationalIdNumber, presentAddress, permanentAddress, address, dateOfJoining, joiningType, joiningTypeText, employmentStatus, employmentStatusText, profilePhotoUrl, notes, isActive) {
             openEditModal(
                 id,
                 employeeId,
@@ -1002,16 +1033,22 @@
                 emergencyContactPhone,
                 dateOfBirth,
                 gender,
+                genderText,
                 maritalStatus,
+                maritalStatusText,
                 bloodGroup,
+                bloodGroupText,
                 nationality,
+                nationalityText,
                 nationalIdNumber,
                 presentAddress,
                 permanentAddress,
                 address,
                 dateOfJoining,
                 joiningType,
+                joiningTypeText,
                 employmentStatus,
+                employmentStatusText,
                 profilePhotoUrl,
                 notes,
                 isActive.toString().toLowerCase()
@@ -1034,7 +1071,7 @@
         }
 
         // Open Edit Modal
-        function openEditModal(id, employeeId, firstName, lastName, middleName, nickName, workEmail, personalEmail, departmentId, designationId, departmentName, designationName, phoneNumber, alternatePhoneNumber, emergencyContactName, emergencyContactPhone, dateOfBirth, gender, maritalStatus, bloodGroup, nationality, nationalIdNumber, presentAddress, permanentAddress, address, dateOfJoining, joiningType, employmentStatus, profilePhotoUrl, notes, isActive) {
+        function openEditModal(id, employeeId, firstName, lastName, middleName, nickName, workEmail, personalEmail, departmentId, designationId, departmentName, designationName, phoneNumber, alternatePhoneNumber, emergencyContactName, emergencyContactPhone, dateOfBirth, gender, genderText, maritalStatus, maritalStatusText, bloodGroup, bloodGroupText, nationality, nationalityText, nationalIdNumber, presentAddress, permanentAddress, address, dateOfJoining, joiningType, joiningTypeText, employmentStatus, employmentStatusText, profilePhotoUrl, notes, isActive) {
             document.getElementById('employeeOffcanvasLabel').textContent = 'Edit Employee';
             document.getElementById('formAction').value = 'edit';
             document.getElementById('employeeId').value = id;
@@ -1049,10 +1086,6 @@
             document.getElementById('empEmergencyContactName').value = emergencyContactName || '';
             document.getElementById('empEmergencyContactPhone').value = emergencyContactPhone || '';
             document.getElementById('empDateOfBirth').value = dateOfBirth || '';
-            document.getElementById('empGender').value = gender || '';
-            document.getElementById('empMaritalStatus').value = maritalStatus || '';
-            document.getElementById('empBloodGroup').value = bloodGroup || '';
-            document.getElementById('empNationality').value = nationality || '';
             document.getElementById('empNationalIdNumber').value = nationalIdNumber || '';
             document.getElementById('empPresentAddress').value = presentAddress || '';
             document.getElementById('empPermanentAddress').value = permanentAddress || '';
@@ -1064,14 +1097,14 @@
             loadDepartments(departmentId, departmentName || '');
             loadDesignations(departmentId, designationId, designationName || '');
             
-            // Reset dropdowns first, then set values
+            // Reset dropdowns first, then set values using ID for form and TEXT for display
             resetAllDropdowns();
-            DefaultSelected('#empGender', gender, gender);
-            DefaultSelected('#empMaritalStatus', maritalStatus, maritalStatus);
-            DefaultSelected('#empBloodGroup', bloodGroup, bloodGroup);
-            DefaultSelected('#empNationality', nationality, nationality);
-            DefaultSelected('#empJoiningType', joiningType, joiningType);
-            DefaultSelected('#empEmploymentStatus', employmentStatus, employmentStatus);
+            DefaultSelected('#empGender', gender, genderText || gender);
+            DefaultSelected('#empMaritalStatus', maritalStatus, maritalStatusText || maritalStatus);
+            DefaultSelected('#empBloodGroup', bloodGroup, bloodGroupText || bloodGroup);
+            DefaultSelected('#empNationality', nationality, nationalityText || nationality);
+            DefaultSelected('#empJoiningType', joiningType, joiningTypeText || joiningType);
+            DefaultSelected('#empEmploymentStatus', employmentStatus, employmentStatusText || employmentStatus);
             
             document.getElementById('empPhoneNumber').value = phoneNumber || '';
             document.getElementById('empAddress').value = address || '';
