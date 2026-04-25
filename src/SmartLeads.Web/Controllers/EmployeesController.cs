@@ -242,7 +242,7 @@ public class EmployeesController : Controller
     [HttpGet]
     public async Task<IActionResult> GetEmployee(Guid id)
     {
-        var employee = await _unitOfWork.employeeRepository.GetByIdAsync(id);
+        var employee = await _unitOfWork.employeeRepository.GetByEmployeeDtoByIdAsync(id);
         if (employee == null)
         {
             return NotFound(new { success = false, message = "Employee not found." });
@@ -260,6 +260,8 @@ public class EmployeesController : Controller
             PersonalEmail = employee.PersonalEmail,
             DepartmentId = employee.DepartmentId,
             DesignationId = employee.DesignationId,
+            DepartmentName = employee.Department?.Name,
+            DesignationName = employee.Designation?.Name,
             PhoneNumber = employee.PhoneNumber,
             AlternatePhoneNumber = employee.AlternatePhoneNumber,
             EmergencyContactName = employee.EmergencyContactName,

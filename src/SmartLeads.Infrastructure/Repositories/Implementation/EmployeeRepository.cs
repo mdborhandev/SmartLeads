@@ -24,9 +24,19 @@ public class EmployeeRepository : GenericRepository<Employee>, IEmployeeReposito
             .FirstOrDefaultAsync(e => e.EmployeeId == employeeId && e.CompanyId == companyId && e.Id != excludeId && !e.IsDeleted);
     }
 
+    public async Task<Employee?> GetByEmployeeDtoByIdAsync(Guid id)
+    {
+        return await _defaultDbContext.Employees
+            .Include(e => e.Department)
+            .Include(e => e.Designation)
+            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
+    }
+
     public async Task<(List<EmployeeDto> data, int total)> GetEmployeesDataAsync(string searchTerm, string sortField, string sortOrder, int page, int pageSize, Guid companyId)
     {
         var query = _defaultDbContext.Employees
+            .Include(e => e.Department)
+            .Include(e => e.Designation)
             .Where(e => e.CompanyId == companyId && !e.IsDeleted)
             .AsQueryable();
 
@@ -96,8 +106,8 @@ public class EmployeeRepository : GenericRepository<Employee>, IEmployeeReposito
             PersonalEmail = e.PersonalEmail,
             DepartmentId = e.DepartmentId,
             DesignationId = e.DesignationId,
-            Department = null, // Will be loaded separately if needed
-            Designation = null,
+            DepartmentName = e.Department?.Name,
+            DesignationName = e.Designation?.Name,
             PhoneNumber = e.PhoneNumber,
             AlternatePhoneNumber = e.AlternatePhoneNumber,
             EmergencyContactName = e.EmergencyContactName,

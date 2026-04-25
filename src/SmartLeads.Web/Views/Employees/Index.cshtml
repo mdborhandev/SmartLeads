@@ -337,7 +337,7 @@
             },
             {
                 title: "Department",
-                field: "department",
+                field: "departmentName",
                 hozAlign: "left",
                 visible: true,
                 formatter: function(cell) {
@@ -347,7 +347,7 @@
             },
             {
                 title: "Designation",
-                field: "designation",
+                field: "designationName",
                 hozAlign: "left",
                 visible: true,
                 formatter: function(cell) {
@@ -574,8 +574,8 @@
                     const personalEmail = (row.personalEmail || '').toString().replace(/'/g, "\\'");
                     const departmentId = (row.departmentId || '').toString().replace(/'/g, "\\'");
                     const designationId = (row.designationId || '').toString().replace(/'/g, "\\'");
-                    const departmentName = (row.department || '').toString().replace(/'/g, "\\'");
-                    const designationName = (row.designation || '').toString().replace(/'/g, "\\'");
+                    const departmentName = (row.departmentName || '').toString().replace(/'/g, "\\'");
+                    const designationName = (row.designationName || '').toString().replace(/'/g, "\\'");
                     const phoneNumber = (row.phoneNumber || '').toString().replace(/'/g, "\\'");
                     const alternatePhoneNumber = (row.alternatePhoneNumber || '').toString().replace(/'/g, "\\'");
                     const emergencyContactName = (row.emergencyContactName || '').toString().replace(/'/g, "\\'");

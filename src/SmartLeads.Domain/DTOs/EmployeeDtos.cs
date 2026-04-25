@@ -12,8 +12,13 @@ public class EmployeeDto
     public string? NickName { get; set; }
     public string? WorkEmail { get; set; }
     public string? PersonalEmail { get; set; }
+    // Lookup values (store ID)
     public Guid? DepartmentId { get; set; }
     public Guid? DesignationId { get; set; }
+
+    // Display text (populated from related tables)
+    public string? DepartmentName { get; set; }
+    public string? DesignationName { get; set; }
     public string? PhoneNumber { get; set; }
     public string? AlternatePhoneNumber { get; set; }
     public string? EmergencyContactName { get; set; }
@@ -45,8 +50,6 @@ public class EmployeeDto
     public string? Notes { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime? CreatedAt { get; set; }
-    public string? Department { get; set; }
-    public string? Designation { get; set; }
 
     public string FullName => $"{FirstName} {LastName}".Trim();
 }
