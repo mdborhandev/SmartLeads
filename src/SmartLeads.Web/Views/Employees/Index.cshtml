@@ -271,12 +271,18 @@
                 hozAlign: "center",
                 headerSort: false,
                 width: 50,
+                minWidth: 40,
+                maxWidth: 60,
+                frozen: true,
                 visible: true
             },
             {
                 title: "Employee ID",
                 field: "employeeId",
                 hozAlign: "center",
+                width: 100,
+                minWidth: 80,
+                maxWidth: 120,
                 visible: true,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -287,18 +293,27 @@
                 title: "First Name",
                 field: "firstName",
                 hozAlign: "left",
+                width: 120,
+                minWidth: 100,
+                maxWidth: 150,
                 visible: true
             },
             {
                 title: "Last Name",
                 field: "lastName",
                 hozAlign: "left",
+                width: 120,
+                minWidth: 100,
+                maxWidth: 150,
                 visible: true
             },
             {
                 title: "Middle Name",
                 field: "middleName",
                 hozAlign: "left",
+                width: 120,
+                minWidth: 100,
+                maxWidth: 150,
                 visible: true,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -309,6 +324,9 @@
                 title: "Nick Name",
                 field: "nickName",
                 hozAlign: "left",
+                width: 100,
+                minWidth: 80,
+                maxWidth: 130,
                 visible: true,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -319,6 +337,9 @@
                 title: "Work Email",
                 field: "workEmail",
                 hozAlign: "left",
+                width: 180,
+                minWidth: 150,
+                maxWidth: 220,
                 visible: true,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -329,6 +350,9 @@
                 title: "Personal Email",
                 field: "personalEmail",
                 hozAlign: "left",
+                width: 180,
+                minWidth: 150,
+                maxWidth: 220,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -339,6 +363,9 @@
                 title: "Department",
                 field: "departmentName",
                 hozAlign: "left",
+                width: 120,
+                minWidth: 100,
+                maxWidth: 150,
                 visible: true,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -349,6 +376,9 @@
                 title: "Designation",
                 field: "designationName",
                 hozAlign: "left",
+                width: 120,
+                minWidth: 100,
+                maxWidth: 150,
                 visible: true,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -359,6 +389,9 @@
                 title: "Phone",
                 field: "phoneNumber",
                 hozAlign: "left",
+                width: 120,
+                minWidth: 100,
+                maxWidth: 150,
                 visible: true,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -369,6 +402,9 @@
                 title: "Alt. Phone",
                 field: "alternatePhoneNumber",
                 hozAlign: "left",
+                width: 120,
+                minWidth: 100,
+                maxWidth: 150,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -379,6 +415,9 @@
                 title: "Emergency Contact",
                 field: "emergencyContactName",
                 hozAlign: "left",
+                width: 140,
+                minWidth: 120,
+                maxWidth: 180,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -389,6 +428,9 @@
                 title: "Emergency Phone",
                 field: "emergencyContactPhone",
                 hozAlign: "left",
+                width: 120,
+                minWidth: 100,
+                maxWidth: 150,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -399,6 +441,9 @@
                 title: "DOB",
                 field: "dateOfBirth",
                 hozAlign: "center",
+                width: 100,
+                minWidth: 80,
+                maxWidth: 120,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -411,6 +456,9 @@
                 title: "Gender",
                 field: "genderText",
                 hozAlign: "center",
+                width: 80,
+                minWidth: 60,
+                maxWidth: 100,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -421,6 +469,9 @@
                 title: "Marital",
                 field: "maritalStatusText",
                 hozAlign: "center",
+                width: 80,
+                minWidth: 60,
+                maxWidth: 100,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -431,6 +482,9 @@
                 title: "Blood Group",
                 field: "bloodGroupText",
                 hozAlign: "center",
+                width: 100,
+                minWidth: 80,
+                maxWidth: 120,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -441,6 +495,9 @@
                 title: "Nationality",
                 field: "nationalityText",
                 hozAlign: "left",
+                width: 100,
+                minWidth: 80,
+                maxWidth: 130,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -451,6 +508,9 @@
                 title: "National ID",
                 field: "nationalIdNumber",
                 hozAlign: "left",
+                width: 130,
+                minWidth: 100,
+                maxWidth: 160,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -461,6 +521,9 @@
                 title: "Present Address",
                 field: "presentAddress",
                 hozAlign: "left",
+                width: 150,
+                minWidth: 120,
+                maxWidth: 200,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -471,6 +534,9 @@
                 title: "Permanent Address",
                 field: "permanentAddress",
                 hozAlign: "left",
+                width: 150,
+                minWidth: 120,
+                maxWidth: 200,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -481,6 +547,9 @@
                 title: "Address",
                 field: "address",
                 hozAlign: "left",
+                width: 150,
+                minWidth: 120,
+                maxWidth: 200,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -491,6 +560,9 @@
                 title: "DOJ",
                 field: "dateOfJoining",
                 hozAlign: "center",
+                width: 100,
+                minWidth: 80,
+                maxWidth: 120,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -503,6 +575,9 @@
                 title: "Joining Type",
                 field: "joiningTypeText",
                 hozAlign: "center",
+                width: 100,
+                minWidth: 80,
+                maxWidth: 130,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -513,6 +588,9 @@
                 title: "Employment Status",
                 field: "employmentStatusText",
                 hozAlign: "center",
+                width: 130,
+                minWidth: 100,
+                maxWidth: 160,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -523,6 +601,9 @@
                 title: "Created",
                 field: "createdAt",
                 hozAlign: "center",
+                width: 100,
+                minWidth: 80,
+                maxWidth: 120,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -535,6 +616,9 @@
                 title: "Notes",
                 field: "notes",
                 hozAlign: "left",
+                width: 150,
+                minWidth: 120,
+                maxWidth: 200,
                 visible: false,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -545,6 +629,9 @@
                 title: "Status",
                 field: "isActive",
                 hozAlign: "center",
+                width: 100,
+                minWidth: 80,
+                maxWidth: 120,
                 visible: true,
                 formatter: function(cell) {
                     const value = cell.getValue();
@@ -561,6 +648,9 @@
                 download: false,
                 print: false,
                 frozen: true,
+                width: 100,
+                minWidth: 80,
+                maxWidth: 120,
                 visible: true,
                 formatter: function(cell) {
                     const row = cell.getRow().getData();
@@ -904,7 +994,7 @@
                 paginationButtonCount: 5,
                 movableColumns: true,
                 resizableRows: false,
-                layout: "fitColumns",
+                layout: "columns",
                 initialSort: [
                     { column: "createdAt", dir: "desc" }
                 ],
