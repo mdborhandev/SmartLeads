@@ -35,13 +35,13 @@ public class AuthController : Controller
         // If user is already logged in, redirect to dashboard
         if (User.Identity?.IsAuthenticated == true)
         {
-            return RedirectToAction("Index", "Contacts");
-        }
-        
-        return View();
-    }
+return RedirectToAction("Index", "Home");
+         }
+         
+         return View();
+     }
 
-    [HttpPost]
+     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
@@ -245,8 +245,8 @@ public class AuthController : Controller
                 return RedirectToAction("Dashboard", "UserCompany");
             }
 
-            // Redirect to contacts (Main layout)
-            return RedirectToAction("Index", "Contacts");
+// Redirect to home (Main layout)
+             return RedirectToAction("Index", "Home");
         }
         catch (Exception ex)
         {
@@ -619,7 +619,7 @@ public class AuthController : Controller
             return Ok(new {
                 success = true,
                 message = "Login successful",
-                redirectUrl = Url.Action("Index", "Contacts"),
+                redirectUrl = Url.Action("Index", "Home"),
                 userId = user.Id.ToString()
             });
         }

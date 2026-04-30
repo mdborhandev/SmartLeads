@@ -11,101 +11,109 @@
 
     var userCompanies = await _companyContext.GetUserCompaniesAsync();
     var currentUserCompany = userCompanies.FirstOrDefault(uc => uc.CompanyId == Model.Id);
+    var canEdit = currentUserCompany?.Role == SmartLeads.Domain.Enums.UserRole.SuperAdmin;
 }
 
-<div class="container-xxl py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="bx bx-buildings me-2"></i>Company Information
-                    </h5>
-                    <div>
-                        @if (currentUserCompany?.Role == SmartLeads.Domain.Enums.UserRole.SuperAdmin)
-                        {
-                            <a href="#" class="btn btn-sm btn-outline-primary">
-                                <i class="bx bx-edit me-1"></i> Edit
-                            </a>
-                        }
-                    </div>
+@Html.AntiForgeryToken()
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bx bx-buildings me-2"></i>Company Information
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="companyForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Id" value="@Model.Id" />
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Company Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="Name" id="companyName" value="@Model.Name" @(canEdit ? "" : "readonly") required />
+                    <span class="text-danger" id="nameError"></span>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <table class="table table-borderless">
-                                <tr>
-                                    <td class="fw-bold" style="width: 150px;">Company Name</td>
-                                    <td>@Model.Name</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Company Code</td>
-                                    <td><span class="badge bg-label-primary">@Model.Code</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Email</td>
-                                    <td>
-                                        <a href="mailto:@Model.Email">@Model.Email</a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Phone</td>
-                                    <td>@Model.Phone</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Address</td>
-                                    <td>@Model.Address</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Status</td>
-                                    <td>
-                                        @if (Model.IsActive)
-                                        {
-                                            <span class="badge bg-label-success">Active</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-label-danger">Inactive</span>
-                                        }
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Type</td>
-                                    <td>
-                                        @if (Model.IsParent)
-                                        {
-                                            <span class="badge bg-label-info">Parent Company</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-label-secondary">Subsidiary</span>
-                                        }
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card bg-label-primary h-100">
-                                <div class="card-body">
-                                    <h6 class="card-title">Quick Stats</h6>
-                                    <div class="d-flex justify-content-between mb-3">
-                                        <span>Employees</span>
-                                        <span class="fw-bold">@ViewBag.EmployeeCount</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-3">
-                                        <span>Users</span>
-                                        <span class="fw-bold">@ViewBag.UserCount</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span>Your Role</span>
-                                        <span class="fw-bold">@(currentUserCompany?.Role.ToString() ?? "N/A")</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Company Code <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="Code" id="companyCode" value="@Model.Code" @(canEdit ? "" : "readonly") required />
+                    <span class="text-danger" id="codeError"></span>
                 </div>
             </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Email <span class="text-danger">*</span></label>
+                    <input type="email" class="form-control" name="Email" id="companyEmail" value="@Model.Email" @(canEdit ? "" : "readonly") required />
+                    <span class="text-danger" id="emailError"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Phone <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="Phone" id="companyPhone" value="@Model.Phone" @(canEdit ? "" : "readonly") required />
+                    <span class="text-danger" id="phoneError"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label class="form-label fw-bold">Address <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="Address" id="companyAddress" value="@Model.Address" @(canEdit ? "" : "readonly") required />
+                    <span class="text-danger" id="addressError"></span>
+                </div>
+            </div>
+
+            @if (canEdit)
+            {
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-outline-primary" id="submitBtn">
+                        <i class="bx bx-save me-1"></i> Save
+                    </button>
+                </div>
+            }
+        </form>
     </div>
 </div>
-</div>
+
+@section Scripts {
+    <script>
+        function clearErrors() {
+            $('#nameError').text('');
+            $('#codeError').text('');
+            $('#emailError').text('');
+            $('#phoneError').text('');
+            $('#addressError').text('');
+        }
+
+        document.getElementById('companyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            clearErrors();
+
+            const formData = new FormData(this);
+            const url = '@Url.Action("UpdateCompany", "UserCompany")';
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    toastr.success(result.message || "Company information updated successfully", "Success", { "toastClass": "toast-green" });
+                } else {
+                    if (result.errors) {
+                        if (result.errors.Name) $('#nameError').text(result.errors.Name);
+                        if (result.errors.Code) $('#codeError').text(result.errors.Code);
+                        if (result.errors.Email) $('#emailError').text(result.errors.Email);
+                        if (result.errors.Phone) $('#phoneError').text(result.errors.Phone);
+                        if (result.errors.Address) $('#addressError').text(result.errors.Address);
+                    }
+                    toastr.error(result.message || "Failed to update company information", "Error");
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                toastr.error("An error occurred while updating company information", "Error");
+            }
+        });
+    </script>
+}

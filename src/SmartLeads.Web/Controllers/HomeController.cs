@@ -23,11 +23,11 @@ public class HomeController : Controller
 
     public IActionResult Landing()
     {
-        // If user is already logged in, redirect to contacts
-        if (User.Identity?.IsAuthenticated == true)
-        {
-            return RedirectToAction("Index", "Contacts");
-        }
+// If user is already logged in, redirect to home
+         if (User.Identity?.IsAuthenticated == true)
+         {
+             return RedirectToAction("Index", "Home");
+         }
 
         return View();
     }

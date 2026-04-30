@@ -230,7 +230,7 @@ public class UserCompanyController : Controller
                 return Ok(new { success = true, message = "Company created successfully!" });
             }
 
-            return RedirectToAction("Index", "Contacts");
+            return RedirectToAction("Index", "Home");
         }
         catch (Exception ex)
         {
@@ -463,15 +463,52 @@ public class UserCompanyController : Controller
             return RedirectToAction("NoCompany");
         }
 
-        var employeeCount = await _unitOfWork.defaultDbContext.Employees
-            .CountAsync(e => e.CompanyId == currentCompanyId.Value && e.IsActive);
-
-        var userCount = await _unitOfWork.systemDbContext.UserCompanies
-            .CountAsync(uc => uc.CompanyId == currentCompanyId.Value && uc.IsActive && !uc.IsDeleted);
-
-        ViewBag.EmployeeCount = employeeCount;
-        ViewBag.UserCount = userCount;
-
         return View(company);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateCompany(UpdateCompanyRequest model)
+    {
+        try
+        {
+            var currentCompanyId = _companyContext.CurrentCompanyId;
+            if (!currentCompanyId.HasValue)
+            {
+                return Json(new { success = false, message = "No company selected." });
+            }
+
+            var userCompanies = await _companyContext.GetUserCompaniesAsync();
+            var currentUserCompany = userCompanies.FirstOrDefault(uc => uc.CompanyId == currentCompanyId.Value);
+
+            if (currentUserCompany?.Role != SmartLeads.Domain.Enums.UserRole.SuperAdmin)
+            {
+                return Json(new { success = false, message = "You do not have permission to update company information." });
+            }
+
+            var company = await _unitOfWork.systemDbContext.Companies
+                .FirstOrDefaultAsync(c => c.Id == model.Id && !c.IsDeleted);
+
+            if (company == null)
+            {
+                return Json(new { success = false, message = "Company not found." });
+            }
+
+            company.Name = model.Name;
+            company.Code = model.Code;
+            company.Email = model.Email;
+            company.Phone = model.Phone;
+            company.Address = model.Address;
+            company.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.systemDbContext.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Company information updated successfully." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to update company information");
+            return Json(new { success = false, message = "An error occurred while updating company information." });
+        }
     }
 }
