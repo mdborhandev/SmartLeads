@@ -33,7 +33,14 @@
 }
 
 <div class="container-xxl py-4">
-    @if (currentCompany == null)
+    @if (currentCompany != null)
+    {
+        // If a company is selected, redirect to CompanyInfo
+        <script>
+            window.location.href = '/UserCompany/CompanyInfo';
+        </script>
+    }
+    else
     {
         // No company selected - show company selection
         <div class="row justify-content-center">
@@ -83,149 +90,6 @@
                         }
                     </div>
                 </div>
-            </div>
-        </div>
-    }
-    else
-    {
-        // Company selected - show company dashboard
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h4 class="card-title mb-1">@currentCompany.Name</h4>
-                                <p class="text-muted mb-0">@currentCompany.Code</p>
-                            </div>
-                            <span class="badge bg-label-primary @(userCompanies.FirstOrDefault(uc => uc.CompanyId == currentCompanyId)?.IsDefault == true ? "" : "d-none")">
-                                <i class="bx bx-star me-1"></i> Default
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-4">
-            <!-- Statistics Cards -->
-            <div class="col-sm-6 col-xl-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar avatar-md-3 me-3">
-                                <div class="avatar-initial bg-primary rounded-circle shadow">
-                                    <i class="bx bx-group"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <h5 class="mb-0">@employeeCount</h5>
-                                <small class="text-muted">Employees</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-sm-6 col-xl-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar avatar-md-3 me-3">
-                                <div class="avatar-initial bg-success rounded-circle shadow">
-                                    <i class="bx bx-user"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <h5 class="mb-0">@userCount</h5>
-                                <small class="text-muted">Users</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-sm-6 col-xl-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar avatar-md-3 me-3">
-                                <div class="avatar-initial bg-info rounded-circle shadow">
-                                    <i class="bx bx-buildings"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <h5 class="mb-0">@userCompanies.Count()</h5>
-                                <small class="text-muted">Your Companies</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-sm-6 col-xl-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar avatar-md-3 me-3">
-                                <div class="avatar-initial bg-warning rounded-circle shadow">
-                                    <i class="bx bx-cog"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <h5 class="mb-0">Active</h5>
-                                <small class="text-muted">Status</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="row g-4 mt-2">
-            <div class="col-12">
-                <h5 class="mb-3">Quick Actions</h5>
-            </div>
-            
-            <div class="col-sm-6 col-lg-3">
-                <a asp-controller="Contacts" asp-action="Index" class="card text-center h-100">
-                    <div class="card-body">
-                        <i class="bx bx-book-contacts display-4 text-primary mb-3"></i>
-                        <h6 class="card-title">Manage Contacts</h6>
-                        <p class="card-text text-muted small">View and manage your contacts</p>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-sm-6 col-lg-3">
-                <a asp-controller="Users" asp-action="Index" class="card text-center h-100">
-                    <div class="card-body">
-                        <i class="bx bx-user display-4 text-success mb-3"></i>
-                        <h6 class="card-title">Manage Users</h6>
-                        <p class="card-text text-muted small">Add or remove users</p>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-sm-6 col-lg-3">
-                <a asp-controller="Invitations" asp-action="Index" class="card text-center h-100">
-                    <div class="card-body">
-                        <i class="bx bx-envelope display-4 text-info mb-3"></i>
-                        <h6 class="card-title">Invitations</h6>
-                        <p class="card-text text-muted small">Send and manage invitations</p>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-sm-6 col-lg-3">
-                <a asp-action="CreateCompany" class="card text-center h-100">
-                    <div class="card-body">
-                        <i class="bx bx-plus-circle display-4 text-warning mb-3"></i>
-                        <h6 class="card-title">Create Company</h6>
-                        <p class="card-text text-muted small">Start a new company</p>
-                    </div>
-                </a>
             </div>
         </div>
     }

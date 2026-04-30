@@ -1,0 +1,111 @@
+@using SmartLeads.Infrastructure.Services
+@using SmartLeads.Infrastructure.Repositories.Interface
+@inject ICompanyContext _companyContext
+@inject IUnitOfWork _unitOfWork
+
+@model SmartLeads.Domain.Models.Company
+
+@{
+    ViewData["Title"] = "Company Information";
+    Layout = "_UserCompanyLayout";
+
+    var userCompanies = await _companyContext.GetUserCompaniesAsync();
+    var currentUserCompany = userCompanies.FirstOrDefault(uc => uc.CompanyId == Model.Id);
+}
+
+<div class="container-xxl py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bx bx-buildings me-2"></i>Company Information
+                    </h5>
+                    <div>
+                        @if (currentUserCompany?.Role == SmartLeads.Domain.Enums.UserRole.SuperAdmin)
+                        {
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="bx bx-edit me-1"></i> Edit
+                            </a>
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold" style="width: 150px;">Company Name</td>
+                                    <td>@Model.Name</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Company Code</td>
+                                    <td><span class="badge bg-label-primary">@Model.Code</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Email</td>
+                                    <td>
+                                        <a href="mailto:@Model.Email">@Model.Email</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Phone</td>
+                                    <td>@Model.Phone</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Address</td>
+                                    <td>@Model.Address</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Status</td>
+                                    <td>
+                                        @if (Model.IsActive)
+                                        {
+                                            <span class="badge bg-label-success">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-label-danger">Inactive</span>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Type</td>
+                                    <td>
+                                        @if (Model.IsParent)
+                                        {
+                                            <span class="badge bg-label-info">Parent Company</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-label-secondary">Subsidiary</span>
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-label-primary h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">Quick Stats</h6>
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span>Employees</span>
+                                        <span class="fw-bold">@ViewBag.EmployeeCount</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span>Users</span>
+                                        <span class="fw-bold">@ViewBag.UserCount</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Your Role</span>
+                                        <span class="fw-bold">@(currentUserCompany?.Role.ToString() ?? "N/A")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+</div>
+</div>

@@ -111,8 +111,8 @@
                     toastr.success(`Switched to ${companyName}`, 'Company Switched');
                 }
                 setTimeout(() => {
-                    console.log('Reloading page...');
-                    window.location.reload();
+                    console.log('Redirecting to Company Info...');
+                    window.location.href = '/UserCompany/CompanyInfo';
                 }, 1000);
             } else {
                 if (typeof toastr !== 'undefined') {

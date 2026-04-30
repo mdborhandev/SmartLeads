@@ -8,6 +8,7 @@ using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Repositories.Interface;
 using SmartLeads.Infrastructure.Services;
 using SmartLeads.Utilities.Interfaces;
+using SmartLeads.Web.Filters;
 
 namespace SmartLeads.Web.Controllers;
 
@@ -439,5 +440,38 @@ public class UserCompanyController : Controller
     {
         var useUserCompanyLayout = HttpContext.Session.GetString("UseUserCompanyLayout") == "true";
         return Ok(new { success = true, useUserCompanyLayout });
+    }
+
+    // GET: UserCompany/CompanyInfo - Show company information
+    [HttpGet]
+    [RequireCompany]
+    public async Task<IActionResult> CompanyInfo()
+    {
+        var currentCompanyId = _companyContext.CurrentCompanyId;
+        if (!currentCompanyId.HasValue)
+        {
+            TempData["ErrorMessage"] = "No company selected.";
+            return RedirectToAction("NoCompany");
+        }
+
+        var company = await _unitOfWork.systemDbContext.Companies
+            .FirstOrDefaultAsync(c => c.Id == currentCompanyId.Value && !c.IsDeleted);
+
+        if (company == null)
+        {
+            TempData["ErrorMessage"] = "Company not found.";
+            return RedirectToAction("NoCompany");
+        }
+
+        var employeeCount = await _unitOfWork.defaultDbContext.Employees
+            .CountAsync(e => e.CompanyId == currentCompanyId.Value && e.IsActive);
+
+        var userCount = await _unitOfWork.systemDbContext.UserCompanies
+            .CountAsync(uc => uc.CompanyId == currentCompanyId.Value && uc.IsActive && !uc.IsDeleted);
+
+        ViewBag.EmployeeCount = employeeCount;
+        ViewBag.UserCount = userCount;
+
+        return View(company);
     }
 }
