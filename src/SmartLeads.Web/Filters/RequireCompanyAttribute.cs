@@ -6,10 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SmartLeads.Web.Filters;
 
-/// <summary>
-/// Attribute to check if user is associated with any company.
-/// Redirects to NoCompany page if user has no company association.
-/// </summary>
+        /// <summary>
+        /// Attribute to check if user is associated with any company.
+        /// Redirects to CreateCompany page if user has no company association.
+        /// </summary>
 public class RequireCompanyAttribute : TypeFilterAttribute
 {
     public RequireCompanyAttribute() : base(typeof(RequireCompanyFilter))
@@ -46,8 +46,8 @@ public class RequireCompanyAttribute : TypeFilterAttribute
 
                 if (!hasCompany)
                 {
-                    // Redirect to NoCompany page
-                    context.Result = new RedirectToActionResult("NoCompany", "UserCompany", null);
+                    // Redirect to CreateCompany page
+                    context.Result = new RedirectToActionResult("CreateCompany", "UserCompany", null);
                     return;
                 }
             }

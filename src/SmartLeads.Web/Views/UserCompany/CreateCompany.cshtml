@@ -5,193 +5,133 @@
     Layout = "_UserCompanyLayout";
 }
 
-<div class="container-xxl py-4">
-    <div class="row justify-content-center">
-        <div class="col-12 col-lg-10 col-xl-8 col-xxl-7">
-            <!-- Create Company Form Card -->
-            <div class="company-card">
-                <!-- Card Header (Inside Card - Top) -->
-                @await Html.PartialAsync("~/Views/Shared/PartialView/_CardHeader.cshtml", new ViewDataDictionary(ViewData) { { "LogoSubtitle", "Set up your company to get started" } })
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bx bx-buildings me-2"></i>Create Company
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="createCompanyForm">
+            @Html.AntiForgeryToken()
 
-                <form id="createCompanyForm" method="post" asp-action="CreateCompany" asp-controller="UserCompany" novalidate>
-                    @Html.AntiForgeryToken()
+            <div id="success-message" class="alert alert-success" role="alert" style="display: none; white-space: pre-line;"></div>
+            <div id="error-message" class="alert alert-danger" role="alert" style="display: none; white-space: pre-line;"></div>
 
-                    <div id="success-message" class="alert alert-success" role="alert" style="display: none; white-space: pre-line;"></div>
-                    <div id="error-message" class="alert alert-danger" role="alert" style="display: none; white-space: pre-line;"></div>
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
 
-                    @if (TempData["ErrorMessage"] != null)
-                    {
-                        <div class="alert alert-danger" role="alert">
-                            @TempData["ErrorMessage"]
-                        </div>
-                    }
-
-                    <!-- Company Information Section -->
-                    <h6 class="section-title">Company Information</h6>
-
-                    <div class="mb-3">
-                        <label asp-for="CompanyName" class="form-label">Company Name</label>
-                        <input asp-for="CompanyName" class="form-control" placeholder="Enter company name" />
-                        <span asp-validation-for="CompanyName" class="text-danger"></span>
-                    </div>
-
-                    <div class="row g-2 mb-3">
-                        <div class="col-md-6">
-                            <label asp-for="CompanyCode" class="form-label">Company Code</label>
-                            <input asp-for="CompanyCode" class="form-control" placeholder="Enter company code" />
-                            <span asp-validation-for="CompanyCode" class="text-danger"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="CompanyPhone" class="form-label">Company Phone</label>
-                            <input asp-for="CompanyPhone" class="form-control" placeholder="Enter phone number" />
-                            <span asp-validation-for="CompanyPhone" class="text-danger"></span>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="CompanyEmail" class="form-label">Company Email</label>
-                        <input asp-for="CompanyEmail" class="form-control" placeholder="name@company.com" />
-                        <span asp-validation-for="CompanyEmail" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-4">
-                        <label asp-for="CompanyAddress" class="form-label">Company Address</label>
-                        <input asp-for="CompanyAddress" class="form-control" placeholder="Enter company address" />
-                        <span asp-validation-for="CompanyAddress" class="text-danger"></span>
-                    </div>
-
-                    <hr class="my-4" />
-
-                    <div class="form-check mb-4">
-                        <input class="form-check-input" type="checkbox" id="agreeToTerms" required />
-                        <label class="form-check-label" for="agreeToTerms">
-                            I agree to the <a href="@Url.Action("Privacy", "Home")" target="_blank" class="text-decoration-none">Terms and Conditions</a>
-                        </label>
-                    </div>
-
-                    <button id="create-company-submit" type="submit" class="btn btn-primary w-100 mb-3 d-flex align-items-center justify-content-center">
-                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                        <span class="button-text">Create Company</span>
-                    </button>
-
-                    <div class="text-center">
-                        <span class="text-muted">Already have an account?</span>
-                        <a asp-action="Login" asp-controller="Auth" class="text-decoration-none ms-2">Sign in</a>
-                    </div>
-                </form>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CompanyName" class="form-label fw-bold">Company Name <span class="text-danger">*</span></label>
+                    <input asp-for="CompanyName" class="form-control" placeholder="Enter company name" required />
+                    <span asp-validation-for="CompanyName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CompanyCode" class="form-label fw-bold">Company Code</label>
+                    <input asp-for="CompanyCode" class="form-control" placeholder="Enter company code" />
+                    <span asp-validation-for="CompanyCode" class="text-danger"></span>
+                </div>
             </div>
-        </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CompanyEmail" class="form-label fw-bold">Email</label>
+                    <input asp-for="CompanyEmail" class="form-control" placeholder="name@company.com" />
+                    <span asp-validation-for="CompanyEmail" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CompanyPhone" class="form-label fw-bold">Phone</label>
+                    <input asp-for="CompanyPhone" class="form-control" placeholder="Enter phone number" />
+                    <span asp-validation-for="CompanyPhone" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label asp-for="CompanyAddress" class="form-label fw-bold">Address</label>
+                    <input asp-for="CompanyAddress" class="form-control" placeholder="Enter company address" />
+                    <span asp-validation-for="CompanyAddress" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-check mb-4">
+                <input class="form-check-input" type="checkbox" id="agreeToTerms" required />
+                <label class="form-check-label" for="agreeToTerms">
+                    I agree to the <a href="@Url.Action("Privacy", "Home")" target="_blank" class="text-decoration-none">Terms and Conditions</a>
+                </label>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button id="create-company-submit" type="submit" class="btn btn-outline-primary">
+                    <i class="bx bx-save me-1"></i> Create Company
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('CreateCompany form initialized');
+        document.getElementById('createCompanyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-            var form = document.getElementById('createCompanyForm');
-            if (!form) {
+            const form = this;
+            const formData = new FormData(form);
+            const url = '@Url.Action("CreateCompany", "UserCompany")';
+
+            // Validate terms checkbox
+            const termsCheckbox = document.getElementById('agreeToTerms');
+            if (!termsCheckbox.checked) {
+                if (window.toastr) {
+                    toastr.error('You must agree to the Terms and Conditions.', 'Error');
+                } else {
+                    document.getElementById('error-message').textContent = 'You must agree to the Terms and Conditions.';
+                    document.getElementById('error-message').style.display = 'block';
+                }
                 return;
             }
 
-            var button = document.getElementById('create-company-submit');
-            var spinner = button.querySelector('.spinner-border');
-            var buttonText = button.querySelector('.button-text');
-            var errorMessage = document.getElementById('error-message');
-            var successMessage = document.getElementById('success-message');
-            var termsCheckbox = document.getElementById('agreeToTerms');
-            var companyNameInput = document.getElementById('CompanyName');
-
-            function showError(message) {
-                errorMessage.textContent = message;
-                errorMessage.style.display = 'block';
-                successMessage.style.display = 'none';
-            }
-
-            function clearMessages() {
-                errorMessage.style.display = 'none';
-                successMessage.style.display = 'none';
-            }
-
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
-
-                clearMessages();
-
-                if (!companyNameInput.value.trim()) {
-                    companyNameInput.focus();
-                    showError('Company Name is required.');
-                    return;
-                }
-
-                if (!form.checkValidity()) {
-                    form.reportValidity();
-                    return;
-                }
-
-                if (!termsCheckbox.checked) {
-                    showError('You must agree to the Terms and Conditions.');
-                    return;
-                }
-
-                button.disabled = true;
-                spinner.classList.remove('d-none');
-                buttonText.textContent = 'Creating Company...';
-
-                var formData = new FormData(form);
-
-                try {
-                    var response = await fetch(form.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    });
-
-                    var payload = null;
-                    try {
-                        payload = await response.json();
-                    } catch {
-                        payload = null;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
+                });
 
-                    if (!response.ok) {
-                        if (payload && payload.errors) {
-                            showError('Please correct the following errors:\n' + payload.errors.map(function(error) {
-                                return '• ' + error;
-                            }).join('\n'));
-                        } else if (payload && payload.message) {
-                            showError(payload.details
-                                ? payload.message + '\n' + payload.details
-                                : payload.message);
-                        } else if (response.status === 401) {
-                            showError('You must be logged in to create a company. Please log in first.');
-                        } else {
-                            showError('Failed to create company. Please try again.');
-                        }
-                        return;
-                    }
+                const result = await response.json();
 
-                    var successText = payload && payload.message
-                        ? payload.message
-                        : 'Company created successfully.';
-                    successMessage.innerHTML = successText + '<br><a href="@Url.Action("Index", "Contacts")" class="alert-link">Go to Contacts</a>';
-                    successMessage.style.display = 'block';
-                    form.reset();
-
+                if (result.success) {
                     if (window.toastr) {
-                        toastr.success('Company created successfully.', 'Success');
+                        toastr.success(result.message || "Company created successfully", "Success", { "toastClass": "toast-green" });
+                    } else {
+                        document.getElementById('success-message').textContent = result.message || 'Company created successfully.';
+                        document.getElementById('success-message').style.display = 'block';
                     }
-                } catch (error) {
-                    console.error('Create company request failed:', error);
-                    showError('Request failed. Please try again.');
-                } finally {
-                    button.disabled = false;
-                    spinner.classList.add('d-none');
-                    buttonText.textContent = 'Create Company';
+                    form.reset();
+                } else {
+                    if (window.toastr) {
+                        toastr.error(result.message || "Failed to create company", "Error");
+                    } else {
+                        document.getElementById('error-message').textContent = result.message || 'Failed to create company.';
+                        document.getElementById('error-message').style.display = 'block';
+                    }
                 }
-            });
+            } catch (error) {
+                console.error('Error:', error);
+                if (window.toastr) {
+                    toastr.error("An error occurred while creating company", "Error");
+                } else {
+                    document.getElementById('error-message').textContent = 'An error occurred while creating company.';
+                    document.getElementById('error-message').style.display = 'block';
+                }
+            }
         });
     </script>
 }

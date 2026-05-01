@@ -103,8 +103,8 @@ return RedirectToAction("Index", "Home");
                 Expires = DateTimeOffset.UtcNow.AddHours(1)
             });
 
-            // Redirect to UserCompany/NoCompany page since user doesn't have a company yet
-            return RedirectToAction("NoCompany", "UserCompany");
+            // Redirect to UserCompany/CreateCompany page since user doesn't have a company yet
+            return RedirectToAction("CreateCompany", "UserCompany");
         }
         catch (Exception ex)
         {
@@ -171,8 +171,8 @@ return RedirectToAction("Index", "Home");
                     Expires = DateTimeOffset.UtcNow.AddHours(1)
                 });
 
-                // Redirect to NoCompany page
-                return RedirectToAction("NoCompany", "UserCompany");
+                // Redirect to CreateCompany page
+                return RedirectToAction("CreateCompany", "UserCompany");
             }
 
             // Get default company
@@ -607,11 +607,11 @@ return RedirectToAction("Index", "Home");
             var hasCompany = await _unitOfWork.userRepository.GetUserCompaniesAsync(user.Id);
             if (hasCompany == null || !hasCompany.Any())
             {
-                // Redirect to NoCompany page
+                // Redirect to CreateCompany page
                 return Ok(new {
                     success = true,
                     message = "Login successful",
-                    redirectUrl = Url.Action("NoCompany", "UserCompany"),
+                    redirectUrl = Url.Action("CreateCompany", "UserCompany"),
                     userId = user.Id.ToString()
                 });
             }
