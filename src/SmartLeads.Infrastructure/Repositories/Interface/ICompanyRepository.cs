@@ -10,4 +10,5 @@ public interface ICompanyRepository : IBaseRepository<Company, Guid>
     Task<IList<CompanyDto>> GetCompanyDtosAsync(CancellationToken token = default);
     Task<CompanyDto?> GetCompanyDtoByIdAsync(Guid id, CancellationToken token = default);
     Task<Company?> GetByNameAsync(string name);
+    Task<IList<Company>> GetAllParentCompaniesAsync();
 }

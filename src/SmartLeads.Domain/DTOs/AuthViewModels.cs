@@ -180,6 +180,9 @@ public class CompanyRegistrationViewModel
 
     [Display(Name = "Date of Joining")]
     public DateTime? DateOfJoining { get; set; }
+
+    [Display(Name = "Parent Company")]
+    public Guid? ParentCompanyId { get; set; }
 }
 
 public class CreateUserViewModel

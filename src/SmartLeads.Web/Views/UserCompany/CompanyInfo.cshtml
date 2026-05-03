@@ -63,6 +63,18 @@
 
             @if (canEdit)
             {
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label fw-bold">Parent Company</label>
+                        <select class="form-select" name="ParentCompanyId" id="parentCompanyId">
+                            <option value="">-- None (Parent Company) --</option>
+                        </select>
+                    </div>
+                </div>
+            }
+
+            @if (canEdit)
+            {
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                     <button type="submit" class="btn btn-outline-primary" id="submitBtn">
                         <i class="bx bx-save me-1"></i> Save
@@ -72,6 +84,53 @@
         </form>
     </div>
 </div>
+
+<!-- Parent Company Info -->
+@if (Model.ParentCompany != null)
+{
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bx bx-buildings me-2"></i>Parent Company
+            </h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Name:</strong> @Model.ParentCompany.Name</p>
+            <p><strong>Code:</strong> @Model.ParentCompany.Code</p>
+        </div>
+    </div>
+}
+
+<!-- Child Companies -->
+@if (Model.ChildCompanies != null && Model.ChildCompanies.Any())
+{
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bx bx-network-chart me-2"></i>Child Companies
+            </h5>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                @foreach (var child in Model.ChildCompanies)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>@child.Name</strong>
+                            @if (!string.IsNullOrEmpty(child.Code))
+                            {
+                                <span class="badge bg-secondary ms-2">@child.Code</span>
+                            }
+                        </div>
+                        <a href="@Url.Action("SwitchCompany", "UserCompany", new { companyId = child.Id })" class="btn btn-sm btn-outline-primary">
+                            Switch
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+}
 
 @section Scripts {
     <script>
@@ -115,5 +174,15 @@
                 toastr.error("An error occurred while updating company information", "Error");
             }
         });
+
+        // Initialize Select2 for Parent Company
+        select2Initializer(
+            '#parentCompanyId',
+            '@Url.Action("GetParentCompaniesForSelect2", "UserCompany")',
+            'ParentCompany',
+            null,
+            false,
+            false
+        );
     </script>
 }

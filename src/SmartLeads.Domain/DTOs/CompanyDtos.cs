@@ -32,5 +32,6 @@ public record UpdateCompanyRequest(
     string Code,
     string Email,
     string Phone,
-    string Address
+    string Address,
+    Guid? ParentCompanyId
 );

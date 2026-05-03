@@ -68,8 +68,11 @@ public class UserCompanyController : Controller
 
     // GET: UserCompany/CreateCompany - Show create company form
     [HttpGet]
-    public IActionResult CreateCompany()
+    public async Task<IActionResult> CreateCompany()
     {
+        // Get list of parent companies for dropdown
+        var parentCompanies = await _unitOfWork.companyRepository.GetAllParentCompaniesAsync();
+        ViewBag.ParentCompanies = parentCompanies.Select(c => new { c.Id, c.Name }).ToList();
         return View();
     }
 
@@ -154,6 +157,7 @@ public class UserCompanyController : Controller
             }
 
             // Create company
+            var isParent = !model.ParentCompanyId.HasValue;
             var company = new Company
             {
                 Name = model.CompanyName,
@@ -161,7 +165,8 @@ public class UserCompanyController : Controller
                 Email = model.CompanyEmail,
                 Phone = model.CompanyPhone,
                 Address = model.CompanyAddress,
-                IsParent = true,
+                IsParent = isParent,
+                ParentCompanyId = model.ParentCompanyId,
                 IsActive = true
             };
 
@@ -458,6 +463,8 @@ public class UserCompanyController : Controller
         }
 
         var company = await _unitOfWork.systemDbContext.Companies
+            .Include(c => c.ParentCompany)
+            .Include(c => c.ChildCompanies.Where(cc => !cc.IsDeleted))
             .FirstOrDefaultAsync(c => c.Id == currentCompanyId.Value && !c.IsDeleted);
 
         if (company == null)
@@ -466,7 +473,43 @@ public class UserCompanyController : Controller
             return RedirectToAction("NoCompany");
         }
 
+        // Get all parent companies for dropdown (excluding current company and its children)
+        var parentCompanies = await _unitOfWork.companyRepository.GetAllParentCompaniesAsync();
+        ViewBag.ParentCompanies = parentCompanies
+            .Where(c => c.Id != currentCompanyId.Value)
+            .Select(c => new { c.Id, c.Name })
+            .ToList();
+
         return View(company);
+    }
+
+    // GET: UserCompany/GetParentCompaniesForSelect2 - Get parent companies for Select2
+    [HttpGet]
+    public async Task<IActionResult> GetParentCompaniesForSelect2(string searchTerm, string type, string selectedvalue)
+    {
+        try
+        {
+            var companies = await _unitOfWork.companyRepository.GetAllParentCompaniesAsync();
+
+            var data = companies.Select(c => new
+            {
+                id = c.Id.ToString(),
+                text = c.Name,
+                selected = !string.IsNullOrEmpty(selectedvalue) && c.Id.ToString() == selectedvalue
+            }).ToList();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                data = data.Where(x => x.text.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            return Json(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get parent companies for Select2");
+            return Json(new List<object>());
+        }
     }
 
     [HttpPost]
@@ -502,6 +545,8 @@ public class UserCompanyController : Controller
             company.Email = model.Email;
             company.Phone = model.Phone;
             company.Address = model.Address;
+            company.ParentCompanyId = model.ParentCompanyId;
+            company.IsParent = !model.ParentCompanyId.HasValue;
             company.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.systemDbContext.SaveChangesAsync();

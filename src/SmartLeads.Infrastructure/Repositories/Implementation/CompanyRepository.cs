@@ -74,6 +74,13 @@ public class CompanyRepository : BaseRepository<Company, Guid>, ICompanyReposito
         return await _systemDbContext.Companies.FirstOrDefaultAsync(c => c.Name == name && !c.IsDeleted);
     }
 
+    public async Task<IList<Company>> GetAllParentCompaniesAsync()
+    {
+        return await _systemDbContext.Companies
+            .Where(c => c.IsParent && !c.IsDeleted)
+            .ToListAsync();
+    }
+
     public override async Task<IList<Company>> GetAllAsync(CancellationToken token = default)
     {
         return await _systemDbContext.Companies.Where(c => !c.IsDeleted).ToListAsync(token);

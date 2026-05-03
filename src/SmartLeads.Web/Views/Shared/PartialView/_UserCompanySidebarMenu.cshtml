@@ -9,6 +9,11 @@
         ? await _unitOfWork.systemDbContext.Companies.FindAsync(currentCompanyId.Value)
         : null;
     var userCompanies = await _companyContext.GetUserCompaniesAsync();
+    
+    // Group companies by parent: parent companies first, then their children
+    var parentCompanies = userCompanies.Where(uc => uc.Company.IsParent).ToList();
+    var childCompanies = userCompanies.Where(uc => !uc.Company.IsParent && uc.Company.ParentCompanyId.HasValue).ToList();
+    var standaloneCompanies = userCompanies.Where(uc => !uc.Company.IsParent && !uc.Company.ParentCompanyId.HasValue).ToList();
 }
 
 <ul class="menu-inner py-1">
@@ -26,8 +31,42 @@
             <span class="menu-header-text" data-i18n="My Companies">My Companies</span>
         </li>
 
-        <!-- Show list of user's companies -->
-        @foreach (var uc in userCompanies)
+        <!-- Show parent companies with their children -->
+        @foreach (var parent in parentCompanies)
+        {
+            var children = childCompanies.Where(cc => cc.Company.ParentCompanyId == parent.CompanyId).ToList();
+            <li class="menu-item @(children.Any() ? "menu-item-open" : "")">
+                <a href="javascript:void(0);" 
+                   class="menu-link @(parent.CompanyId == currentCompanyId ? "active" : "")"
+                   onclick="switchCompanySidebar('@parent.CompanyId', '@parent.Company.Name'); return false;">
+                    <i class="menu-icon icon-base bx bx-@(parent.CompanyId == currentCompanyId ? "check-circle" : "buildings")"></i>
+                    <span class="text-truncate" style="max-width: 160px;">@parent.Company.Name</span>
+                    @if (parent.IsDefault)
+                    {
+                        <span class="badge bg-label-primary ms-auto">Default</span>
+                    }
+                </a>
+                @if (children.Any())
+                {
+                    <ul class="menu-sub">
+                        @foreach (var child in children)
+                        {
+                            <li class="menu-item">
+                                <a href="javascript:void(0);" 
+                                   class="menu-link @(child.CompanyId == currentCompanyId ? "active" : "")"
+                                   onclick="switchCompanySidebar('@child.CompanyId', '@child.Company.Name'); return false;">
+                                    <i class="menu-icon icon-base bx bx-@(child.CompanyId == currentCompanyId ? "check-circle" : "circle")"></i>
+                                    <span class="text-truncate" style="max-width: 140px;">@child.Company.Name</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                }
+            </li>
+        }
+
+        <!-- Show standalone companies (no parent, not a parent) -->
+        @foreach (var uc in standaloneCompanies)
         {
             <li class="menu-item">
                 <a href="javascript:void(0);" 
