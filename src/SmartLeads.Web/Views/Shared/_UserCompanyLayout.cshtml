@@ -121,6 +121,14 @@
     <script src="~/gtlib/dependencylib/sneatlayout/assets/js/config.js"></script>
 
     <script type="importmap"></script>
+    <style>
+        #layoutSwitcher i {
+            transition: transform 0.5s ease;
+        }
+        #layoutSwitcher.rotating i {
+            transform: rotate(180deg);
+        }
+    </style>
 </head>
 <body>
     <!-- Antiforgery Token Hidden Input -->
@@ -213,23 +221,14 @@
                             }
 
                             <!-- Layout Switcher -->
-                            <li class="nav-item dropdown me-2 me-xl-0">
-                                <a class="nav-link dropdown-toggle hide-arrow"
+                            <li class="nav-item me-2 me-xl-0">
+                                <a class="nav-link"
                                    id="layoutSwitcher"
                                    href="javascript:void(0);"
-                                   data-bs-toggle="dropdown">
+                                   onclick="switchLayoutWithRotation(this, 'main')">
                                     <i class="icon-base bx bx-layout icon-md"></i>
                                     <span class="d-none ms-2">Layout</span>
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="layoutSwitcher">
-                                    <li>
-                                        <button type="button"
-                                                class="dropdown-item"
-                                                onclick="switchToMainLayout()">
-                                            <i class="icon-base bx bx-globe me-2"></i>Main Layout
-                                        </button>
-                                    </li>
-                                </ul>
                             </li>
 
                             <!-- Style Switcher -->
@@ -613,6 +612,54 @@
                 });
             }
         })();
+
+        // Switch Layout with Rotation
+        function switchLayoutWithRotation(element, targetLayout) {
+            // Add rotation class
+            element.classList.add('rotating');
+
+            // Call the switch function
+            setTimeout(function() {
+                switchToMainLayout();
+            }, 250); // Wait for half of rotation
+        }
+
+        // Switch to Main Layout
+        function switchToMainLayout() {
+            console.log('Switching to Main Layout...');
+            fetch('/UserCompany/SwitchLayout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ useUserCompanyLayout: false })
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        console.error('Server error:', err);
+                        throw err;
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    toastr.success('Switched to Main Layout', 'Layout Changed');
+                    setTimeout(() => {
+                        window.location.href = '/Home/Index';
+                    }, 1000);
+                } else {
+                    toastr.error('Failed to switch layout', 'Error');
+                }
+            })
+            .catch(error => {
+                console.error('Switch layout failed:', error);
+                toastr.error(error.message || 'Failed to switch layout', 'Error');
+            });
+        }
     </script>
 
     <!-- Services -->
