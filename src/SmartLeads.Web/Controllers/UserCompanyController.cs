@@ -167,11 +167,14 @@ public class UserCompanyController : Controller
 
             await _unitOfWork.companyRepository.AddAsync(company);
 
-            // Create Employee record for the logged-in user with default values
+            // Create Employee record for the logged-in user with data from User
             var employee = new Employee
             {
                 CompanyId = company.Id,
                 EmployeeId = $"EMP{user.Id.ToString().Substring(0, 8).ToUpper()}",
+                FirstName = user.FirstName ?? string.Empty,
+                LastName = user.LastName ?? string.Empty,
+                WorkEmail = user.Email,
                 DepartmentId = null,
                 DesignationId = null,
                 PhoneNumber = null,
