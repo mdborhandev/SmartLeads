@@ -6,7 +6,7 @@ namespace SmartLeads.Utilities.Interfaces;
 /// Notification repository interface for use by INotificationService.
 /// Full implementation lives in Infrastructure.
 /// </summary>
-public interface INotificationRepo
+public interface INotificationRepository
 {
     // Core CRUD
     Task AddAsync(Notification entity, CancellationToken token = default);

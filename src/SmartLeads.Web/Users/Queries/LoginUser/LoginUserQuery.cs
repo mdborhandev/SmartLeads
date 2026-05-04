@@ -2,7 +2,9 @@ using MediatR;
 using SmartLeads.Domain.DTOs;
 using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Repositories.Interface;
-using SmartLeads.Utilities.Interfaces;
+using IUserRepo = SmartLeads.Utilities.Interfaces.IUserRepository;
+using IPasswordHasher = SmartLeads.Utilities.Interfaces.IPasswordHasher;
+using IJwtTokenGenerator = SmartLeads.Utilities.Interfaces.IJwtTokenGenerator;
 
 namespace SmartLeads.Web.Users.Queries.LoginUser;
 

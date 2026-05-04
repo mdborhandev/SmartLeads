@@ -7,7 +7,7 @@ namespace SmartLeads.Utilities.Interfaces;
 /// Notification preference repository interface for use by INotificationService.
 /// Full implementation lives in Infrastructure.
 /// </summary>
-public interface INotificationPreferenceRepo
+public interface INotificationPreferenceRepository
 {
     Task<NotificationPreference?> GetByUserIdAndTypeAsync(Guid userId, NotificationType type, CancellationToken cancellationToken = default);
     Task<IList<NotificationPreference>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);

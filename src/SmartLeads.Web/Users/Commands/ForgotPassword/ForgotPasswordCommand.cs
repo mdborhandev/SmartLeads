@@ -1,7 +1,8 @@
 using MediatR;
 using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Repositories.Interface;
-using SmartLeads.Utilities.Interfaces;
+using IUserRepo = SmartLeads.Utilities.Interfaces.IUserRepository;
+using IEmailService = SmartLeads.Utilities.Interfaces.IEmailService;
 
 namespace SmartLeads.Web.Users.Commands.ForgotPassword;
 

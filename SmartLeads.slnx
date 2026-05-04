@@ -3,6 +3,5 @@
     <Project Path="src/SmartLeads.Domain/SmartLeads.Domain.csproj" />
     <Project Path="src/SmartLeads.Infrastructure/SmartLeads.Infrastructure.csproj" />
     <Project Path="src/SmartLeads.Web/SmartLeads.Web.csproj" />
-    <Project Path="src/SmartLeads.Worker/SmartLeads.Worker.csproj" />
   </Folder>
 </Solution>

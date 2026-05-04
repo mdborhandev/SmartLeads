@@ -6,24 +6,24 @@ using SmartLeads.Infrastructure.Repositories.Interface;
 
 namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
-public class NotificationPreferenceRepository : GenericSystemRepository<NotificationPreference>, INotificationPreferenceRepository, SmartLeads.Utilities.Interfaces.INotificationPreferenceRepo
+public class NotificationPreferenceRepository : GenericSystemRepository<NotificationPreference>, INotificationPreferenceRepository
 {
-    private readonly SystemDbContext _dbContext;
+    private readonly SystemDbContext _systemDbContext;
 
     public NotificationPreferenceRepository(SystemDbContext dbContext) : base(dbContext)
     {
-        _dbContext = dbContext;
+        _systemDbContext = dbContext;
     }
 
     public async Task<NotificationPreference?> GetByUserIdAndTypeAsync(Guid userId, NotificationType type, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.NotificationPreferences
+        return await _systemDbContext.NotificationPreferences
             .FirstOrDefaultAsync(np => np.UserId == userId && np.NotificationType == type, cancellationToken);
     }
 
     public async Task<IList<NotificationPreference>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.NotificationPreferences
+        return await _systemDbContext.NotificationPreferences
             .Where(np => np.UserId == userId)
             .ToListAsync(cancellationToken);
     }

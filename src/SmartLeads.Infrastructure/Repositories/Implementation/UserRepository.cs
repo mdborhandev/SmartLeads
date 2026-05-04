@@ -8,7 +8,7 @@ using IPasswordHasher = SmartLeads.Utilities.Interfaces.IPasswordHasher;
 
 namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
-public class UserRepository : GenericSystemRepository<User>, IUserRepository, SmartLeads.Utilities.Interfaces.IUserRepo
+public class UserRepository : GenericSystemRepository<User>, IUserRepository
 {
     private readonly SystemDbContext _systemDbContext;
     private readonly DefaultDbContext _defaultDbContext;

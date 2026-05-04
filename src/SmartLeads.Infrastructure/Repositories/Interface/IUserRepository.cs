@@ -3,8 +3,9 @@ using SmartLeads.Domain.Models;
 
 namespace SmartLeads.Infrastructure.Repositories.Interface;
 
-public interface IUserRepository : IGenericSystemRepository<User>
+public interface IUserRepository : IGenericSystemRepository<User>, SmartLeads.Utilities.Interfaces.IUserRepository
 {
+    new Task<User?> GetByIdAsync(Guid id, CancellationToken token = default);
     Task<User?> GetByUsernameOrEmailAsync(string usernameOrEmail);
     Task<User?> GetByEmailAsync(string email);
     Task<User?> GetByUsernameAsync(string username);

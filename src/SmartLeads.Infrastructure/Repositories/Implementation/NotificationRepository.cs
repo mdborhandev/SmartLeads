@@ -6,18 +6,18 @@ using SmartLeads.Infrastructure.Repositories.Interface;
 
 namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
-public class NotificationRepository : BaseRepository<Notification, Guid>, INotificationRepository, SmartLeads.Utilities.Interfaces.INotificationRepo
+public class NotificationRepository : BaseRepository<Notification, Guid>, INotificationRepository
 {
-    private readonly SystemDbContext _dbContext;
+    private readonly SystemDbContext _systemDbContext;
 
     public NotificationRepository(SystemDbContext dbContext) : base(dbContext)
     {
-        _dbContext = dbContext;
+        _systemDbContext = dbContext;
     }
 
     public async Task<IList<Notification>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Notifications
+        return await _systemDbContext.Notifications
             .Where(n => n.UserId == userId && !n.IsDeleted)
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -25,7 +25,7 @@ public class NotificationRepository : BaseRepository<Notification, Guid>, INotif
 
     public async Task<IList<Notification>> GetUnreadByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Notifications
+        return await _systemDbContext.Notifications
             .Where(n => n.UserId == userId && n.Status == NotificationStatus.Unread && !n.IsDeleted)
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -33,7 +33,7 @@ public class NotificationRepository : BaseRepository<Notification, Guid>, INotif
 
     public async Task<IList<Notification>> GetByTypeAsync(Guid userId, NotificationType type, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Notifications
+        return await _systemDbContext.Notifications
             .Where(n => n.UserId == userId && n.Type == type && !n.IsDeleted)
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -41,7 +41,7 @@ public class NotificationRepository : BaseRepository<Notification, Guid>, INotif
 
     public async Task<int> GetUnreadCountByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Notifications
+        return await _systemDbContext.Notifications
             .CountAsync(n => n.UserId == userId && n.Status == NotificationStatus.Unread && !n.IsDeleted, cancellationToken);
     }
 
@@ -59,7 +59,7 @@ public class NotificationRepository : BaseRepository<Notification, Guid>, INotif
 
     public async Task MarkAllAsReadAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var unreadNotifications = await _dbContext.Notifications
+        var unreadNotifications = await _systemDbContext.Notifications
             .Where(n => n.UserId == userId && n.Status == NotificationStatus.Unread && !n.IsDeleted)
             .ToListAsync(cancellationToken);
 
@@ -95,7 +95,7 @@ public class NotificationRepository : BaseRepository<Notification, Guid>, INotif
 
     public async Task ArchiveAllAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var notifications = await _dbContext.Notifications
+        var notifications = await _systemDbContext.Notifications
             .Where(n => n.UserId == userId && n.Status != NotificationStatus.Archived && !n.IsDeleted)
             .ToListAsync(cancellationToken);
 
@@ -109,7 +109,7 @@ public class NotificationRepository : BaseRepository<Notification, Guid>, INotif
 
     public async Task DeleteOldNotificationsAsync(DateTime olderThan, CancellationToken cancellationToken = default)
     {
-        var oldNotifications = await _dbContext.Notifications
+        var oldNotifications = await _systemDbContext.Notifications
             .Where(n => n.CreatedAt < olderThan && !n.IsDeleted)
             .ToListAsync(cancellationToken);
 

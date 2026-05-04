@@ -1,7 +1,7 @@
 using MediatR;
-using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Repositories.Interface;
-using SmartLeads.Utilities.Interfaces;
+using IUserRepo = SmartLeads.Utilities.Interfaces.IUserRepository;
+using IPasswordHasher = SmartLeads.Utilities.Interfaces.IPasswordHasher;
 
 namespace SmartLeads.Web.Users.Commands.ResetPassword;
 

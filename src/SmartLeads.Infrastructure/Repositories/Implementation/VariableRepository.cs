@@ -22,7 +22,7 @@ public class VariableRepository : GenericRepository<Variable>, IVariableReposito
         new CommonDataTypeDto { Id = "Employment Status", Text = "Employment Status" }
     };
 
-    public List<CommonDataTypeDto> GetAllCommonDataType(string searchTerm = null)
+    public List<CommonDataTypeDto> GetAllCommonDataType(string? searchTerm = null)
     {
         var result = _commonDataTypes;
 
@@ -36,13 +36,13 @@ public class VariableRepository : GenericRepository<Variable>, IVariableReposito
         return result.OrderBy(x => x.Text).ToList();
     }
 
-    public List<CommonDataTypeDto> GetAllCommonDataType(string searchTerm, string selectedvalue)
+    public List<CommonDataTypeDto> GetAllCommonDataType(string? searchTerm, string? selectedvalue)
     {
         var result = _commonDataTypes.Select(x => new CommonDataTypeDto
         {
             Id = x.Id,
             Text = x.Text,
-            selected = selectedvalue != "" && x.Id == selectedvalue
+            selected = selectedvalue != null && selectedvalue != "" && x.Id == selectedvalue
         }).ToList();
 
         if (!string.IsNullOrWhiteSpace(searchTerm))

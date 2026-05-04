@@ -1,6 +1,8 @@
 using MediatR;
+using SmartLeads.Domain.DTOs;
 using SmartLeads.Domain.Models;
 using SmartLeads.Infrastructure.Repositories.Interface;
+using IUserRepo = SmartLeads.Utilities.Interfaces.IUserRepository;
 
 namespace SmartLeads.Web.Users.Queries.GetUserProfile;
 

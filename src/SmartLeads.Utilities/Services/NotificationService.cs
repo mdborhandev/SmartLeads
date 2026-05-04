@@ -7,15 +7,15 @@ namespace SmartLeads.Utilities.Services;
 
 public class NotificationService : INotificationService
 {
-    private readonly INotificationRepo _notificationRepository;
-    private readonly INotificationPreferenceRepo _notificationPreferenceRepository;
-    private readonly IUserRepo _userRepository;
+    private readonly INotificationRepository _notificationRepository;
+    private readonly INotificationPreferenceRepository _notificationPreferenceRepository;
+    private readonly IUserRepository _userRepository;
     private readonly IEmailService _emailService;
 
     public NotificationService(
-        INotificationRepo notificationRepository,
-        INotificationPreferenceRepo notificationPreferenceRepository,
-        IUserRepo userRepository,
+        INotificationRepository notificationRepository,
+        INotificationPreferenceRepository notificationPreferenceRepository,
+        IUserRepository userRepository,
         IEmailService emailService)
     {
         _notificationRepository = notificationRepository;
