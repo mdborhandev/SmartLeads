@@ -14,11 +14,6 @@ public class DefaultDbContext : DbContext
     }
 
     // Default database entities
-    public DbSet<Contact> Contacts { get; set; }
-    public DbSet<Group> Groups { get; set; }
-    public DbSet<Tag> Tags { get; set; }
-    public DbSet<Note> Notes { get; set; }
-    public DbSet<Attachment> Attachments { get; set; }
     public DbSet<ColumnFilter> ColumnFilters { get; set; }
     public DbSet<Employee> Employees { get; set; }
     public DbSet<EmployeeUser> EmployeeUsers { get; set; }
@@ -26,10 +21,6 @@ public class DefaultDbContext : DbContext
     public DbSet<Designation> Designations { get; set; }
     public DbSet<Invitation> Invitations { get; set; }
     public DbSet<Variable> Variables { get; set; }
-
-    // Junction tables
-    public DbSet<ContactGroup> ContactGroups { get; set; }
-    public DbSet<ContactTag> ContactTags { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -53,69 +44,6 @@ public class DefaultDbContext : DbContext
 
         // Configure BaseEntity relationships for all entities
         ConfigureBaseEntityRelationships(modelBuilder);
-
-        modelBuilder.Entity<Contact>(entity =>
-        {
-            entity.Ignore(c => c.User);
-        });
-
-        // Note belongs to Contact
-        modelBuilder.Entity<Note>(entity =>
-        {
-            entity.Ignore(n => n.User);
-
-            entity.HasOne(n => n.Contact)
-                .WithMany(c => c.Notes)
-                .HasForeignKey(n => n.ContactId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-
-        // Attachment belongs to Contact
-        modelBuilder.Entity<Attachment>(entity =>
-        {
-            entity.HasOne(a => a.Contact)
-                .WithMany(c => c.Attachments)
-                .HasForeignKey(a => a.ContactId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-
-        // Many-to-Many: Contact <-> Group
-        modelBuilder.Entity<ContactGroup>(entity =>
-        {
-            entity.HasKey(cg => new { cg.ContactId, cg.GroupId });
-
-            entity.HasOne(cg => cg.Contact)
-                .WithMany(c => c.ContactGroups)
-                .HasForeignKey(cg => cg.ContactId);
-
-            entity.HasOne(cg => cg.Group)
-                .WithMany(g => g.ContactGroups)
-                .HasForeignKey(cg => cg.GroupId);
-        });
-
-        modelBuilder.Entity<Group>(entity =>
-        {
-            entity.Ignore(g => g.User);
-        });
-
-        // Many-to-Many: Contact <-> Tag
-        modelBuilder.Entity<ContactTag>()
-            .HasKey(ct => new { ct.ContactId, ct.TagId });
-
-        modelBuilder.Entity<ContactTag>()
-            .HasOne(ct => ct.Contact)
-            .WithMany(c => c.ContactTags)
-            .HasForeignKey(ct => ct.ContactId);
-
-        modelBuilder.Entity<ContactTag>()
-            .HasOne(ct => ct.Tag)
-            .WithMany(t => t.ContactTags)
-            .HasForeignKey(ct => ct.TagId);
-
-        modelBuilder.Entity<Tag>(entity =>
-        {
-            entity.Ignore(t => t.User);
-        });
 
         modelBuilder.Entity<Employee>(entity =>
         {

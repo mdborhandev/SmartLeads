@@ -26,13 +26,6 @@ public class SystemDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         // Exclude company-specific entities from system database
-        modelBuilder.Ignore<ContactGroup>();
-        modelBuilder.Ignore<ContactTag>();
-        modelBuilder.Ignore<Contact>();
-        modelBuilder.Ignore<Group>();
-        modelBuilder.Ignore<Tag>();
-        modelBuilder.Ignore<Note>();
-        modelBuilder.Ignore<Attachment>();
         modelBuilder.Ignore<ColumnFilter>();
         modelBuilder.Ignore<Employee>();
         modelBuilder.Ignore<EmployeeUser>();

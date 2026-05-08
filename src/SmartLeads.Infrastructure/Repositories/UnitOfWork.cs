@@ -12,7 +12,6 @@ public class UnitOfWork : IUnitOfWork
     private readonly IPasswordHasher _passwordHasher;
 
     #region Repositories
-    public IContactRepository contactRepository { get; private set; }
     public IUserRepository userRepository { get; private set; }
     public ICompanyRepository companyRepository { get; private set; }
     public IInvitationRepository invitationRepository { get; private set; }
@@ -41,7 +40,6 @@ public class UnitOfWork : IUnitOfWork
         notificationPreferenceRepository = new NotificationPreferenceRepository(systemDbContext);
 
         // Default database repositories
-        contactRepository = new ContactRepository(defaultDbContext);
         columnFilterRepository = new ColumnFilterRepository(defaultDbContext);
         departmentRepository = new DepartmentRepository(defaultDbContext);
         designationRepository = new DesignationRepository(defaultDbContext);

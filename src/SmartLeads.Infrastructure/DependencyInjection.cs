@@ -47,7 +47,6 @@ public static class DependencyInjection
         services.AddScoped<SmartLeads.Utilities.Interfaces.IUserRepository>(sp => sp.GetRequiredService<IUserRepository>());
         
         services.AddScoped<ICompanyRepository, CompanyRepository>();
-        services.AddScoped<IContactRepository, ContactRepository>();
         services.AddScoped<IInvitationRepository, InvitationRepository>();
         services.AddScoped<IColumnFilterRepository, ColumnFilterRepository>();
         
