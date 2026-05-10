@@ -15,8 +15,7 @@ public interface IUnitOfWork : IAsyncDisposable
     IEmployeeRepository employeeRepository { get; }
     IVariableRepository variableRepository { get; }
 
-    SystemDbContext systemDbContext { get; }
-    DefaultDbContext defaultDbContext { get; }
+    SmartLeadsDbContext dbContext { get; }
 
     Task SaveAsync(CancellationToken token = default);
 }

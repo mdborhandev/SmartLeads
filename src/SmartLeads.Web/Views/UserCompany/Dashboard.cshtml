@@ -11,7 +11,7 @@
     // Get current company
     var currentCompanyId = _companyContext.CurrentCompanyId;
     var currentCompany = currentCompanyId.HasValue
-        ? await _unitOfWork.systemDbContext.Companies.FindAsync(currentCompanyId.Value)
+        ? await _unitOfWork.dbContext.Companies.FindAsync(currentCompanyId.Value)
         : null;
 
     // Get user's companies
@@ -22,11 +22,11 @@
     int userCount = 0;
     if (currentCompanyId.HasValue)
     {
-        employeeCount = await _unitOfWork.defaultDbContext.Employees
+        employeeCount = await _unitOfWork.dbContext.Employees
             .Where(e => e.CompanyId == currentCompanyId.Value && e.IsActive)
             .CountAsync();
         
-        userCount = await _unitOfWork.systemDbContext.UserCompanies
+        userCount = await _unitOfWork.dbContext.UserCompanies
             .Where(uc => uc.CompanyId == currentCompanyId.Value && uc.IsActive && !uc.IsDeleted)
             .CountAsync();
     }

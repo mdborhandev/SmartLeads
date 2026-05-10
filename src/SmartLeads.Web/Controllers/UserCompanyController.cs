@@ -188,7 +188,7 @@ public class UserCompanyController : Controller
                 IsActive = true
             };
 
-            await _unitOfWork.defaultDbContext.Employees.AddAsync(employee);
+            await _unitOfWork.dbContext.Employees.AddAsync(employee);
 
             // Keep the user mapping in the same default-db save as the employee record.
             var employeeUser = new EmployeeUser
@@ -197,10 +197,10 @@ public class UserCompanyController : Controller
                 UserId = user.Id,
                 IsPrimary = true
             };
-            await _unitOfWork.defaultDbContext.EmployeeUsers.AddAsync(employeeUser);
+            await _unitOfWork.dbContext.EmployeeUsers.AddAsync(employeeUser);
 
             // Check if user has any other companies with IsDefault = true
-            var existingUserCompanies = await _unitOfWork.systemDbContext.UserCompanies
+            var existingUserCompanies = await _unitOfWork.dbContext.UserCompanies
                 .Where(uc => uc.UserId == user.Id && uc.IsDefault)
                 .ToListAsync();
 
@@ -216,7 +216,7 @@ public class UserCompanyController : Controller
                 Role = UserRole.SuperAdmin,  // Creator is always SuperAdmin of their company
                 IsDefault = shouldBeDefault
             };
-            await _unitOfWork.systemDbContext.UserCompanies.AddAsync(userCompany);
+            await _unitOfWork.dbContext.UserCompanies.AddAsync(userCompany);
 
             // Save all changes in one go - both contexts
             _logger.LogInformation("Saving company {CompanyName} for user {UserId}", model.CompanyName, user.Id);
@@ -247,32 +247,32 @@ public class UserCompanyController : Controller
             {
                 if (createdEmployeeId.HasValue)
                 {
-                    var employeeUsers = _unitOfWork.defaultDbContext.EmployeeUsers
+                    var employeeUsers = _unitOfWork.dbContext.EmployeeUsers
                         .Where(eu => eu.EmployeeId == createdEmployeeId.Value);
-                    _unitOfWork.defaultDbContext.EmployeeUsers.RemoveRange(employeeUsers);
+                    _unitOfWork.dbContext.EmployeeUsers.RemoveRange(employeeUsers);
 
-                    var employee = await _unitOfWork.defaultDbContext.Employees.FindAsync(createdEmployeeId.Value);
+                    var employee = await _unitOfWork.dbContext.Employees.FindAsync(createdEmployeeId.Value);
                     if (employee != null)
                     {
-                        _unitOfWork.defaultDbContext.Employees.Remove(employee);
+                        _unitOfWork.dbContext.Employees.Remove(employee);
                     }
 
-                    await _unitOfWork.defaultDbContext.SaveChangesAsync();
+                    await _unitOfWork.dbContext.SaveChangesAsync();
                 }
 
                 if (createdCompanyId.HasValue)
                 {
-                    var userCompanies = _unitOfWork.systemDbContext.UserCompanies
+                    var userCompanies = _unitOfWork.dbContext.UserCompanies
                         .Where(uc => uc.CompanyId == createdCompanyId.Value);
-                    _unitOfWork.systemDbContext.UserCompanies.RemoveRange(userCompanies);
+                    _unitOfWork.dbContext.UserCompanies.RemoveRange(userCompanies);
 
-                    var company = await _unitOfWork.systemDbContext.Companies.FindAsync(createdCompanyId.Value);
+                    var company = await _unitOfWork.dbContext.Companies.FindAsync(createdCompanyId.Value);
                     if (company != null)
                     {
-                        _unitOfWork.systemDbContext.Companies.Remove(company);
+                        _unitOfWork.dbContext.Companies.Remove(company);
                     }
 
-                    await _unitOfWork.systemDbContext.SaveChangesAsync();
+                    await _unitOfWork.dbContext.SaveChangesAsync();
                 }
             }
             catch
@@ -321,13 +321,13 @@ public class UserCompanyController : Controller
             _logger.LogInformation("User {UserId} attempting to switch to company {CompanyId}", userId.Value, companyId);
 
             // Verify user belongs to this company
-            var userCompany = await _unitOfWork.systemDbContext.UserCompanies
+            var userCompany = await _unitOfWork.dbContext.UserCompanies
                 .FirstOrDefaultAsync(uc => uc.UserId == userId.Value && uc.CompanyId == companyId && uc.IsActive && !uc.IsDeleted);
 
             if (userCompany == null)
             {
                 // Log detailed information for debugging
-                var allUserCompanies = await _unitOfWork.systemDbContext.UserCompanies
+                var allUserCompanies = await _unitOfWork.dbContext.UserCompanies
                     .Where(uc => uc.UserId == userId.Value)
                     .ToListAsync();
 
@@ -356,7 +356,7 @@ public class UserCompanyController : Controller
             });
 
             // Get and update Employee record for this user in this company
-            var employeeUser = await _unitOfWork.defaultDbContext.EmployeeUsers
+            var employeeUser = await _unitOfWork.dbContext.EmployeeUsers
                 .Include(eu => eu.Employee)
                 .FirstOrDefaultAsync(eu => eu.UserId == userId.Value && eu.Employee.CompanyId == companyId);
 
@@ -462,7 +462,7 @@ public class UserCompanyController : Controller
             return RedirectToAction("NoCompany");
         }
 
-        var company = await _unitOfWork.systemDbContext.Companies
+        var company = await _unitOfWork.dbContext.Companies
             .Include(c => c.ParentCompany)
             .Include(c => c.ChildCompanies.Where(cc => !cc.IsDeleted))
             .FirstOrDefaultAsync(c => c.Id == currentCompanyId.Value && !c.IsDeleted);
@@ -532,7 +532,7 @@ public class UserCompanyController : Controller
                 return Json(new { success = false, message = "You do not have permission to update company information." });
             }
 
-            var company = await _unitOfWork.systemDbContext.Companies
+            var company = await _unitOfWork.dbContext.Companies
                 .FirstOrDefaultAsync(c => c.Id == model.Id && !c.IsDeleted);
 
             if (company == null)
@@ -549,7 +549,7 @@ public class UserCompanyController : Controller
             company.IsParent = !model.ParentCompanyId.HasValue;
             company.UpdatedAt = DateTime.UtcNow;
 
-            await _unitOfWork.systemDbContext.SaveChangesAsync();
+            await _unitOfWork.dbContext.SaveChangesAsync();
 
             return Json(new { success = true, message = "Company information updated successfully." });
         }

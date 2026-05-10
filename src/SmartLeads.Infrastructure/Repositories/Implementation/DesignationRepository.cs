@@ -8,13 +8,16 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
 public class DesignationRepository : GenericRepository<Designation>, IDesignationRepository
 {
-    public DesignationRepository(DefaultDbContext dbContext) : base(dbContext)
+    private new readonly SmartLeadsDbContext _dbContext;
+
+    public DesignationRepository(SmartLeadsDbContext dbContext) : base(dbContext)
     {
+        _dbContext = dbContext;
     }
 
     public async Task<List<SelectOptionDto>> SearchDesignationsAsync(string searchTerm, string selectedvalue, Guid companyId, Guid? departmentId = null)
     {
-        var query = _defaultDbContext.Designations
+        var query = _dbContext.Designations
             .Where(d => d.CompanyId == companyId && !d.IsDeleted && d.IsActive);
 
         if (departmentId.HasValue)

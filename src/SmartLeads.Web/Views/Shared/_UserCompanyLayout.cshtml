@@ -43,7 +43,7 @@
     // Get current company
     var currentCompanyId = _companyContext.CurrentCompanyId;
     var currentCompany = currentCompanyId.HasValue 
-        ? await _unitOfWork.systemDbContext.Companies.FindAsync(currentCompanyId.Value)
+        ? await _unitOfWork.dbContext.Companies.FindAsync(currentCompanyId.Value)
         : null;
 
     // Get user's companies for the switcher

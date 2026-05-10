@@ -8,23 +8,23 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
 public class CompanyRepository : BaseRepository<Company, Guid>, ICompanyRepository
 {
-    private readonly SystemDbContext _systemDbContext;
+    private new readonly SmartLeadsDbContext _dbContext;
 
-    public CompanyRepository(SystemDbContext dbContext) : base(dbContext)
+    public CompanyRepository(SmartLeadsDbContext dbContext) : base(dbContext)
     {
-        _systemDbContext = dbContext;
+        _dbContext = dbContext;
     }
 
     public async Task<IList<Company>> GetCompaniesByParentIdAsync(Guid? parentId, CancellationToken token = default)
     {
-        return await _systemDbContext.Companies
+        return await _dbContext.Companies
             .Where(c => c.ParentCompanyId == parentId && !c.IsDeleted)
             .ToListAsync(token);
     }
 
     public async Task<IList<CompanyDto>> GetCompanyDtosAsync(CancellationToken token = default)
     {
-        return await _systemDbContext.Companies
+        return await _dbContext.Companies
             .Where(c => !c.IsDeleted)
             .Select(c => new CompanyDto(
                 c.Id,
@@ -44,7 +44,7 @@ public class CompanyRepository : BaseRepository<Company, Guid>, ICompanyReposito
 
     public async Task<CompanyDto?> GetCompanyDtoByIdAsync(Guid id, CancellationToken token = default)
     {
-        return await _systemDbContext.Companies
+        return await _dbContext.Companies
             .Where(c => c.Id == id && !c.IsDeleted)
             .Select(c => new CompanyDto(
                 c.Id,
@@ -64,25 +64,25 @@ public class CompanyRepository : BaseRepository<Company, Guid>, ICompanyReposito
 
     public async Task<Company?> GetCompanyWithChildrenAsync(Guid id, CancellationToken token = default)
     {
-        return await _systemDbContext.Companies
+        return await _dbContext.Companies
             .Include(c => c.ChildCompanies)
             .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted, token);
     }
 
     public async Task<Company?> GetByNameAsync(string name)
     {
-        return await _systemDbContext.Companies.FirstOrDefaultAsync(c => c.Name == name && !c.IsDeleted);
+        return await _dbContext.Companies.FirstOrDefaultAsync(c => c.Name == name && !c.IsDeleted);
     }
 
     public async Task<IList<Company>> GetAllParentCompaniesAsync()
     {
-        return await _systemDbContext.Companies
+        return await _dbContext.Companies
             .Where(c => c.IsParent && !c.IsDeleted)
             .ToListAsync();
     }
 
     public override async Task<IList<Company>> GetAllAsync(CancellationToken token = default)
     {
-        return await _systemDbContext.Companies.Where(c => !c.IsDeleted).ToListAsync(token);
+        return await _dbContext.Companies.Where(c => !c.IsDeleted).ToListAsync(token);
     }
 }

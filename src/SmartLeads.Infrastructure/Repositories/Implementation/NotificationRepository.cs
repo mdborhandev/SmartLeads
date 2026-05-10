@@ -8,59 +8,58 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
 public class NotificationRepository : BaseRepository<Notification, Guid>, INotificationRepository
 {
-    private readonly SystemDbContext _systemDbContext;
+    private new readonly SmartLeadsDbContext _dbContext;
 
-    public NotificationRepository(SystemDbContext dbContext) : base(dbContext)
+    public NotificationRepository(SmartLeadsDbContext dbContext) : base(dbContext)
     {
-        _systemDbContext = dbContext;
+        _dbContext = dbContext;
     }
 
     public async Task<IList<Notification>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await _systemDbContext.Notifications
-            .Where(n => n.UserId == userId && !n.IsDeleted)
+        return await _dbContext.Notifications
+            .Where(n => n.UserId == userId)
             .OrderByDescending(n => n.CreatedAt)
+            .Take(50)
             .ToListAsync(cancellationToken);
     }
 
     public async Task<IList<Notification>> GetUnreadByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await _systemDbContext.Notifications
-            .Where(n => n.UserId == userId && n.Status == NotificationStatus.Unread && !n.IsDeleted)
-            .OrderByDescending(n => n.CreatedAt)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IList<Notification>> GetByTypeAsync(Guid userId, NotificationType type, CancellationToken cancellationToken = default)
-    {
-        return await _systemDbContext.Notifications
-            .Where(n => n.UserId == userId && n.Type == type && !n.IsDeleted)
+        return await _dbContext.Notifications
+            .Where(n => n.UserId == userId && n.Status == NotificationStatus.Unread)
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync(cancellationToken);
     }
 
     public async Task<int> GetUnreadCountByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await _systemDbContext.Notifications
-            .CountAsync(n => n.UserId == userId && n.Status == NotificationStatus.Unread && !n.IsDeleted, cancellationToken);
+        return await _dbContext.Notifications
+            .CountAsync(n => n.UserId == userId && n.Status == NotificationStatus.Unread, cancellationToken);
     }
 
-    // Business logic methods
+    public async Task<IList<Notification>> GetByTypeAsync(Guid userId, NotificationType type, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Notifications
+            .Where(n => n.UserId == userId && n.Type == type)
+            .OrderByDescending(n => n.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task MarkAsReadAsync(Guid notificationId, CancellationToken cancellationToken = default)
     {
-        var notification = await GetByIdAsync(notificationId, cancellationToken);
+        var notification = await _dbContext.Notifications.FindAsync(new object[] { notificationId }, cancellationToken);
         if (notification != null)
         {
             notification.Status = NotificationStatus.Read;
-            await EditAsync(notification);
-            await SaveAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 
     public async Task MarkAllAsReadAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var unreadNotifications = await _systemDbContext.Notifications
-            .Where(n => n.UserId == userId && n.Status == NotificationStatus.Unread && !n.IsDeleted)
+        var unreadNotifications = await _dbContext.Notifications
+            .Where(n => n.UserId == userId && n.Status == NotificationStatus.Unread)
             .ToListAsync(cancellationToken);
 
         foreach (var notification in unreadNotifications)
@@ -68,35 +67,33 @@ public class NotificationRepository : BaseRepository<Notification, Guid>, INotif
             notification.Status = NotificationStatus.Read;
         }
 
-        await SaveAsync();
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task MarkAsUnreadAsync(Guid notificationId, CancellationToken cancellationToken = default)
     {
-        var notification = await GetByIdAsync(notificationId, cancellationToken);
+        var notification = await _dbContext.Notifications.FindAsync(new object[] { notificationId }, cancellationToken);
         if (notification != null)
         {
             notification.Status = NotificationStatus.Unread;
-            await EditAsync(notification);
-            await SaveAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 
     public async Task ArchiveAsync(Guid notificationId, CancellationToken cancellationToken = default)
     {
-        var notification = await GetByIdAsync(notificationId, cancellationToken);
+        var notification = await _dbContext.Notifications.FindAsync(new object[] { notificationId }, cancellationToken);
         if (notification != null)
         {
             notification.Status = NotificationStatus.Archived;
-            await EditAsync(notification);
-            await SaveAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 
     public async Task ArchiveAllAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var notifications = await _systemDbContext.Notifications
-            .Where(n => n.UserId == userId && n.Status != NotificationStatus.Archived && !n.IsDeleted)
+        var notifications = await _dbContext.Notifications
+            .Where(n => n.UserId == userId && n.Status != NotificationStatus.Archived)
             .ToListAsync(cancellationToken);
 
         foreach (var notification in notifications)
@@ -104,21 +101,19 @@ public class NotificationRepository : BaseRepository<Notification, Guid>, INotif
             notification.Status = NotificationStatus.Archived;
         }
 
-        await SaveAsync();
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task DeleteOldNotificationsAsync(DateTime olderThan, CancellationToken cancellationToken = default)
     {
-        var oldNotifications = await _systemDbContext.Notifications
-            .Where(n => n.CreatedAt < olderThan && !n.IsDeleted)
+        var oldNotifications = await _dbContext.Notifications
+            .Where(n => n.CreatedAt < olderThan)
             .ToListAsync(cancellationToken);
 
-        foreach (var notification in oldNotifications)
+        if (oldNotifications.Any())
         {
-            notification.IsDeleted = true;
-            notification.DeletedAt = DateTime.UtcNow;
+            _dbContext.Notifications.RemoveRange(oldNotifications);
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
-
-        await SaveAsync();
     }
 }

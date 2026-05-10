@@ -17,15 +17,15 @@ public class UsersController : Controller
     private readonly IEmailService _emailService;
     private readonly IConfiguration _configuration;
     private readonly ICompanyContext _companyContext;
-    private readonly SystemDbContext _systemDbContext;
+    private readonly SmartLeadsDbContext _dbContext;
 
-    public UsersController(IUnitOfWork unitOfWork, IEmailService emailService, IConfiguration configuration, ICompanyContext companyContext, SystemDbContext systemDbContext)
+    public UsersController(IUnitOfWork unitOfWork, IEmailService emailService, IConfiguration configuration, ICompanyContext companyContext, SmartLeadsDbContext dbContext)
     {
         _unitOfWork = unitOfWork;
         _emailService = emailService;
         _configuration = configuration;
         _companyContext = companyContext;
-        _systemDbContext = systemDbContext;
+        _dbContext = dbContext;
     }
 
     // GET: Users
@@ -175,7 +175,7 @@ public class UsersController : Controller
         var userRole = UserRole.User;
         if (companyId.HasValue)
         {
-            var userCompany = await _systemDbContext.UserCompanies
+            var userCompany = await _dbContext.UserCompanies
                 .FirstOrDefaultAsync(uc => uc.UserId == id && uc.CompanyId == companyId.Value);
             if (userCompany != null)
             {
@@ -245,7 +245,7 @@ public class UsersController : Controller
         // Update role in UserCompany for the current company
         if (companyId.HasValue)
         {
-            var userCompany = await _systemDbContext.UserCompanies
+            var userCompany = await _dbContext.UserCompanies
                 .FirstOrDefaultAsync(uc => uc.UserId == id && uc.CompanyId == companyId.Value);
             
             if (userCompany != null)
@@ -262,7 +262,7 @@ public class UsersController : Controller
                     Role = model.Role,
                     IsActive = true
                 };
-                await _systemDbContext.UserCompanies.AddAsync(userCompany);
+                await _dbContext.UserCompanies.AddAsync(userCompany);
             }
         }
 

@@ -78,7 +78,7 @@ public class VariablesController : Controller
                 return BadRequest(new { error = "Invalid company context" });
             }
 
-            var variables = _unitOfWork.defaultDbContext.Variables
+            var variables = _unitOfWork.dbContext.Variables
                 .Where(v => v.CompanyId == companyId && !v.IsDeleted)
                 .AsQueryable();
 

@@ -42,7 +42,7 @@ public class DepartmentsController : Controller
                 return BadRequest(new { error = "Invalid company context" });
             }
 
-            var departments = _unitOfWork.defaultDbContext.Departments
+            var departments = _unitOfWork.dbContext.Departments
                 .Where(d => d.CompanyId == companyId && !d.IsDeleted && d.IsActive)
                 .AsQueryable();
 
@@ -115,7 +115,7 @@ public class DepartmentsController : Controller
 
             var companyId = Guid.Parse(companyIdClaim);
 
-            var departments = await _unitOfWork.defaultDbContext.Departments
+            var departments = await _unitOfWork.dbContext.Departments
                 .Where(d => d.CompanyId == companyId && !d.IsDeleted && d.IsActive)
                 .OrderBy(d => d.Name)
                 .Select(d => new { d.Id, d.Name })
@@ -181,7 +181,7 @@ public class DepartmentsController : Controller
         try
         {
             // Check if department name already exists for this company
-            var existingDept = await _unitOfWork.defaultDbContext.Departments
+            var existingDept = await _unitOfWork.dbContext.Departments
                 .FirstOrDefaultAsync(d => d.Name == model.Name && d.CompanyId == companyId);
 
             if (existingDept != null)

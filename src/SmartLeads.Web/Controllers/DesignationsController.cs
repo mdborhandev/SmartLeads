@@ -42,7 +42,7 @@ public class DesignationsController : Controller
                 return BadRequest(new { error = "Invalid company context" });
             }
 
-            var designations = _unitOfWork.defaultDbContext.Designations
+            var designations = _unitOfWork.dbContext.Designations
                 .Where(d => d.CompanyId == companyId && !d.IsDeleted)
                 .AsQueryable();
 
@@ -117,7 +117,7 @@ public class DesignationsController : Controller
 
             var companyId = Guid.Parse(companyIdClaim);
 
-            var designations = await _unitOfWork.defaultDbContext.Designations
+            var designations = await _unitOfWork.dbContext.Designations
                 .Where(d => d.CompanyId == companyId && !d.IsDeleted && d.IsActive)
                 .OrderBy(d => d.Name)
                 .Select(d => new { d.Id, d.Name })
@@ -190,7 +190,7 @@ public class DesignationsController : Controller
         try
         {
             // Check if designation name already exists for this company
-            var existingDesig = await _unitOfWork.defaultDbContext.Designations
+            var existingDesig = await _unitOfWork.dbContext.Designations
                 .FirstOrDefaultAsync(d => d.Name == model.Name && d.CompanyId == companyId);
 
             if (existingDesig != null)

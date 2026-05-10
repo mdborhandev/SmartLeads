@@ -6,7 +6,7 @@
 @{
     var currentCompanyId = _companyContext.CurrentCompanyId;
     var currentCompany = currentCompanyId.HasValue 
-        ? await _unitOfWork.systemDbContext.Companies.FindAsync(currentCompanyId.Value)
+        ? await _unitOfWork.dbContext.Companies.FindAsync(currentCompanyId.Value)
         : null;
     var userCompanies = await _companyContext.GetUserCompaniesAsync();
     

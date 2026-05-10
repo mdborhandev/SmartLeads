@@ -8,25 +8,28 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
 public class EmployeeRepository : GenericRepository<Employee>, IEmployeeRepository
 {
-    public EmployeeRepository(DefaultDbContext dbContext) : base(dbContext)
+    private new readonly SmartLeadsDbContext _dbContext;
+
+    public EmployeeRepository(SmartLeadsDbContext dbContext) : base(dbContext)
     {
+        _dbContext = dbContext;
     }
 
     public async Task<Employee?> GetByEmployeeIdAsync(string employeeId, Guid companyId)
     {
-        return await _defaultDbContext.Employees
+        return await _dbContext.Employees
             .FirstOrDefaultAsync(e => e.EmployeeId == employeeId && e.CompanyId == companyId && !e.IsDeleted);
     }
 
     public async Task<Employee?> GetByEmployeeIdExcludingIdAsync(string employeeId, Guid companyId, Guid excludeId)
     {
-        return await _defaultDbContext.Employees
+        return await _dbContext.Employees
             .FirstOrDefaultAsync(e => e.EmployeeId == employeeId && e.CompanyId == companyId && e.Id != excludeId && !e.IsDeleted);
     }
 
     public async Task<Employee?> GetByEmployeeDtoByIdAsync(Guid id)
     {
-        return await _defaultDbContext.Employees
+        return await _dbContext.Employees
             .Include(e => e.Department)
             .Include(e => e.Designation)
             .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
@@ -34,7 +37,7 @@ public class EmployeeRepository : GenericRepository<Employee>, IEmployeeReposito
 
     public async Task<(List<EmployeeDto> data, int total)> GetEmployeesDataAsync(string searchTerm, string sortField, string sortOrder, int page, int pageSize, Guid companyId)
     {
-        var query = _defaultDbContext.Employees
+        var query = _dbContext.Employees
             .Include(e => e.Department)
             .Include(e => e.Designation)
             .Where(e => e.CompanyId == companyId && !e.IsDeleted)
@@ -72,7 +75,6 @@ public class EmployeeRepository : GenericRepository<Employee>, IEmployeeReposito
             .Take(pageSize)
             .ToListAsync();
 
-        // Get all variable values from employees
         var allVariableValues = employees
             .Where(e => e.Gender != null).Select(e => e.Gender!)
             .Concat(employees.Where(e => e.MaritalStatus != null).Select(e => e.MaritalStatus!))
@@ -83,17 +85,14 @@ public class EmployeeRepository : GenericRepository<Employee>, IEmployeeReposito
             .Distinct()
             .ToList();
 
-        // Fetch variables where Value matches (the stored value is the ID, but for backward compatibility we match by Value too)
-        var variables = await _defaultDbContext.Variables
+        var variables = await _dbContext.Variables
             .Where(v => allVariableValues.Contains(v.Value) && v.CompanyId == companyId)
             .ToDictionaryAsync(v => v.Value, v => v.Value);
 
-        // Also fetch by Id for GUID-based storage
-        var variablesById = await _defaultDbContext.Variables
+        var variablesById = await _dbContext.Variables
             .Where(v => allVariableValues.Contains(v.Id.ToString()) && v.CompanyId == companyId)
             .ToDictionaryAsync(v => v.Id.ToString(), v => v.Value);
 
-        // Convert to DTO with display text
         var items = employees.Select(e => new EmployeeDto
         {
             Id = e.Id,
@@ -116,7 +115,6 @@ public class EmployeeRepository : GenericRepository<Employee>, IEmployeeReposito
             IsActive = e.IsActive,
             CreatedAt = e.CreatedAt,
             DateOfBirth = e.DateOfBirth,
-            // Store original values
             Gender = e.Gender,
             MaritalStatus = e.MaritalStatus,
             BloodGroup = e.BloodGroup,
@@ -129,7 +127,6 @@ public class EmployeeRepository : GenericRepository<Employee>, IEmployeeReposito
             DateOfJoining = e.DateOfJoining,
             ProfilePhotoUrl = e.ProfilePhotoUrl,
             Notes = e.Notes,
-            // Get display text - first try by Id, then by Value
             GenderText = e.Gender != null ? (variablesById.ContainsKey(e.Gender) ? variablesById[e.Gender] : (variables.ContainsKey(e.Gender) ? variables[e.Gender] : e.Gender)) : null,
             MaritalStatusText = e.MaritalStatus != null ? (variablesById.ContainsKey(e.MaritalStatus) ? variablesById[e.MaritalStatus] : (variables.ContainsKey(e.MaritalStatus) ? variables[e.MaritalStatus] : e.MaritalStatus)) : null,
             BloodGroupText = e.BloodGroup != null ? (variablesById.ContainsKey(e.BloodGroup) ? variablesById[e.BloodGroup] : (variables.ContainsKey(e.BloodGroup) ? variables[e.BloodGroup] : e.BloodGroup)) : null,

@@ -16,33 +16,19 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // Register Memory Cache
         services.AddMemoryCache();
 
-        // Register HTTP Context Accessor (needed for CompanyContext)
         services.AddHttpContextAccessor();
 
-        // Register System DbContext (for Users, Companies, UserCompanies, Invitations)
-        services.AddDbContext<SystemDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("SystemConnection")));
+        services.AddDbContext<SmartLeadsDbContext>(options =>
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
-        // Register Default DbContext (for contact and related application data)
-        services.AddDbContext<DefaultDbContext>(options =>
-            options.UseNpgsql(GetDefaultConnectionString(configuration)));
-
-        // Register default DbContext factory
-        services.AddScoped<IDefaultDbContextFactory, DefaultDbContextFactory>();
-
-        // Register Company Context (tracks current user's company)
         services.AddScoped<ICompanyContext, CompanyContext>();
 
-        // Register generic repository for backward compatibility
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-        // Register Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        // Register Repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<SmartLeads.Utilities.Interfaces.IUserRepository>(sp => sp.GetRequiredService<IUserRepository>());
         
@@ -56,7 +42,6 @@ public static class DependencyInjection
         services.AddScoped<INotificationPreferenceRepository, NotificationPreferenceRepository>();
         services.AddScoped<SmartLeads.Utilities.Interfaces.INotificationPreferenceRepository>(sp => sp.GetRequiredService<INotificationPreferenceRepository>());
 
-        // JWT Authentication
         var jwtSettings = configuration.GetSection("JwtSettings");
         var secret = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret not found");
 
@@ -89,11 +74,5 @@ public static class DependencyInjection
         });
 
         return services;
-    }
-
-    private static string GetDefaultConnectionString(IConfiguration configuration)
-    {
-        return configuration.GetConnectionString("DefaultConnection")
-               ?? throw new InvalidOperationException("Default connection string not found");
     }
 }

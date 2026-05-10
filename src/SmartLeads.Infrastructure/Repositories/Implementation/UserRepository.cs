@@ -10,37 +10,34 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
 public class UserRepository : GenericSystemRepository<User>, IUserRepository
 {
-    private readonly SystemDbContext _systemDbContext;
-    private readonly DefaultDbContext _defaultDbContext;
+    private new readonly SmartLeadsDbContext _dbContext;
     private readonly IPasswordHasher _passwordHasher;
 
-    public UserRepository(SystemDbContext systemDbContext, DefaultDbContext defaultDbContext, IPasswordHasher passwordHasher) : base(systemDbContext)
+    public UserRepository(SmartLeadsDbContext dbContext, IPasswordHasher passwordHasher) : base(dbContext)
     {
-        _systemDbContext = systemDbContext;
-        _defaultDbContext = defaultDbContext;
+        _dbContext = dbContext;
         _passwordHasher = passwordHasher;
     }
 
     public async Task<User?> GetByUsernameOrEmailAsync(string usernameOrEmail)
     {
-        return await _systemDbContext.Users
+        return await _dbContext.Users
             .FirstOrDefaultAsync(u => u.Username == usernameOrEmail || u.Email == usernameOrEmail);
     }
 
     public async Task<User?> GetByEmailAsync(string email)
     {
-        return await _systemDbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+        return await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
 
     public async Task<User?> GetByUsernameAsync(string username)
     {
-        return await _systemDbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
+        return await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
     }
 
     public async Task<User?> GetByUsernameAndCompanyIdAsync(string username, Guid companyId, CancellationToken token = default)
     {
-        // Get user through UserCompany junction
-        var userCompany = await _systemDbContext.UserCompanies
+        var userCompany = await _dbContext.UserCompanies
             .Include(uc => uc.User)
             .FirstOrDefaultAsync(uc => uc.User.Username == username && uc.CompanyId == companyId && !uc.IsDeleted, token);
         
@@ -49,8 +46,7 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
 
     public async Task<User?> GetUserByIdAndCompanyIdAsync(Guid id, Guid companyId, CancellationToken token = default)
     {
-        // Get user through UserCompany junction
-        var userCompany = await _systemDbContext.UserCompanies
+        var userCompany = await _dbContext.UserCompanies
             .Include(uc => uc.User)
             .FirstOrDefaultAsync(uc => uc.UserId == id && uc.CompanyId == companyId && !uc.IsDeleted, token);
         
@@ -59,14 +55,14 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
 
     public async Task<IEnumerable<User>> GetAllUsersAsync()
     {
-        return await _systemDbContext.Users
+        return await _dbContext.Users
             .OrderByDescending(u => u.CreatedAt)
             .ToListAsync();
     }
 
     public async Task<PaginationResponse<UserTableDto>> GetUsersPagedAsync(Guid companyId, PaginationRequest request, CancellationToken token = default)
     {
-        var employees = await _defaultDbContext.Employees
+        var employees = await _dbContext.Employees
             .Where(e => e.CompanyId == companyId && !e.IsDeleted && e.IsActive)
             .Include(e => e.EmployeeUsers)
             .Include(e => e.Department)
@@ -79,12 +75,11 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
             .Distinct()
             .ToList();
 
-        var users = await _systemDbContext.Users
+        var users = await _dbContext.Users
             .Where(u => userIds.Contains(u.Id) && !u.IsDeleted && u.IsActive)
             .ToListAsync(token);
 
-        // Get UserCompany records to fetch roles for this company
-        var userCompanies = await _systemDbContext.UserCompanies
+        var userCompanies = await _dbContext.UserCompanies
             .Where(uc => uc.CompanyId == companyId && userIds.Contains(uc.UserId))
             .ToListAsync(token);
 
@@ -102,7 +97,6 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
                     return null;
                 }
 
-                // Get role from UserCompany instead of User
                 var role = UserRole.User;
                 if (userCompaniesByUserId.TryGetValue(user.Id, out var userCompany))
                 {
@@ -144,7 +138,6 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
 
         var totalCount = rows.Count();
 
-        // Apply sorting
         var sortField = request.SortField?.ToLower();
         var sortOrder = request.SortOrder?.ToLower() ?? "desc";
 
@@ -179,7 +172,6 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
         };
     }
 
-    // Authentication and profile methods
     public Task<bool> VerifyPasswordAsync(string password, string passwordHash)
     {
         return Task.FromResult(_passwordHasher.VerifyPassword(password, passwordHash));
@@ -187,67 +179,62 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
 
     public async Task<bool> UpdateProfileAsync(User user, CancellationToken token = default)
     {
-        _systemDbContext.Users.Update(user);
-        await _systemDbContext.SaveChangesAsync(token);
+        _dbContext.Users.Update(user);
+        await _dbContext.SaveChangesAsync(token);
         return true;
     }
 
     public async Task<IEnumerable<UserCompany>> GetUserCompaniesAsync(Guid userId, CancellationToken token = default)
     {
-        return await _systemDbContext.UserCompanies
+        return await _dbContext.UserCompanies
             .Include(uc => uc.Company)
             .Where(uc => uc.UserId == userId && uc.IsActive && !uc.IsDeleted)
             .ToListAsync(token);
     }
 
-    // Password reset methods
     public async Task<bool> SetPasswordResetTokenAsync(string email, string token, DateTime expiryTime, CancellationToken cancellationToken = default)
     {
-        var user = await _systemDbContext.Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
         if (user == null)
         {
-            return true; // Always return true to prevent email enumeration
+            return true;
         }
 
         user.ResetPasswordToken = token;
         user.ResetPasswordTokenExpiryTime = expiryTime;
-        await _systemDbContext.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }
 
     public async Task<bool> ResetPasswordAsync(string email, string token, string newPasswordHash, CancellationToken cancellationToken = default)
     {
-        var user = await _systemDbContext.Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
         if (user == null)
         {
             return false;
         }
 
-        // Validate token
         if (user.ResetPasswordToken != token)
         {
             return false;
         }
 
-        // Check token expiry
         if (user.ResetPasswordTokenExpiryTime < DateTime.UtcNow)
         {
             return false;
         }
 
-        // Update password
         user.PasswordHash = newPasswordHash;
         user.ResetPasswordToken = null;
         user.ResetPasswordTokenExpiryTime = null;
 
-        await _systemDbContext.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    // Uniqueness checks (global, not company-specific)
     public async Task<bool> IsUsernameTakenAsync(string username, Guid? excludeUserId = null, CancellationToken token = default)
     {
-        var query = _systemDbContext.Users.AsQueryable();
+        var query = _dbContext.Users.AsQueryable();
         
         if (excludeUserId.HasValue)
         {
@@ -259,7 +246,7 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
 
     public async Task<bool> IsEmailTakenAsync(string email, Guid? excludeUserId = null, CancellationToken token = default)
     {
-        var query = _systemDbContext.Users.AsQueryable();
+        var query = _dbContext.Users.AsQueryable();
         
         if (excludeUserId.HasValue)
         {
@@ -269,27 +256,24 @@ public class UserRepository : GenericSystemRepository<User>, IUserRepository
         return await query.AnyAsync(u => u.Email.ToLower() == email.ToLower(), token);
     }
 
-    // Password change
     public async Task<bool> ChangePasswordAsync(Guid userId, string currentPasswordHash, string newPasswordHash, CancellationToken token = default)
     {
-        var user = await _systemDbContext.Users.FindAsync(new object[] { userId }, token);
+        var user = await _dbContext.Users.FindAsync(new object[] { userId }, token);
         if (user == null)
         {
             return false;
         }
 
-        // Verify current password
         if (user.PasswordHash != currentPasswordHash)
         {
             return false;
         }
 
-        // Update password
         user.PasswordHash = newPasswordHash;
         user.UpdatedAt = DateTime.UtcNow;
 
-        _systemDbContext.Users.Update(user);
-        await _systemDbContext.SaveChangesAsync(token);
+        _dbContext.Users.Update(user);
+        await _dbContext.SaveChangesAsync(token);
         return true;
     }
 }

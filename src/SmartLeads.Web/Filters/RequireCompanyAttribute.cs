@@ -19,40 +19,35 @@ public class RequireCompanyAttribute : TypeFilterAttribute
     private class RequireCompanyFilter : IAsyncActionFilter
     {
         private readonly IUserRepository _userRepository;
-        private readonly SystemDbContext _systemDbContext;
+        private readonly SmartLeadsDbContext _dbContext;
 
-        public RequireCompanyFilter(IUserRepository userRepository, SystemDbContext systemDbContext)
+        public RequireCompanyFilter(IUserRepository userRepository, SmartLeadsDbContext dbContext)
         {
             _userRepository = userRepository;
-            _systemDbContext = systemDbContext;
+            _dbContext = dbContext;
         }
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            // Get user ID from claims or cookies
             var userIdClaim = context.HttpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             
             if (string.IsNullOrEmpty(userIdClaim))
             {
-                // Try to get from cookie
                 userIdClaim = context.HttpContext.Request.Cookies["UserId"];
             }
 
             if (Guid.TryParse(userIdClaim, out var userId))
             {
-                // Check if user has any company association
-                var hasCompany = await _systemDbContext.UserCompanies
+                var hasCompany = await _dbContext.UserCompanies
                     .AnyAsync(uc => uc.UserId == userId && uc.IsActive && !uc.IsDeleted);
 
                 if (!hasCompany)
                 {
-                    // Redirect to CreateCompany page
                     context.Result = new RedirectToActionResult("CreateCompany", "UserCompany", null);
                     return;
                 }
             }
 
-            // User has company, proceed with action
             await next();
         }
     }

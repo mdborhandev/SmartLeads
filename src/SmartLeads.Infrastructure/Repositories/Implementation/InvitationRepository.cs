@@ -9,13 +9,11 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
 public class InvitationRepository : BaseRepository<Invitation, Guid>, IInvitationRepository
 {
-    private readonly DefaultDbContext _defaultDbContext;
-    private readonly SystemDbContext _systemDbContext;
+    private new readonly SmartLeadsDbContext _dbContext;
 
-    public InvitationRepository(DefaultDbContext dbContext, SystemDbContext systemDbContext) : base(dbContext)
+    public InvitationRepository(SmartLeadsDbContext dbContext) : base(dbContext)
     {
-        _defaultDbContext = dbContext;
-        _systemDbContext = systemDbContext;
+        _dbContext = dbContext;
     }
 
     public async Task<Invitation?> GetByTokenAsync(string token, CancellationToken cancellationToken = default)
@@ -46,10 +44,9 @@ public class InvitationRepository : BaseRepository<Invitation, Guid>, IInvitatio
         return await GetByConditionAsync(i => i.InvitedByUserId == userId && !i.IsDeleted, cancellationToken);
     }
 
-    // Business logic methods
     public async Task<Invitation?> GetPendingInvitationByEmailAndCompanyIdAsync(string email, Guid companyId, CancellationToken cancellationToken = default)
     {
-        return await _systemDbContext.Invitations
+        return await _dbContext.Invitations
             .FirstOrDefaultAsync(i => i.Email.ToLower() == email.ToLower() 
                 && i.CompanyId == companyId 
                 && i.Status == InvitationStatus.Pending
@@ -107,7 +104,7 @@ public class InvitationRepository : BaseRepository<Invitation, Guid>, IInvitatio
         var dtos = new List<InvitationDto>();
         foreach (var invitation in invitations)
         {
-            var invitedByUser = await _systemDbContext.Users.FindAsync(new object[] { invitation.InvitedByUserId }, cancellationToken);
+            var invitedByUser = await _dbContext.Users.FindAsync(new object[] { invitation.InvitedByUserId }, cancellationToken);
             var invitedByUserName = invitedByUser != null
                 ? (!string.IsNullOrEmpty(invitedByUser.FirstName) && !string.IsNullOrEmpty(invitedByUser.LastName)
                     ? $"{invitedByUser.FirstName} {invitedByUser.LastName}"

@@ -8,27 +8,26 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
 public class NotificationPreferenceRepository : GenericSystemRepository<NotificationPreference>, INotificationPreferenceRepository
 {
-    private readonly SystemDbContext _systemDbContext;
+    private new readonly SmartLeadsDbContext _dbContext;
 
-    public NotificationPreferenceRepository(SystemDbContext dbContext) : base(dbContext)
+    public NotificationPreferenceRepository(SmartLeadsDbContext dbContext) : base(dbContext)
     {
-        _systemDbContext = dbContext;
+        _dbContext = dbContext;
     }
 
     public async Task<NotificationPreference?> GetByUserIdAndTypeAsync(Guid userId, NotificationType type, CancellationToken cancellationToken = default)
     {
-        return await _systemDbContext.NotificationPreferences
+        return await _dbContext.NotificationPreferences
             .FirstOrDefaultAsync(np => np.UserId == userId && np.NotificationType == type, cancellationToken);
     }
 
     public async Task<IList<NotificationPreference>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await _systemDbContext.NotificationPreferences
+        return await _dbContext.NotificationPreferences
             .Where(np => np.UserId == userId)
             .ToListAsync(cancellationToken);
     }
 
-    // Business logic methods
     public async Task UpdatePreferenceAsync(Guid userId, NotificationType type, bool enableInApp, bool enableEmail, CancellationToken cancellationToken = default)
     {
         var preference = await GetByUserIdAndTypeAsync(userId, type, cancellationToken);
@@ -56,14 +55,12 @@ public class NotificationPreferenceRepository : GenericSystemRepository<Notifica
 
     public async Task InitializeDefaultPreferencesAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        // Check if preferences already exist
         var existingPreferences = await GetByUserIdAsync(userId, cancellationToken);
         if (existingPreferences.Any())
         {
-            return; // Already initialized
+            return;
         }
 
-        // Create default preferences for all notification types
         var preferences = new List<NotificationPreference>();
         foreach (NotificationType type in Enum.GetValues(typeof(NotificationType)))
         {

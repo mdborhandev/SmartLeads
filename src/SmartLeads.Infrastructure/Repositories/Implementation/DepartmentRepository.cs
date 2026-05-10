@@ -8,13 +8,16 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
 public class DepartmentRepository : GenericRepository<Department>, IDepartmentRepository
 {
-    public DepartmentRepository(DefaultDbContext dbContext) : base(dbContext)
+    private new readonly SmartLeadsDbContext _dbContext;
+
+    public DepartmentRepository(SmartLeadsDbContext dbContext) : base(dbContext)
     {
+        _dbContext = dbContext;
     }
 
     public async Task<List<SelectOptionDto>> SearchDepartmentsAsync(string searchTerm, string selectedvalue, Guid companyId)
     {
-        var query = _defaultDbContext.Departments
+        var query = _dbContext.Departments
             .Where(d => d.CompanyId == companyId && !d.IsDeleted && d.IsActive);
 
         if (!string.IsNullOrWhiteSpace(searchTerm))

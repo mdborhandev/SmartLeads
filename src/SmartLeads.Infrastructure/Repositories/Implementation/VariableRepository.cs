@@ -8,8 +8,11 @@ namespace SmartLeads.Infrastructure.Repositories.Implementation;
 
 public class VariableRepository : GenericRepository<Variable>, IVariableRepository
 {
-    public VariableRepository(DefaultDbContext dbContext) : base(dbContext)
+    private new readonly SmartLeadsDbContext _dbContext;
+
+    public VariableRepository(SmartLeadsDbContext dbContext) : base(dbContext)
     {
+        _dbContext = dbContext;
     }
 
     private readonly List<CommonDataTypeDto> _commonDataTypes = new List<CommonDataTypeDto>
@@ -57,7 +60,7 @@ public class VariableRepository : GenericRepository<Variable>, IVariableReposito
 
     public async Task<IEnumerable<Variable>> GetByTypeAsync(string type, Guid companyId)
     {
-        return await _defaultDbContext.Variables
+        return await _dbContext.Variables
             .Where(v => v.Type == type && v.CompanyId == companyId && !v.IsDeleted)
             .OrderBy(v => v.SortOrder)
             .ThenBy(v => v.Value)
@@ -66,7 +69,7 @@ public class VariableRepository : GenericRepository<Variable>, IVariableReposito
 
     public async Task<IEnumerable<string>> GetTypesAsync(Guid companyId)
     {
-        return await _defaultDbContext.Variables
+        return await _dbContext.Variables
             .Where(v => v.CompanyId == companyId && !v.IsDeleted)
             .Select(v => v.Type)
             .Distinct()
@@ -76,13 +79,13 @@ public class VariableRepository : GenericRepository<Variable>, IVariableReposito
 
     public async Task<Variable?> GetByTypeAndValueAsync(string type, string value, Guid companyId)
     {
-        return await _defaultDbContext.Variables
+        return await _dbContext.Variables
             .FirstOrDefaultAsync(v => v.Type == type && v.Value == value && v.CompanyId == companyId && !v.IsDeleted);
     }
 
     public async Task<List<SelectOptionDto>> SearchVariablesAsync(string searchTerm, string type, string selectedvalue, Guid companyId)
     {
-        var query = _defaultDbContext.Variables
+        var query = _dbContext.Variables
             .Where(v => v.CompanyId == companyId && !v.IsDeleted && v.IsActive);
 
         if (!string.IsNullOrWhiteSpace(type))

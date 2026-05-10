@@ -221,7 +221,7 @@ return RedirectToAction("Index", "Home");
             });
 
             // Get Employee record for this user in this company and store in cookie
-            var employeeUser = await _unitOfWork.defaultDbContext.EmployeeUsers
+            var employeeUser = await _unitOfWork.dbContext.EmployeeUsers
                 .Include(eu => eu.Employee)
                 .FirstOrDefaultAsync(eu => eu.UserId == user.Id && eu.Employee.CompanyId == defaultCompany.CompanyId);
 
