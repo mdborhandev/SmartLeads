@@ -26,6 +26,7 @@
 
     <!-- SmartLeads Custom CSS -->
     <link rel="stylesheet" href="~/css/smartleads.css" />
+    <link rel="stylesheet" href="~/css/auth.css" />
     @await RenderSectionAsync("Styles", required: false)
 
     <!-- Pickr Color Picker -->
@@ -65,6 +66,9 @@
             </ul>
         </div>
     </div>
+
+    <div class="auth-bg-orb auth-bg-orb--1"></div>
+    <div class="auth-bg-orb auth-bg-orb--2"></div>
 
     <div class="auth-wrapper">
         @RenderBody()

@@ -1,85 +1,95 @@
+/**
+ * SmartLeads Landing Page — Modern Interactions
+ */
 (function () {
+    "use strict";
+
     const body = document.body;
-    if (!body || !body.classList.contains("landing-page-body")) {
-        return;
-    }
+    if (!body || !body.classList.contains("landing-page-body")) return;
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const revealItems = document.querySelectorAll(".reveal-on-scroll");
-    const sections = document.querySelectorAll("section[id]");
-    const tabLinks = document.querySelectorAll("[data-tab-link]");
-    const counters = document.querySelectorAll("[data-counter]");
-    const progressBars = document.querySelectorAll("[data-progress-width]");
-    const tiltCards = document.querySelectorAll("[data-tilt-card]");
 
-    const setActiveTab = function (id) {
-        tabLinks.forEach(function (link) {
-            const isActive = link.getAttribute("href") === "#" + id;
-            link.classList.toggle("is-active", isActive);
+    // --- DOM cache ---
+    const revealItems = document.querySelectorAll(".reveal-on-scroll");
+    const sections    = document.querySelectorAll("section[id]");
+    const tabLinks    = document.querySelectorAll("[data-tab-link]");
+    const counters    = document.querySelectorAll("[data-counter]");
+    const progressBars = document.querySelectorAll("[data-progress-width]");
+    const tiltCards   = document.querySelectorAll("[data-tilt-card]");
+
+    // -----------------------------------------------------------------------
+    // 1. Reveal-on-scroll (with stagger)
+    // -----------------------------------------------------------------------
+    function revealAll() {
+        revealItems.forEach(function (item) {
+            item.classList.add("revealed");
         });
-    };
+    }
 
     if (revealItems.length) {
         if (reduceMotion || !("IntersectionObserver" in window)) {
-            revealItems.forEach(function (item) {
-                item.classList.add("revealed");
-            });
+            revealAll();
         } else {
-            const revealObserver = new IntersectionObserver(function (entries, observer) {
+            const revealObserver = new IntersectionObserver(function (entries, obs) {
                 entries.forEach(function (entry) {
-                    if (!entry.isIntersecting) {
-                        return;
-                    }
-
+                    if (!entry.isIntersecting) return;
                     entry.target.classList.add("revealed");
-                    observer.unobserve(entry.target);
+                    obs.unobserve(entry.target);
                 });
             }, {
-                threshold: 0.16,
-                rootMargin: "0px 0px -40px 0px"
+                threshold: 0.12,
+                rootMargin: "0px 0px -30px 0px"
             });
 
             revealItems.forEach(function (item, index) {
-                item.style.transitionDelay = Math.min(index * 55, 280) + "ms";
+                // Stagger delay — cap at 350ms to keep feel snappy
+                item.style.transitionDelay = Math.min(index * 45, 350) + "ms";
                 revealObserver.observe(item);
             });
         }
     }
 
-    if (sections.length) {
-        if ("IntersectionObserver" in window) {
-            const sectionObserver = new IntersectionObserver(function (entries) {
-                entries.forEach(function (entry) {
-                    if (entry.isIntersecting) {
-                        setActiveTab(entry.target.id);
-                    }
-                });
-            }, {
-                threshold: 0.35,
-                rootMargin: "-20% 0px -45% 0px"
-            });
-
-            sections.forEach(function (section) {
-                sectionObserver.observe(section);
-            });
-        } else if (sections[0]) {
-            setActiveTab(sections[0].id);
-        }
+    // -----------------------------------------------------------------------
+    // 2. Active tab highlight on scroll
+    // -----------------------------------------------------------------------
+    function setActiveTab(id) {
+        tabLinks.forEach(function (link) {
+            var isActive = link.getAttribute("href") === "#" + id;
+            link.classList.toggle("is-active", isActive);
+        });
     }
 
+    if (sections.length && "IntersectionObserver" in window) {
+        var sectionObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    setActiveTab(entry.target.id);
+                }
+            });
+        }, {
+            threshold: 0.30,
+            rootMargin: "-15% 0px -40% 0px"
+        });
+
+        sections.forEach(function (section) {
+            sectionObserver.observe(section);
+        });
+    } else if (sections[0]) {
+        setActiveTab(sections[0].id);
+    }
+
+    // -----------------------------------------------------------------------
+    // 3. Smooth-scroll tab links
+    // -----------------------------------------------------------------------
     tabLinks.forEach(function (link) {
-        link.addEventListener("click", function (event) {
-            const targetId = link.getAttribute("href");
-            if (!targetId || !targetId.startsWith("#")) {
-                return;
-            }
+        link.addEventListener("click", function (e) {
+            var targetId = link.getAttribute("href");
+            if (!targetId || !targetId.startsWith("#")) return;
 
-            const target = document.querySelector(targetId);
-            if (!target) {
-                return;
-            }
+            var target = document.querySelector(targetId);
+            if (!target) return;
 
-            event.preventDefault();
+            e.preventDefault();
             target.scrollIntoView({
                 behavior: reduceMotion ? "auto" : "smooth",
                 block: "start"
@@ -88,76 +98,73 @@
         });
     });
 
+    // -----------------------------------------------------------------------
+    // 4. Animated counters (with easing)
+    // -----------------------------------------------------------------------
+    function startCounter(el) {
+        if (el.dataset.counted === "true") return;
+        el.dataset.counted = "true";
+
+        var target = Number(el.dataset.counter || 0);
+        if (reduceMotion || Number.isNaN(target)) {
+            el.textContent = String(target);
+            return;
+        }
+
+        var duration = 1400;
+        var startTime = performance.now();
+
+        function tick(now) {
+            var elapsed = now - startTime;
+            var t = Math.min(elapsed / duration, 1);
+            // Cubic ease-out
+            var ease = 1 - Math.pow(1 - t, 3);
+            el.textContent = String(Math.round(target * ease));
+
+            if (t < 1) {
+                window.requestAnimationFrame(tick);
+            }
+        }
+
+        window.requestAnimationFrame(tick);
+    }
+
     if (counters.length) {
-        const startCounter = function (counter) {
-            if (counter.dataset.counted === "true") {
-                return;
-            }
-
-            counter.dataset.counted = "true";
-
-            const target = Number(counter.dataset.counter || 0);
-            if (reduceMotion || Number.isNaN(target)) {
-                counter.textContent = String(target);
-                return;
-            }
-
-            const duration = 1200;
-            const start = performance.now();
-
-            const tick = function (now) {
-                const progress = Math.min((now - start) / duration, 1);
-                counter.textContent = String(Math.round(target * progress));
-
-                if (progress < 1) {
-                    window.requestAnimationFrame(tick);
-                }
-            };
-
-            window.requestAnimationFrame(tick);
-        };
-
         if ("IntersectionObserver" in window) {
-            const counterObserver = new IntersectionObserver(function (entries, observer) {
+            var counterObserver = new IntersectionObserver(function (entries, obs) {
                 entries.forEach(function (entry) {
-                    if (!entry.isIntersecting) {
-                        return;
-                    }
-
+                    if (!entry.isIntersecting) return;
                     startCounter(entry.target);
-                    observer.unobserve(entry.target);
+                    obs.unobserve(entry.target);
                 });
-            }, { threshold: 0.55 });
+            }, { threshold: 0.50 });
 
-            counters.forEach(function (counter) {
-                counterObserver.observe(counter);
+            counters.forEach(function (c) {
+                counterObserver.observe(c);
             });
         } else {
             counters.forEach(startCounter);
         }
     }
 
+    // -----------------------------------------------------------------------
+    // 5. Animated progress bars
+    // -----------------------------------------------------------------------
+    function fillBar(bar) {
+        if (bar.dataset.filled === "true") return;
+        bar.dataset.filled = "true";
+        bar.style.width = bar.dataset.progressWidth || "0%";
+    }
+
     if (progressBars.length) {
-        const fillBar = function (bar) {
-            if (bar.dataset.filled === "true") {
-                return;
-            }
-
-            bar.dataset.filled = "true";
-            bar.style.width = bar.dataset.progressWidth || "0%";
-        };
-
         if ("IntersectionObserver" in window) {
-            const progressObserver = new IntersectionObserver(function (entries, observer) {
+            var progressObserver = new IntersectionObserver(function (entries, obs) {
                 entries.forEach(function (entry) {
-                    if (!entry.isIntersecting) {
-                        return;
-                    }
-
+                    if (!entry.isIntersecting) return;
                     fillBar(entry.target);
-                    observer.unobserve(entry.target);
+                    obs.unobserve(entry.target);
                 });
-            }, { threshold: 0.5 });
+            }, { threshold: 0.45 });
 
             progressBars.forEach(function (bar) {
                 progressObserver.observe(bar);
@@ -167,15 +174,26 @@
         }
     }
 
-    if (!reduceMotion) {
+    // -----------------------------------------------------------------------
+    // 6. Subtle 3D tilt on hover (with requestAnimationFrame throttle)
+    // -----------------------------------------------------------------------
+    if (!reduceMotion && tiltCards.length) {
         tiltCards.forEach(function (card) {
-            card.addEventListener("pointermove", function (event) {
-                const rect = card.getBoundingClientRect();
-                const x = event.clientX - rect.left;
-                const y = event.clientY - rect.top;
-                const rotateX = ((y / rect.height) - 0.5) * -8;
-                const rotateY = ((x / rect.width) - 0.5) * 8;
-                card.style.transform = "perspective(900px) rotateX(" + rotateX.toFixed(2) + "deg) rotateY(" + rotateY.toFixed(2) + "deg) translateY(-6px)";
+            var ticking = false;
+
+            card.addEventListener("pointermove", function (e) {
+                if (ticking) return;
+                window.requestAnimationFrame(function () {
+                    var rect = card.getBoundingClientRect();
+                    var x = e.clientX - rect.left;
+                    var y = e.clientY - rect.top;
+                    var rotateX = ((y / rect.height) - 0.5) * -6;
+                    var rotateY = ((x / rect.width) - 0.5) * 6;
+                    card.style.transform =
+                        "perspective(800px) rotateX(" + rotateX.toFixed(2) + "deg) rotateY(" + rotateY.toFixed(2) + "deg) translateY(-4px)";
+                    ticking = false;
+                });
+                ticking = true;
             });
 
             card.addEventListener("pointerleave", function () {
@@ -183,4 +201,5 @@
             });
         });
     }
+
 })();

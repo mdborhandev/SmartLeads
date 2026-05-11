@@ -11,14 +11,16 @@
 <div class="landing-page-shell">
     <div class="landing-page-glow landing-page-glow-one"></div>
     <div class="landing-page-glow landing-page-glow-two"></div>
+    <div class="landing-page-glow-three"></div>
 
     <div class="container py-4 py-lg-5">
+        <!-- Top Navigation Bar -->
         <div class="landing-topbar reveal-on-scroll">
-            <a href="#overview" class="landing-brand text-decoration-none">
+            <a href="#overview" class="landing-brand">
                 <span class="landing-brand-mark">SL</span>
                 <span>
-                    <span class="d-block fw-semibold text-dark">SmartLeads</span>
-                    <span class="small text-muted">Contact and pipeline workspace</span>
+                    <span class="landing-brand-name">SmartLeads</span>
+                    <span class="landing-brand-tagline">Contact & pipeline workspace</span>
                 </span>
             </a>
 
@@ -28,16 +30,18 @@
             </div>
         </div>
 
-        <div class="d-flex justify-content-center">
+        <!-- Section Navigation (Sticky) -->
+        <div class="landing-tabs-wrapper">
             <nav class="landing-section-tabs reveal-on-scroll" aria-label="Landing page sections">
                 <a href="#overview" class="landing-tab-link is-active" data-tab-link>Overview</a>
-            <a href="#features" class="landing-tab-link" data-tab-link>Features</a>
-            <a href="#pricing" class="landing-tab-link" data-tab-link>Pricing</a>
-            <a href="#workflow" class="landing-tab-link" data-tab-link>Workflow</a>
-            <a href="#faq" class="landing-tab-link" data-tab-link>FAQ</a>
-        </nav>
+                <a href="#features" class="landing-tab-link" data-tab-link>Features</a>
+                <a href="#pricing" class="landing-tab-link" data-tab-link>Pricing</a>
+                <a href="#workflow" class="landing-tab-link" data-tab-link>Workflow</a>
+                <a href="#faq" class="landing-tab-link" data-tab-link>FAQ</a>
+            </nav>
         </div>
 
+        <!-- Hero / Overview Section -->
         <section id="overview" class="landing-panel landing-hero-panel reveal-on-scroll">
             <div class="row align-items-center g-4 g-xl-5">
                 <div class="col-lg-7">
@@ -49,26 +53,26 @@
                         SmartLeads is a modern CRM built for teams and agencies. Organize contacts, track company hierarchies, assign employees, and move deals forward with complete data isolation per company.
                     </p>
 
-                    <div class="d-flex flex-column flex-sm-row gap-3 mb-4">
+                    <div class="d-flex flex-column flex-sm-row gap-3 mb-4 landing-hero-cta">
                         <a asp-action="Register" asp-controller="Auth" class="btn btn-primary btn-lg rounded-pill px-4">Start Free Trial</a>
                         <a href="#features" class="btn btn-outline-dark btn-lg rounded-pill px-4">Explore Features</a>
                     </div>
 
                     <div class="row g-3">
                         <div class="col-sm-4">
-                            <div class="landing-stat-card interactive-lift" data-tilt-card>
+                            <div class="landing-stat-card" data-tilt-card>
                                 <div class="landing-stat-value" data-counter="320">0</div>
                                 <div class="landing-stat-label">Contacts per company</div>
                             </div>
                         </div>
                         <div class="col-sm-4">
-                            <div class="landing-stat-card interactive-lift" data-tilt-card>
+                            <div class="landing-stat-card" data-tilt-card>
                                 <div class="landing-stat-value" data-counter="74">0</div>
                                 <div class="landing-stat-label">Percent faster onboarding</div>
                             </div>
                         </div>
                         <div class="col-sm-4">
-                            <div class="landing-stat-card interactive-lift" data-tilt-card>
+                            <div class="landing-stat-card" data-tilt-card>
                                 <div class="landing-stat-value" data-counter="12">0</div>
                                 <div class="landing-stat-label">Companies supported</div>
                             </div>
@@ -81,18 +85,18 @@
                         <div class="landing-dashboard-head">
                             <div>
                                 <div class="small text-uppercase text-muted fw-semibold">Multi-Tenant CRM</div>
-                                <h2 class="h4 fw-bold mb-0">Company Isolation Dashboard</h2>
+                                <h2 class="h5 fw-bold mb-0">Company Isolation Dashboard</h2>
                             </div>
                             <span class="badge text-bg-success rounded-pill">Secure</span>
                         </div>
 
                         <div class="landing-dashboard-grid">
-                            <div class="dashboard-mini-card interactive-lift" data-tilt-card>
+                            <div class="dashboard-mini-card" data-tilt-card>
                                 <span class="dashboard-mini-label">Total Contacts</span>
                                 <strong>128</strong>
                                 <small>Active records</small>
                             </div>
-                            <div class="dashboard-mini-card interactive-lift" data-tilt-card>
+                            <div class="dashboard-mini-card" data-tilt-card>
                                 <span class="dashboard-mini-label">Companies</span>
                                 <strong>42</strong>
                                 <small>With hierarchies</small>
@@ -110,25 +114,25 @@
                         </div>
 
                         <div class="landing-activity-list">
-                            <div class="landing-activity-item interactive-lift" data-tilt-card>
+                            <div class="landing-activity-item" data-tilt-card>
                                 <span class="landing-activity-dot"></span>
                                 <div>
                                     <strong>Contact Management</strong>
-                                    <p class="mb-0 text-muted">Store leads, customers, and partners with complete profiles.</p>
+                                    <p class="mb-0">Store leads, customers, and partners with complete profiles.</p>
                                 </div>
                             </div>
-                            <div class="landing-activity-item interactive-lift" data-tilt-card>
+                            <div class="landing-activity-item" data-tilt-card>
                                 <span class="landing-activity-dot"></span>
                                 <div>
                                     <strong>Company Hierarchies</strong>
-                                    <p class="mb-0 text-muted">Track parent companies and subsidiaries with ease.</p>
+                                    <p class="mb-0">Track parent companies and subsidiaries with ease.</p>
                                 </div>
                             </div>
-                            <div class="landing-activity-item interactive-lift" data-tilt-card>
+                            <div class="landing-activity-item" data-tilt-card>
                                 <span class="landing-activity-dot"></span>
                                 <div>
                                     <strong>Employee Assignment</strong>
-                                    <p class="mb-0 text-muted">Assign users to companies with role-based access.</p>
+                                    <p class="mb-0">Assign users to companies with role-based access.</p>
                                 </div>
                             </div>
                         </div>
@@ -137,58 +141,60 @@
             </div>
         </section>
 
+        <!-- Features Section -->
         <section id="features" class="landing-panel reveal-on-scroll">
             <div class="landing-section-heading">
                 <span class="landing-kicker">Features</span>
-                <h2 class="h4 fw-bold mb-3">Everything You Need to Manage Contacts and Companies</h2>
-                <p class="text-muted mb-0">Built on .NET 10 with ASP.NET Core MVC, SmartLeads provides a complete CRM solution with multi-tenant architecture.</p>
+                <h2>Everything You Need to Manage Contacts and Companies</h2>
+                <p>Built on .NET 10 with ASP.NET Core MVC, SmartLeads provides a complete CRM solution with multi-tenant architecture.</p>
             </div>
 
             <div class="row g-4">
                 <div class="col-md-6 col-xl-3">
-                    <article class="landing-feature-card interactive-lift reveal-on-scroll" data-tilt-card>
+                    <article class="landing-feature-card reveal-on-scroll" data-tilt-card>
                         <span class="feature-badge text-bg-primary">Contacts</span>
-                        <h3 class="h4 fw-bold mt-3">Contact Management</h3>
-                        <p class="text-muted mb-0">Full CRUD operations with tags, groups, notes, and attachments. Archive, search, and organize your leads efficiently.</p>
+                        <h3>Contact Management</h3>
+                        <p>Full CRUD operations with tags, groups, notes, and attachments. Archive, search, and organize your leads efficiently.</p>
                     </article>
                 </div>
                 <div class="col-md-6 col-xl-3">
-                    <article class="landing-feature-card interactive-lift reveal-on-scroll" data-tilt-card>
+                    <article class="landing-feature-card reveal-on-scroll" data-tilt-card>
                         <span class="feature-badge text-bg-success">Companies</span>
-                        <h3 class="h4 fw-bold mt-3">Company Hierarchies</h3>
-                        <p class="text-muted mb-0">Track parent companies and subsidiaries. Each company has isolated data for complete privacy and security.</p>
+                        <h3>Company Hierarchies</h3>
+                        <p>Track parent companies and subsidiaries. Each company has isolated data for complete privacy and security.</p>
                     </article>
                 </div>
                 <div class="col-md-6 col-xl-3">
-                    <article class="landing-feature-card interactive-lift reveal-on-scroll" data-tilt-card>
+                    <article class="landing-feature-card reveal-on-scroll" data-tilt-card>
                         <span class="feature-badge text-bg-warning">Employees</span>
-                        <h3 class="h4 fw-bold mt-3">Employee Assignment</h3>
-                        <p class="text-muted mb-0">Assign users to companies with employee IDs, departments, designations, and role-based access control.</p>
+                        <h3>Employee Assignment</h3>
+                        <p>Assign users to companies with employee IDs, departments, designations, and role-based access control.</p>
                     </article>
                 </div>
                 <div class="col-md-6 col-xl-3">
-                    <article class="landing-feature-card interactive-lift reveal-on-scroll" data-tilt-card>
+                    <article class="landing-feature-card reveal-on-scroll" data-tilt-card>
                         <span class="feature-badge text-bg-info">Multi-Tenant</span>
-                        <h3 class="h4 fw-bold mt-3">Data Isolation</h3>
-                        <p class="text-muted mb-0">Each company gets a dedicated database. Complete data separation with shared user authentication.</p>
+                        <h3>Data Isolation</h3>
+                        <p>Each company gets a dedicated database. Complete data separation with shared user authentication.</p>
                     </article>
                 </div>
             </div>
         </section>
 
+        <!-- Pricing Section -->
         <section id="pricing" class="landing-panel reveal-on-scroll">
             <div class="landing-section-heading">
                 <span class="landing-kicker">Pricing</span>
-                <h2 class="h4 fw-bold mb-3">Flexible Plans for Every Team Size</h2>
-                <p class="text-muted mb-0">Start free and scale as your business grows. No hidden fees, cancel anytime.</p>
+                <h2>Flexible Plans for Every Team Size</h2>
+                <p>Start free and scale as your business grows. No hidden fees, cancel anytime.</p>
             </div>
 
             <div class="row g-4 align-items-stretch">
                 <div class="col-lg-4">
-                    <article class="pricing-card interactive-lift reveal-on-scroll" data-tilt-card>
+                    <article class="pricing-card reveal-on-scroll" data-tilt-card>
                         <span class="pricing-plan">Starter</span>
                         <div class="pricing-amount">$0<span>/mo</span></div>
-                        <p class="text-muted">For individuals and small teams getting started.</p>
+                        <p>For individuals and small teams getting started.</p>
                         <ul class="pricing-list">
                             <li>Up to 100 contacts</li>
                             <li>1 company workspace</li>
@@ -201,10 +207,10 @@
                 </div>
 
                 <div class="col-lg-4">
-                    <article class="pricing-card pricing-card-featured interactive-lift reveal-on-scroll" data-tilt-card>
+                    <article class="pricing-card pricing-card-featured reveal-on-scroll" data-tilt-card>
                         <span class="pricing-plan">Professional</span>
                         <div class="pricing-amount">$29<span>/mo</span></div>
-                        <p class="text-muted">For growing teams that need advanced features.</p>
+                        <p>For growing teams that need advanced features.</p>
                         <ul class="pricing-list">
                             <li>Unlimited contacts</li>
                             <li>Up to 5 companies</li>
@@ -218,10 +224,10 @@
                 </div>
 
                 <div class="col-lg-4">
-                    <article class="pricing-card interactive-lift reveal-on-scroll" data-tilt-card>
+                    <article class="pricing-card reveal-on-scroll" data-tilt-card>
                         <span class="pricing-plan">Enterprise</span>
                         <div class="pricing-amount">$79<span>/mo</span></div>
-                        <p class="text-muted">For agencies and multi-company operations.</p>
+                        <p>For agencies and multi-company operations.</p>
                         <ul class="pricing-list">
                             <li>Everything in Professional</li>
                             <li>Unlimited companies</li>
@@ -236,36 +242,37 @@
             </div>
         </section>
 
+        <!-- Workflow Section -->
         <section id="workflow" class="landing-panel reveal-on-scroll">
             <div class="row g-4 align-items-center">
                 <div class="col-lg-5">
                     <span class="landing-kicker">Get Started</span>
-                    <h2 class="h4 fw-bold mb-3">Simple Onboarding in Three Steps</h2>
+                    <h2>Simple Onboarding in Three Steps</h2>
                     <p class="text-muted mb-4">From registration to managing your contacts, SmartLeads gets you up and running in minutes.</p>
                     <a asp-action="Register" asp-controller="Auth" class="btn btn-dark rounded-pill px-4">Create Your Account</a>
                 </div>
 
                 <div class="col-lg-7">
                     <div class="workflow-timeline">
-                        <article class="workflow-step reveal-on-scroll interactive-lift" data-tilt-card>
+                        <article class="workflow-step reveal-on-scroll" data-tilt-card>
                             <span class="workflow-number">01</span>
                             <div>
-                                <h3 class="h5 fw-bold">Create Your Account</h3>
-                                <p class="mb-0 text-muted">Sign up with your email and set up your profile. No credit card required.</p>
+                                <h3>Create Your Account</h3>
+                                <p>Sign up with your email and set up your profile. No credit card required.</p>
                             </div>
                         </article>
-                        <article class="workflow-step reveal-on-scroll interactive-lift" data-tilt-card>
+                        <article class="workflow-step reveal-on-scroll" data-tilt-card>
                             <span class="workflow-number">02</span>
                             <div>
-                                <h3 class="h5 fw-bold">Set Up Your Company</h3>
-                                <p class="mb-0 text-muted">Add your company details, logo, and invite team members with specific roles.</p>
+                                <h3>Set Up Your Company</h3>
+                                <p>Add your company details, logo, and invite team members with specific roles.</p>
                             </div>
                         </article>
-                        <article class="workflow-step reveal-on-scroll interactive-lift" data-tilt-card>
+                        <article class="workflow-step reveal-on-scroll" data-tilt-card>
                             <span class="workflow-number">03</span>
                             <div>
-                                <h3 class="h5 fw-bold">Add Contacts and Grow</h3>
-                                <p class="mb-0 text-muted">Import or manually add contacts, organize with tags and groups, and start managing relationships.</p>
+                                <h3>Add Contacts and Grow</h3>
+                                <p>Import or manually add contacts, organize with tags and groups, and start managing relationships.</p>
                             </div>
                         </article>
                     </div>
@@ -273,11 +280,12 @@
             </div>
         </section>
 
+        <!-- FAQ Section -->
         <section id="faq" class="landing-panel reveal-on-scroll">
             <div class="landing-section-heading">
                 <span class="landing-kicker">FAQ</span>
-                <h2 class="h4 fw-bold mb-3">Frequently Asked Questions</h2>
-                <p class="text-muted mb-0">Everything you need to know about SmartLeads CRM. Can't find the answer you're looking for? Contact our support team.</p>
+                <h2>Frequently Asked Questions</h2>
+                <p>Everything you need to know about SmartLeads CRM. Can't find the answer you're looking for? Contact our support team.</p>
             </div>
 
             <div class="accordion landing-faq" id="landingFaq">
@@ -288,7 +296,7 @@
                         </button>
                     </h3>
                     <div id="faqOne" class="accordion-collapse collapse show" data-bs-parent="#landingFaq">
-                        <div class="accordion-body text-muted">
+                        <div class="accordion-body">
                             SmartLeads is a multi-tenant CRM platform built on .NET 10 with ASP.NET Core MVC. It helps teams manage contacts, companies with hierarchies, and employee assignments with complete data isolation per company.
                         </div>
                     </div>
@@ -300,7 +308,7 @@
                         </button>
                     </h3>
                     <div id="faqTwo" class="accordion-collapse collapse" data-bs-parent="#landingFaq">
-                        <div class="accordion-body text-muted">
+                        <div class="accordion-body">
                             Each company gets its own dedicated database for complete data isolation. Users can be assigned to multiple companies with different roles and employee information per company.
                         </div>
                     </div>
@@ -312,7 +320,7 @@
                         </button>
                     </h3>
                     <div id="faqThree" class="accordion-collapse collapse" data-bs-parent="#landingFaq">
-                        <div class="accordion-body text-muted">
+                        <div class="accordion-body">
                             Yes! We offer a 14-day free trial on the Professional plan. The Starter plan is free forever with up to 100 contacts and 1 company workspace.
                         </div>
                     </div>
@@ -324,7 +332,7 @@
                         </button>
                     </h3>
                     <div id="faqFour" class="accordion-collapse collapse" data-bs-parent="#landingFaq">
-                        <div class="accordion-body text-muted">
+                        <div class="accordion-body">
                             Yes. SmartLeads supports CSV and Excel import for contacts and companies. You can also use our REST API for programmatic data migration.
                         </div>
                     </div>
@@ -332,12 +340,13 @@
             </div>
         </section>
 
+        <!-- CTA Section -->
         <section class="landing-cta-panel reveal-on-scroll">
             <div class="row align-items-center g-4">
                 <div class="col-lg-8">
                     <span class="landing-kicker">Ready to Get Started</span>
-                    <h2 class="h4 fw-bold mb-3">Start Managing Your Contacts and Companies Today</h2>
-                    <p class="fs-5 text-muted mb-0">Join teams and agencies who trust SmartLeads for their CRM needs. No credit card required, set up in minutes.</p>
+                    <h2>Start Managing Your Contacts and Companies Today</h2>
+                    <p>Join teams and agencies who trust SmartLeads for their CRM needs. No credit card required, set up in minutes.</p>
                 </div>
                 <div class="col-lg-4">
                     <div class="d-grid gap-3">
