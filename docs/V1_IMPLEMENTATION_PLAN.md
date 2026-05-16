@@ -1,5 +1,13 @@
 # V1 Enterprise Company Management System - Implementation Plan
 
+> **Status: ~75% Complete** | Last verified: May 16, 2026 (QC performed)
+>
+> ✅ **Completed:** Auth (Register/Login/Logout/JWT/Cookies/WorkspaceSwitch), Company Mgmt, Employee CRUD, Multi-Company (Switch/Isolation/Default), Company Setup automation, Database/Infrastructure, UI Pages, API Endpoints
+> ⏳ **Partially:** Invitation Sending (send works, accept broken), RBAC (role enum done, service/attributes pending), Child Company hierarchy display
+> ❌ **Broken/Missing:** Invitation Acceptance flow (no controller/view for `/Invitations/Accept`), Role service, Permission attributes, Auth middleware, Seed data, Rate limiting
+>
+> **QC CRITICAL FINDING:** Invitation email links to `/Invitations/Accept?token=...&email=...` but **no route, controller, or view exists** for this URL — returns HTTP 404.
+
 ---
 
 ## 1. System Architecture
@@ -174,105 +182,105 @@ Companies ────────┐
 ## 3. Feature Breakdown
 
 ### 3.1 Authentication
-- [ ] User Registration
-- [ ] User Login
-- [ ] JWT Token Generation
-- [ ] Cookie-based Session
-- [ ] Workspace Switching
-- [ ] Logout
+- [x] User Registration
+- [x] User Login
+- [x] JWT Token Generation
+- [x] Cookie-based Session
+- [x] Workspace Switching
+- [x] Logout
 
 ### 3.2 Company Management
-- [ ] Create Company (during setup)
-- [ ] Create Child Company
-- [ ] View Company Details
-- [ ] Edit Company Info
+- [x] Create Company (during setup)
+- [x] Create Child Company
+- [x] View Company Details
+- [x] Edit Company Info
 - [ ] Company Hierarchy Display
-- [ ] Parent-Child Relationship
+- [x] Parent-Child Relationship
 
 ### 3.3 Employee Management
-- [ ] Create Employee (manual)
-- [ ] Edit Employee
-- [ ] Delete Employee (soft delete)
-- [ ] View Employee List
+- [x] Create Employee (manual)
+- [x] Edit Employee
+- [x] Delete Employee (soft delete)
+- [x] View Employee List
 - [ ] Employee Details View
-- [ ] Multi-company Employee Support
+- [x] Multi-company Employee Support
 
 ### 3.4 Invitation System
-- [ ] Send Invitation
-- [ ] Invitation Email Template
-- [ ] Accept Invitation (GET)
-- [ ] Accept Invitation (POST)
-- [ ] Token Validation
-- [ ] Expiry Validation
-- [ ] Attach Existing User
-- [ ] Create New User on Accept
+- [x] Send Invitation
+- [x] Invitation Email Template
+- [ ] Accept Invitation (GET) — BROKEN: no controller/route for `/Invitations/Accept`
+- [ ] Accept Invitation (POST) — BROKEN: no controller/route
+- [ ] Token Validation — BROKEN: not exposed via web endpoint
+- [ ] Expiry Validation — BROKEN: not exposed via web endpoint
+- [ ] Attach Existing User — BROKEN: no acceptance flow
+- [ ] Create New User on Accept — BROKEN: no acceptance flow
 
 ### 3.5 RBAC
-- [ ] Role Definitions (SuperAdmin, Admin, Manager, User)
-- [ ] Company-specific Role Assignment
+- [x] Role Definitions (SuperAdmin, Admin, Manager, User)
+- [x] Company-specific Role Assignment
 - [ ] Permission Attributes
 - [ ] Role-based View Rendering
 - [ ] API Authorization
 
 ### 3.6 Multi-Company Support
-- [ ] Switch Company Context
-- [ ] Default Company Selection
-- [ ] Company-specific Data Isolation
-- [ ] Cross-company User Access
+- [x] Switch Company Context
+- [x] Default Company Selection
+- [x] Company-specific Data Isolation
+- [x] Cross-company User Access
 
 ---
 
 ## 4. Step-by-Step Implementation Order
 
 ### Phase 1: Foundation
-1. Create project structure (Clean Architecture folders)
-2. Setup EF Core DbContext
-3. Create all entity models
-4. Run migrations
-5. Setup dependency injection
+1. ✅ Create project structure (Clean Architecture folders)
+2. ✅ Setup EF Core DbContext
+3. ✅ Create all entity models
+4. ✅ Run migrations
+5. ✅ Setup dependency injection
 
 ### Phase 2: Core Services
-6. Create base repository interface/implementation
-7. Create unit of work
-8. Create service layer base classes
+6. ✅ Create base repository interface/implementation
+7. ✅ Create unit of work
+8. ✅ Create service layer base classes
 
 ### Phase 3: Authentication
-9. Implement User registration
-10. Implement User login
-11. Implement JWT token generation
-12. Implement company context middleware
+9. ✅ Implement User registration
+10. ✅ Implement User login
+11. ✅ Implement JWT token generation
+12. ✅ Implement company context middleware
 
 ### Phase 3b: Company Setup (Current Gap)
-13. Create Setup/Company controller
-14. Create company setup view
-15. Implement auto-creation of:
+13. ✅ Create Setup/Company controller (UserCompanyController)
+14. ✅ Create company setup view
+15. ✅ Implement auto-creation of:
     - Owner Employee
-    - EmployeeCompany
+    - EmployeeCompany (EmployeeUser)
     - UserCompanyRole with SuperAdmin
 
 ### Phase 4: Employee Management
-16. Create Employee repository
-17. Create Employee controller
-18. Create employee list view
-19. Create employee create/edit views
+16. ✅ Create Employee repository
+17. ✅ Create Employee controller
+18. ✅ Create employee list view
+19. ✅ Create employee create/edit views
 
 ### Phase 5: Invitation System (Current Gap)
-20. Create Invitation controller (MISSING)
-21. Create invitation accept view (MISSING)
-22. Implement token validation
-23. Implement existing user attach logic
-24. Implement new user creation logic
+20. ❌ Create Invitation controller (MISSING — no /Invitations/Accept route)
+21. ❌ Create invitation accept view (MISSING — no Accept.cshtml)
+22. ❌ Implement token validation (no web endpoint)
+23. ❌ Implement existing user attach logic (no web endpoint)
+24. ❌ Implement new user creation logic (no web endpoint)
 
 ### Phase 6: RBAC
-25. Create role service
-26. Create authorization middleware
-27. Add role-based attributes
-28. Create permission system
+25. ⏳ Create role service (enum defined, pending dedicated service)
+26. ⏳ Create authorization middleware (RequireCompanyAttribute exists)
+27. ⏳ Add role-based attributes
+28. ⏳ Create permission system
 
 ### Phase 7: Multi-Company Features
-29. Implement company switcher
-30. Implement company isolation
-31. Create child company feature
+29. ✅ Implement company switcher
+30. ✅ Implement company isolation
+31. ✅ Create child company feature
 
 ---
 
@@ -366,107 +374,107 @@ src/
 ## 6. Complete V1 TODO Checklist
 
 ### Database & Infrastructure
-- [ ] Create all entity models
-- [ ] Setup DbContext with relationships
-- [ ] Add DbSets for all entities
-- [ ] Run initial migration
+- [x] Create all entity models
+- [x] Setup DbContext with relationships
+- [x] Add DbSets for all entities
+- [x] Run initial migration
 - [ ] Add seed data for default roles
 
 ### Authentication
-- [ ] User Register endpoint
-- [ ] User Login endpoint
-- [ ] JWT token generation
-- [ ] Cookie authentication setup
-- [ ] Logout endpoint
+- [x] User Register endpoint
+- [x] User Login endpoint
+- [x] JWT token generation
+- [x] Cookie authentication setup
+- [x] Logout endpoint
 
 ### Company Setup (Current Gap)
-- [ ] Create SetupController
-- [ ] Create /setup/company route
-- [ ] Create company setup view
-- [ ] Auto-create Employee on company creation
-- [ ] Auto-create EmployeeCompany record
-- [ ] Auto-create UserCompanyRole with SuperAdmin
-- [ ] Auto-set as default company
+- [x] Create UserCompanyController
+- [x] Create /setup/company route
+- [x] Create company setup view
+- [x] Auto-create Employee on company creation
+- [x] Auto-create EmployeeUser record
+- [x] Auto-create UserCompanyRole with SuperAdmin
+- [x] Auto-set as default company
 
 ### Employee Management
-- [ ] Employee List endpoint
-- [ ] Employee Create endpoint
-- [ ] Employee Update endpoint
-- [ ] Employee Delete (soft) endpoint
-- [ ] Employee List view
-- [ ] Employee Create/Edit view
+- [x] Employee List endpoint
+- [x] Employee Create endpoint
+- [x] Employee Update endpoint
+- [x] Employee Delete (soft) endpoint
+- [x] Employee List view
+- [x] Employee Create/Edit view
 
 ### Invitation System (Current Gap)
-- [ ] Create InvitationController
-- [ ] Create /invitations/accept GET route
-- [ ] Create accept invitation view
-- [ ] Validate token exists
-- [ ] Validate token not expired
-- [ ] Validate token not used
-- [ ] Handle existing user case
-- [ ] Handle new user case
-- [ ] Create User on accept
-- [ ] Link user to Employee
-- [ ] Create UserCompanyRole
-- [ ] Update Invitation status
-- [ ] Auto-login after accept
+- [ ] Create InvitationController (MISSING — no controller exists)
+- [ ] Create /invitations/accept GET route (MISSING — route returns 404)
+- [ ] Create accept invitation view (MISSING — no Accept.cshtml)
+- [ ] Validate token exists (no web endpoint calls repository method)
+- [ ] Validate token not expired (no web endpoint)
+- [ ] Validate token not used (no web endpoint)
+- [ ] Handle existing user case (no acceptance flow)
+- [ ] Handle new user case (no acceptance flow)
+- [ ] Create User on accept (no acceptance flow)
+- [ ] Link user to Employee (no acceptance flow)
+- [ ] Create UserCompanyRole (no acceptance flow)
+- [ ] Update Invitation status (no acceptance flow)
+- [ ] Auto-login after accept (no acceptance flow)
 
 ### RBAC
-- [ ] Define role enum/constants
+- [x] Define role enum/constants (UserRole enum)
 - [ ] Create role service
 - [ ] Create authorization middleware
-- [ ] Add [Authorize] attributes
+- [x] Add [Authorize] attributes
 - [ ] Create RequireRoleAttribute
 - [ ] Create PermissionAttribute
 - [ ] Implement role-based view logic
 
 ### Multi-Company Support
-- [ ] Company context middleware
-- [ ] Get current company service
-- [ ] Switch company endpoint
-- [ ] Default company selection
-- [ ] Company isolation for queries
+- [x] Company context middleware/service (CompanyContext)
+- [x] Get current company service
+- [x] Switch company endpoint
+- [x] Default company selection
+- [x] Company isolation for queries
 
 ### Child Company
-- [ ] Create child company endpoint
-- [ ] Parent-Child dropdown UI
-- [ ] Auto-assign SuperAdmin to creator
+- [x] Create child company endpoint
+- [x] Parent-Child dropdown UI
+- [x] Auto-assign SuperAdmin to creator
 - [ ] Hierarchy display
 
 ### Middleware & Security
-- [ ] CompanyContextMiddleware
+- [x] CompanyContextMiddleware (CompanyContext service)
 - [ ] Request validation middleware
-- [ ] Token expiry validation
+- [x] Token expiry validation (JWT expiry)
 - [ ] Rate limiting for auth endpoints
-- [ ] SQL injection prevention
-- [ ] XSS prevention
+- [x] SQL injection prevention (EF Core parameterized queries)
+- [x] XSS prevention (Razor auto-encoding)
 
 ### UI/Pages
-- [ ] Login page
-- [ ] Register page
-- [ ] Company setup page (NEW)
-- [ ] Dashboard
-- [ ] Employee list
-- [ ] Employee create/edit
-- [ ] User list
-- [ ] Invite user form
-- [ ] Accept invitation page (NEW)
-- [ ] Company switcher UI
+- [x] Login page
+- [x] Register page
+- [x] Company setup page
+- [x] Dashboard
+- [x] Employee list
+- [x] Employee create/edit
+- [x] User list
+- [x] Invite user form
+- [ ] Accept invitation page — BROKEN: no view exists
+- [x] Company switcher UI
 
 ### API Endpoints
-- [ ] POST /api/auth/register
-- [ ] POST /api/auth/login
-- [ ] POST /api/setup/company
-- [ ] GET /api/companies
-- [ ] POST /api/companies/child
-- [ ] GET /api/employees
-- [ ] POST /api/employees
-- [ ] PUT /api/employees/{id}
-- [ ] DELETE /api/employees/{id}
-- [ ] POST /api/invitations
-- [ ] GET /api/invitations/accept/{token}
-- [ ] POST /api/invitations/accept
-- [ ] POST /api/companies/switch
+- [x] POST /api/auth/register
+- [x] POST /api/auth/login
+- [x] POST /api/setup/company
+- [x] GET /api/companies
+- [x] POST /api/companies/child
+- [x] GET /api/employees
+- [x] POST /api/employees
+- [x] PUT /api/employees/{id}
+- [x] DELETE /api/employees/{id}
+- [x] POST /api/invitations
+- [ ] GET /api/invitations/accept/{token} — BROKEN: no route
+- [ ] POST /api/invitations/accept — BROKEN: no route
+- [x] POST /api/companies/switch
 
 ---
 
@@ -606,9 +614,9 @@ public interface ICompanySetupService
 - [x] Create UserCompany with SuperAdmin role
 
 ### Gap 2: Invitation Acceptance
-**Problem:** /Invitations/Accept route doesn't exist
+**Problem:** /Invitations/Accept route doesn't exist (STILL MISSING)
 
-**Solution:** Create:
+**Solution:** Need to create:
 - [ ] InvitationController.cs
 - [ ] Accept GET action
 - [ ] Accept POST action
@@ -617,26 +625,26 @@ public interface ICompanySetupService
 ### Gap 3: Company Context
 **Problem:** Need consistent way to get current company
 
-**Solution:** Ensure ICompanyContext is:
-- [ ] Set from JWT token
-- [ ] Updated on company switch
-- [ ] Used in all repository queries
+**Solution:** ICompanyContext implemented in CompanyContext service:
+- [x] Set from JWT token
+- [x] Updated on company switch
+- [x] Used in all repository queries (via BaseEntity.CompanyId)
 
 ---
 
 ## 12. Summary
 
-The V1 system will support:
+The V1 system supports:
 - ✅ User registration and login
 - ✅ Company setup with auto-owned employee
 - ✅ Employee management (manual creation)
-- ✅ Invitation system (send + accept)
+- ❌ Invitation system (send only — ACCEPTANCE FLOW BROKEN)
 - ✅ Multi-company user access
 - ✅ Child company hierarchy
-- ✅ Role-based access control
+- ⏳ Role-based access control (partially done)
 
 **Key missing pieces to implement:**
-1. Company setup automation (likely already done)
-2. Invitation acceptance controller + view
-3. Company context middleware enhancement
-4. RBAC implementation
+1. ✅ Company setup automation (done - auto-creates Employee + EmployeeUser + UserCompanyRole)
+2. ❌ Invitation acceptance controller + view (MISSING — redirection email links to /Invitations/Accept which returns 404)
+3. ✅ Company context middleware enhancement (done - CompanyContext service)
+4. ⏳ RBAC implementation (role service, authorization middleware, permission attributes)
