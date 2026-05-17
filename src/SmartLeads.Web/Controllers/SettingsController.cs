@@ -6,23 +6,27 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SmartLeads.Web.Controllers;
 
-public class VariablesController : Controller
+public class SettingsController : BaseController
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public VariablesController(IUnitOfWork unitOfWork)
+    public SettingsController(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    [HttpGet]
-    public IActionResult Index()
+    // ========================
+    // Variables
+    // ========================
+
+    [Route("~/Variables/Index")]
+    public IActionResult VariablesIndex()
     {
-        return View();
+        return View("~/Views/Variables/Index.cshtml");
     }
 
-    [HttpGet]
-    public IActionResult SearchType(string searchTerm = "", string selectedvalue = "")
+    [Route("~/Variables/SearchType")]
+    public IActionResult VariablesSearchType(string searchTerm = "", string selectedvalue = "")
     {
         try
         {
@@ -35,8 +39,8 @@ public class VariablesController : Controller
         }
     }
 
-    [HttpGet]
-    public async Task<IActionResult> SearchVariable(string searchTerm = "", string type = "", string selectedvalue = "")
+    [Route("~/Variables/SearchVariable")]
+    public async Task<IActionResult> VariablesSearch(string searchTerm = "", string type = "", string selectedvalue = "")
     {
         try
         {
@@ -59,8 +63,8 @@ public class VariablesController : Controller
         }
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetVariablesData([FromQuery] PaginationRequest request)
+    [Route("~/Variables/GetVariablesData")]
+    public async Task<IActionResult> VariablesGetData([FromQuery] PaginationRequest request)
     {
         try
         {
@@ -143,8 +147,8 @@ public class VariablesController : Controller
         }
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetTypes()
+    [Route("~/Variables/GetTypes")]
+    public async Task<IActionResult> VariablesGetTypes()
     {
         var companyIdClaim = User.FindFirst("CompanyId")?.Value;
         if (string.IsNullOrEmpty(companyIdClaim))
@@ -158,8 +162,8 @@ public class VariablesController : Controller
         return Ok(new { success = true, data = types });
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetByType(string type)
+    [Route("~/Variables/GetByType")]
+    public async Task<IActionResult> VariablesGetByType(string type)
     {
         var companyIdClaim = User.FindFirst("CompanyId")?.Value;
         if (string.IsNullOrEmpty(companyIdClaim))
@@ -189,7 +193,8 @@ public class VariablesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Save([FromBody] VariableDto model)
+    [Route("~/Variables/Save")]
+    public async Task<IActionResult> VariablesSave([FromBody] VariableDto model)
     {
         var errors = new Dictionary<string, List<string>>();
         var companyIdClaim = User.FindFirst("CompanyId")?.Value;
@@ -230,7 +235,6 @@ public class VariablesController : Controller
                     return NotFound(new { success = false, message = "Variable not found." });
                 }
 
-                // Check for duplicate
                 var duplicate = await variableRepo.GetByTypeAndValueAsync(model.Type!, model.Value!, companyId);
                 if (duplicate != null && duplicate.Id != variable.Id)
                 {
@@ -254,7 +258,6 @@ public class VariablesController : Controller
             }
             else
             {
-                // Check for duplicate
                 var existing = await variableRepo.GetByTypeAndValueAsync(model.Type!, model.Value!, companyId);
                 if (existing != null)
                 {
@@ -289,7 +292,8 @@ public class VariablesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(Guid id)
+    [Route("~/Variables/Delete/{id}")]
+    public async Task<IActionResult> VariablesDelete(Guid id)
     {
         var variable = await _unitOfWork.variableRepository.GetByIdAsync(id);
         if (variable == null)
@@ -305,7 +309,8 @@ public class VariablesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteByType(string type)
+    [Route("~/Variables/DeleteByType")]
+    public async Task<IActionResult> VariablesDeleteByType(string type)
     {
         var companyIdClaim = User.FindFirst("CompanyId")?.Value;
         if (string.IsNullOrEmpty(companyIdClaim))
@@ -324,5 +329,90 @@ public class VariablesController : Controller
         await _unitOfWork.SaveAsync();
 
         return Ok(new { success = true, message = $"All variables of type '{type}' deleted successfully!" });
+    }
+
+    // ========================
+    // ColumnFilter
+    // ========================
+
+    [Route("~/ColumnFilter/GetFilteredColumn")]
+    public async Task<IActionResult> ColumnFilterGet(string type)
+    {
+        var columnFilter = await _unitOfWork.columnFilterRepository.GetColumnFilterByUserAndListNameAsync(
+            UserId, CompanyId, type);
+
+        if (columnFilter == null)
+        {
+            return Json(new { Success = 0 });
+        }
+
+        return Json(new { Success = 1, data = columnFilter });
+    }
+
+    [HttpPost]
+    [Route("~/ColumnFilter/ColumnFilterCreation")]
+    public async Task<IActionResult> ColumnFilterSave([FromBody] ColumnFilterRequest request, CancellationToken token)
+    {
+        try
+        {
+            var columnFilter = await _unitOfWork.columnFilterRepository.GetColumnFilterByUserAndListNameAsync(
+                UserId, null, request.Type, token);
+
+            if (columnFilter == null)
+            {
+                var newFilter = new Domain.Models.ColumnFilter
+                {
+                    Id = Guid.NewGuid(),
+                    CreatedByUserId = UserId,
+                    ListName = request.Type,
+                    KeyValue = request.KeyValue,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _unitOfWork.columnFilterRepository.AddAsync(newFilter, token);
+                await _unitOfWork.SaveAsync(token);
+
+                return Json(new { Success = 1, Message = "Data saved successfully" });
+            }
+            else
+            {
+                columnFilter.KeyValue = request.KeyValue;
+                columnFilter.ListName = request.Type;
+                columnFilter.UpdatedAt = DateTime.UtcNow;
+
+                _unitOfWork.columnFilterRepository.Edit(columnFilter);
+                await _unitOfWork.SaveAsync(token);
+
+                return Json(new { Success = 1, Message = "Data updated successfully" });
+            }
+        }
+        catch (Exception ex)
+        {
+            return Json(new { Success = 0, Message = $"Error: {ex.Message}" });
+        }
+    }
+
+    [Route("~/ColumnFilter/DeleteColumnFilter")]
+    public async Task<IActionResult> ColumnFilterDelete(string type, CancellationToken token)
+    {
+        try
+        {
+            var columnFilter = await _unitOfWork.columnFilterRepository.GetColumnFilterByUserAndListNameAsync(
+                UserId, CompanyId, type, token);
+
+            if (columnFilter == null)
+            {
+                return Json(new { Success = 0, Message = "No items found to delete." });
+            }
+
+            await _unitOfWork.columnFilterRepository.RemoveAsync(columnFilter);
+            await _unitOfWork.SaveAsync(token);
+
+            return Json(new { Success = 1, Message = "Deleted successfully" });
+        }
+        catch (Exception)
+        {
+            return Json(new { Success = 0, Message = "An error occurred while deleting." });
+        }
     }
 }

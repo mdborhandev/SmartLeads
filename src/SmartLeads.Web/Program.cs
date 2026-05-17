@@ -1,6 +1,7 @@
 using SmartLeads.Web;
 using SmartLeads.Infrastructure;
 using SmartLeads.Utilities;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,12 +26,29 @@ builder.Services.AddSession(options =>
 });
 builder.Services.AddHttpContextAccessor();
 
+// Configure Swagger
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "SmartLeads API",
+        Version = "v1",
+        Description = "SmartLeads - Lead Management System API"
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "SmartLeads API v1");
+        c.RoutePrefix = "swagger";
+    });
 }
 else
 {
@@ -74,10 +92,11 @@ app.MapControllerRoute(
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("===========================================");
 logger.LogInformation("SmartLeads Application Started");
-logger.LogInformation("Access the application at: http://localhost:5284");
+logger.LogInformation("Frontend UI:  http://localhost:5284");
+logger.LogInformation("Swagger Docs: http://localhost:5284/swagger");
 logger.LogInformation("Landing Page: http://localhost:5284/");
-logger.LogInformation("Register: http://localhost:5284/Auth/Register");
-logger.LogInformation("Login: http://localhost:5284/Auth/Login");
+logger.LogInformation("Register:     http://localhost:5284/Auth/Register");
+logger.LogInformation("Login:        http://localhost:5284/Auth/Login");
 logger.LogInformation("===========================================");
 logger.LogInformation("Press Ctrl+C to stop the application");
 
